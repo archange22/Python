@@ -8,7 +8,9 @@ Application gratuite pour apprendre Python en français, pensée pour les début
 - Indices masqués pour essayer avant de regarder.
 - 3 projets guidés : jeu de devinette, calculatrice et quiz.
 - Recherche et filtre par niveau.
-- Progression enregistrée localement sur l'appareil.
+- Profil personnalisable (pseudo et avatar), niveau et XP.
+- Profil et progression enregistrés uniquement sur l'appareil dans le navigateur (localStorage) : aucune synchronisation entre appareils et aucun compte distant.
+- Les données peuvent être perdues si les données du navigateur sont effacées.
 - Application web installable (PWA) et mode hors ligne après le premier chargement.
 
 ## Utilisation
