@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#100d20"><meta name="description" content="Apprends Python gratuitement en français."><title>Python Facile</title><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg"><link rel="stylesheet" href="styles.css"></head><body>
+<header><a class="brand" href="#"><b>Py</b> Python<span>Facile</span></a><nav><a href="#lecons">Leçons</a><a href="#projets">Projets</a></nav><button id="install" hidden>Installer</button></header>
+<main><section class="hero"><div><small>APPRENDRE À TON RYTHME</small><h1>Le Python devient<br><em>plus simple.</em></h1><p>Des leçons courtes, des exercices pratiques et des projets pour apprendre à programmer, même depuis ton téléphone.</p><a class="primary" href="#lecons">Commencer à apprendre ↗</a><p class="note">✓ Gratuit · Sans compte · Fonctionne hors ligne après chargement</p></div><pre class="sample"><span>mon_premier_code.py</span>
+nom = <i>"Python"</i>
+print(<i>"Bonjour "</i> + nom)
+
+<span># Ton aventure commence ici</span>
+for i in range(3):
+    print(<i>"Je progresse !"</i>)</pre></section>
+<section class="stats"><div><b id="doneLessons">0/8</b><small>Leçons terminées</small></div><div><b id="doneExercises">0</b><small>Exercices validés</small></div><div><b id="doneProjects">0/3</b><small>Projets réalisés</small></div><div><b id="percent">0%</b><small>Progression totale</small><div class="track"><i id="bar"></i></div></div></section>
+<section class="section" id="lecons"><div class="heading"><div><small>LE PARCOURS</small><h2>Construis tes bases.</h2><p>Avance étape par étape. Chaque notion prépare la suivante.</p></div><div class="filters"><input id="search" placeholder="Rechercher une leçon…"><select id="level"><option value="all">Tous les niveaux</option><option>Débutant</option><option>Intermédiaire</option></select></div></div><div class="cards" id="lessons"></div></section>
+<section class="section projects" id="projets"><div class="heading"><div><small>APPRENDRE EN CRÉANT</small><h2>Place à la pratique.</h2><p>Transforme tes connaissances en programmes utiles.</p></div></div><div class="cards projects-grid" id="projects"></div></section>
+<section class="callout"><div><small>TON OUTIL D’APPRENTISSAGE</small><h2>Un téléphone suffit pour commencer.</h2><p>Ouvre les exercices dans Pydroid 3, teste ton code et reviens marquer tes progrès ici. Aucun abonnement, aucun compte.</p></div><a class="primary" href="#lecons">Voir les leçons ↗</a></section></main>
+<footer><a class="brand" href="#"><b>Py</b> Python<span>Facile</span></a><span>Fait pour apprendre, une ligne à la fois.</span><a href="https://github.com/archange22/Python">Code source sur GitHub ↗</a></footer>
+<div class="backdrop" id="backdrop" hidden><section class="modal"><button id="close" class="close">×</button><div id="content"></div></section></div><div id="toast" class="toast"></div><script src="app.js"></script></body></html>
