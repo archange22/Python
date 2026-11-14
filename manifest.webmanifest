@@ -1,0 +1,18 @@
+{
+  "name": "Python Facile",
+  "short_name": "Python",
+  "description": "Apprendre Python gratuitement en français.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0d0b17",
+  "theme_color": "#100d20",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "lang": "fr"
+}
