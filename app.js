@@ -7,8 +7,44 @@ const projects=[
 let state={lessons:[],projects:[],exercises:0,profile:{name:'Apprenant',avatar:'🐼'}};try{state={...state,...JSON.parse(localStorage.getItem('python-facile')||'{}')}}catch(e){};state.profile={name:'Apprenant',avatar:'🐼',...(state.profile||{})};
 const save=()=>localStorage.setItem('python-facile',JSON.stringify(state)), $=s=>document.querySelector(s), esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(t){let e=$('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200)}
-function stats(){let d=state.lessons.length,p=state.projects.length,n=Math.round((d+p)/11*100);$('#doneLessons').textContent=d+'/8';$('#doneExercises').textContent=state.exercises;$('#doneProjects').textContent=p+'/3';$('#percent').textContent=n+'%';$('#bar').style.width=n+'%';$('#headerAvatar').textContent=state.profile.avatar;$('#headerName').textContent=state.profile.name||'Mon profil'}
-function render(){let q=$('#search').value.toLowerCase(),lv=$('#level').value;let arr=lessons.filter(l=>(lv==='all'||l.level===lv)&&(l.title+' '+l.desc).toLowerCase().includes(q));$('#lessons').innerHTML=arr.length?arr.map(l=>'<article class="card"><div class="symbol">'+l.icon+'</div><span class="tag">'+l.level+'</span><h3>'+l.id+'. '+esc(l.title)+'</h3><p>'+esc(l.desc)+'</p><div class="card-foot"><span>'+l.time+(state.lessons.includes(l.id)?' · ✓ Terminé':'')+'</span><button data-lesson="'+l.id+'">Ouvrir ↗</button></div></article>').join(''):'<div class="empty">Aucune leçon trouvée.</div>';$('#lessons').querySelectorAll('[data-lesson]').forEach(b=>b.onclick=()=>lesson(+b.dataset.lesson));$('#projects').innerHTML=projects.map(p=>'<article class="card"><div class="symbol">'+p.symbol+'</div><span class="tag">'+p.level+'</span><h3>'+p.title+'</h3><p>'+p.desc+'</p><div class="card-foot"><span>'+p.skills+'</span><button data-project="'+p.id+'">'+(state.projects.includes(p.id)?'✓ Réalisé':'Voir le guide ↗')+'</button></div></article>').join('');$('#projects').querySelectorAll('[data-project]').forEach(b=>b.onclick=()=>project(b.dataset.project))}
+function stats(){
+ const d=state.lessons.length,p=state.projects.length,n=Math.round((d+p)/11*100),xp=d*20+p*50,level=Math.floor(xp/100)+1,within=xp%100,next=lessons.find(l=>!state.lessons.includes(l.id))||lessons[lessons.length-1];
+ $('#doneLessons').textContent=d+'/8';$('#doneExercises').textContent=state.exercises;$('#doneProjects').textContent=p+'/3';$('#percent').textContent=n+'%';$('#headerAvatar').textContent=state.profile.avatar;$('#headerName').textContent=state.profile.name||'Mon profil';
+ if($('#mobileAvatar'))$('#mobileAvatar').textContent=state.profile.avatar;
+ if($('#welcomeName'))$('#welcomeName').textContent=state.profile.name||'Apprenant';
+ if($('#topXp'))$('#topXp').textContent=xp+' XP';
+ if($('#dashboardLevel'))$('#dashboardLevel').textContent=level;
+ if($('#dashboardXp'))$('#dashboardXp').textContent=xp+' XP';
+ if($('#levelBar'))$('#levelBar').style.width=within+'%';
+ if($('#continueTitle'))$('#continueTitle').textContent=next.title;
+ if($('#continueMeta'))$('#continueMeta').textContent=state.lessons.includes(next.id)?'Tu as terminé toutes les leçons. Revois celle-ci pour consolider tes acquis.':next.desc;
+ if($('#continuePercent'))$('#continuePercent').textContent=Math.round(d/lessons.length*100)+'%';
+ if($('#continueBar'))$('#continueBar').style.width=(d/lessons.length*100)+'%';
+ if($('#bar'))$('#bar').style.width=n+'%';
+ if($('#continueBtn'))$('#continueBtn').onclick=()=>lesson(next.id);
+}
+const lessonUnits=[
+ {title:'Premiers pas en Python',subtitle:'Découvre le langage et écris tes premières instructions.',icon:'🌱',ids:[1,2]},
+ {title:'Donner des instructions',subtitle:'Apprends à faire des choix et à répéter des actions.',icon:'🎯',ids:[3,4,5]},
+ {title:'Ranger les informations',subtitle:'Organise tes données pour créer des programmes utiles.',icon:'🧰',ids:[6,8]},
+ {title:'Créer avec des fonctions',subtitle:'Structure ton code et réutilise tes propres outils.',icon:'🚀',ids:[7]}
+];
+function render(){
+ const q=$('#search').value.toLowerCase(),lv=$('#level').value,arr=lessons.filter(l=>(lv==='all'||l.level===lv)&&(l.title+' '+l.desc).toLowerCase().includes(q));
+ const html=lessonUnits.map((unit,i)=>{
+  const unitLessons=unit.ids.map(id=>lessons.find(l=>l.id===id)).filter(l=>l&&arr.includes(l));
+  if(!unitLessons.length)return '';
+  const done=unitLessons.filter(l=>state.lessons.includes(l.id)).length,percent=Math.round(done/unit.ids.length*100);
+  return '<section class="unit-card"><div class="unit-heading"><div class="unit-heading-main"><div class="unit-icon">'+unit.icon+'</div><div><small>UNITÉ '+String(i+1).padStart(2,'0')+'</small><h3>'+esc(unit.title)+'</h3><p>'+esc(unit.subtitle)+'</p></div></div><div class="unit-progress"><b>'+done+'/'+unit.ids.length+'</b><small>terminées</small><div class="progress-track"><i style="width:'+percent+'%"></i></div></div></div><div class="path-list">'+unitLessons.map(l=>{
+   const complete=state.lessons.includes(l.id);
+   return '<article class="path-step '+(complete?'is-done':'')+'"><div class="path-node">'+(complete?'⭐':l.icon)+'</div><div class="path-info"><span class="tag">'+esc(l.level)+'</span><h4>'+l.id+'. '+esc(l.title)+'</h4><p>'+esc(l.desc)+'</p></div><div class="path-side"><small>'+(complete?'Terminée':'+20 XP')+'</small><button data-lesson="'+l.id+'">'+(complete?'Revoir':'Démarrer')+' →</button></div></article>';
+  }).join('')+'</div></section>';
+ }).join('');
+ $('#lessons').innerHTML=html||'<div class="empty">Aucune leçon trouvée. Essaie un autre mot ou niveau.</div>';
+ $('#lessons').querySelectorAll('[data-lesson]').forEach(b=>b.onclick=()=>lesson(+b.dataset.lesson));
+ $('#projects').innerHTML=projects.map(p=>'<article class="card"><div class="symbol">'+p.symbol+'</div><span class="tag">'+p.level+'</span><h3>'+esc(p.title)+'</h3><p>'+esc(p.desc)+'</p><div class="card-foot"><span>'+esc(p.skills)+'</span><button data-project="'+p.id+'">'+(state.projects.includes(p.id)?'✓ Réalisé':'Voir le guide →')+'</button></div></article>').join('');
+ $('#projects').querySelectorAll('[data-project]').forEach(b=>b.onclick=()=>project(b.dataset.project));
+}
 function show(content){$('#content').innerHTML=content;$('#backdrop').hidden=false;document.body.style.overflow='hidden'}
 function close(){ $('#backdrop').hidden=true;document.body.style.overflow=''}
 function copy(text){if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>toast('Code copié !')).catch(()=>toast('Copie indisponible ici.'));else toast('Copie indisponible ici.')}
@@ -16,7 +52,7 @@ function lesson(id){let l=lessons.find(x=>x.id===id),done=state.lessons.includes
 function project(id){let p=projects.find(x=>x.id===id),done=state.projects.includes(id);show('<small>PROJET GUIDÉ · '+p.level.toUpperCase()+'</small><h2>'+p.symbol+' '+esc(p.title)+'</h2><p>'+esc(p.desc)+'</p><h3>Étapes</h3><ol>'+p.steps.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol><h3>Exemple de départ</h3><pre>'+esc(p.code)+'</pre><button class="action" id="copy">Copier le code</button><div class="hint">Recopie le programme dans Pydroid 3, exécute-le et modifie-le pour comprendre chaque partie.</div><button class="action" id="done">'+(done?'Projet déjà réalisé ✓':'Marquer comme réalisé')+'</button>');$('#copy').onclick=()=>copy(p.code);$('#done').onclick=()=>{if(!state.projects.includes(id))state.projects.push(id);save();stats();render();toast('Projet validé : +50 XP !');project(id)}}
 
 function profile(){const xp=state.lessons.length*20+state.projects.length*50,level=Math.floor(xp/100)+1,within=xp%100;const avatars=['🐼','🦊','🐸','🐯','🐧','🐙','🐲','🦉'];show('<small>TON ESPACE PERSONNEL</small><h2>Mon profil</h2><div class="profile-summary"><div class="big-avatar">'+esc(state.profile.avatar)+'</div><div><b>'+esc(state.profile.name||'Apprenant')+'</b><p>Niveau '+level+' · '+xp+' XP gagnés</p></div></div><div class="xp-label"><span>Progression vers le niveau '+(level+1)+'</span><b>'+within+'/100 XP</b></div><div class="xp-track"><i style="width:'+within+'%"></i></div><div class="profile-stats"><div><b>'+state.lessons.length+'</b><small>Leçons</small></div><div><b>'+state.projects.length+'</b><small>Projets</small></div><div><b>'+xp+'</b><small>XP total</small></div></div><h3>Personnaliser mon profil</h3><label class="profile-label" for="profileName">Ton pseudo</label><input id="profileName" class="profile-input" maxlength="20" value="'+esc(state.profile.name)+'" placeholder="Choisis un pseudo"><p class="profile-label">Choisis ton avatar</p><div class="avatars">'+avatars.map(a=>'<button type="button" class="avatar-choice '+(a===state.profile.avatar?'selected':'')+'" data-avatar="'+a+'">'+a+'</button>').join('')+'</div><button class="action" id="saveProfile">Enregistrer mon profil</button><div class="privacy-note"><b>🔒 Ton profil reste sur cet appareil.</b><br>Le pseudo, l’avatar et ta progression sont enregistrés uniquement dans le stockage local de ce navigateur. Aucun compte ni serveur ne reçoit ces informations. Si tu changes d’appareil ou de navigateur, ton profil ne sera pas transféré. Effacer les données du navigateur peut aussi supprimer ta progression.</div>');let selected=state.profile.avatar;document.querySelectorAll('[data-avatar]').forEach(b=>b.onclick=()=>{selected=b.dataset.avatar;document.querySelectorAll('[data-avatar]').forEach(x=>x.classList.toggle('selected',x.dataset.avatar===selected))});$('#saveProfile').onclick=()=>{const name=$('#profileName').value.trim();if(!name){toast('Entre un pseudo avant d’enregistrer.');return}state.profile={name:name.slice(0,20),avatar:selected};save();stats();toast('Profil enregistré sur cet appareil !');profile()}}
-$('#profileOpen').onclick=profile;
+$('#profileOpen').onclick=profile;if($('#mobileProfile'))$('#mobileProfile').onclick=profile;
 $('#close').onclick=close;$('#backdrop').onclick=e=>{if(e.target===$('#backdrop'))close()};document.onkeydown=e=>{if(e.key==='Escape')close()};$('#search').oninput=render;$('#level').onchange=render;render();stats();
 let promptInstall=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();promptInstall=e;$('#install').hidden=false});$('#install').onclick=async()=>{if(promptInstall){promptInstall.prompt();await promptInstall.userChoice;promptInstall=null}else toast('Ouvre le menu du navigateur pour installer.');};
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
