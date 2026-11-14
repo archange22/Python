@@ -20,3 +20,35 @@ $('#profileOpen').onclick=profile;
 $('#close').onclick=close;$('#backdrop').onclick=e=>{if(e.target===$('#backdrop'))close()};document.onkeydown=e=>{if(e.key==='Escape')close()};$('#search').oninput=render;$('#level').onchange=render;render();stats();
 let promptInstall=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();promptInstall=e;$('#install').hidden=false});$('#install').onclick=async()=>{if(promptInstall){promptInstall.prompt();await promptInstall.userChoice;promptInstall=null}else toast('Ouvre le menu du navigateur pour installer.');};
 if('serviceWorker'in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+/* Dictionnaire Python avec recherche et filtres */
+const dictionaryItems=[
+{term:"print()",group:"Bases",desc:"Affiche du texte ou une valeur dans la console.",example:'print("Bonjour !")'},
+{term:"input()",group:"Bases",desc:"Demande une information à la personne qui utilise le programme.",example:'nom = input("Ton nom : ")'},
+{term:"int()",group:"Bases",desc:"Convertit une valeur en nombre entier.",example:'age = int(input("Âge : "))'},
+{term:"float()",group:"Bases",desc:"Convertit une valeur en nombre décimal.",example:'prix = float("12.5")'},
+{term:"str()",group:"Bases",desc:"Convertit une valeur en texte.",example:'texte = str(2026)'},
+{term:"type()",group:"Bases",desc:"Indique le type d'une valeur.",example:'print(type(15))'},
+{term:"len()",group:"Bases",desc:"Compte le nombre d'éléments ou de caractères.",example:'print(len("Python"))'},
+{term:"if",group:"Conditions",desc:"Exécute un bloc si une condition est vraie.",example:'if age >= 18:\n    print("Adulte")'},
+{term:"elif",group:"Conditions",desc:"Teste une autre condition si le if précédent est faux.",example:'elif age >= 13:\n    print("Ado")'},
+{term:"else",group:"Conditions",desc:"Définit le cas où les conditions précédentes sont fausses.",example:'else:\n    print("Autre cas")'},
+{term:"and / or / not",group:"Conditions",desc:"Combine ou inverse des conditions logiques.",example:'if age >= 13 and age <= 17:\n    print("Autorisé")'},
+{term:"for",group:"Boucles",desc:"Répète un bloc pour chaque élément d'une séquence.",example:'for n in range(3):\n    print(n)'},
+{term:"while",group:"Boucles",desc:"Répète un bloc tant qu'une condition est vraie.",example:'while compteur < 5:\n    compteur += 1'},
+{term:"range()",group:"Boucles",desc:"Génère une suite de nombres, souvent utilisée avec for.",example:'for n in range(1, 6):\n    print(n)'},
+{term:"def",group:"Fonctions",desc:"Crée une fonction réutilisable.",example:'def saluer(nom):\n    print("Salut", nom)'},
+{term:"return",group:"Fonctions",desc:"Renvoie un résultat depuis une fonction.",example:'def carre(n):\n    return n * n'},
+{term:"import",group:"Modules",desc:"Permet d'utiliser les outils d'un module Python.",example:'import random'},
+{term:"random.randint()",group:"Modules",desc:"Choisit un nombre entier aléatoire dans un intervalle.",example:'import random\nn = random.randint(1, 10)'},
+{term:"random.choice()",group:"Modules",desc:"Choisit un élément au hasard dans une séquence.",example:'import random\nchoix = random.choice(["A", "B"])'},
+{term:"random.shuffle()",group:"Modules",desc:"Mélange les éléments d'une liste sur place.",example:'import random\ncartes = [1, 2, 3]\nrandom.shuffle(cartes)'},
+{term:"append()",group:"Collections",desc:"Ajoute un élément à la fin d'une liste.",example:'fruits = ["mangue"]\nfruits.append("orange")'},
+{term:"items()",group:"Collections",desc:"Parcourt les paires clé-valeur d'un dictionnaire.",example:'for cle, valeur in profil.items():\n    print(cle, valeur)'},
+{term:"{} dictionnaire",group:"Collections",desc:"Associe des clés à des valeurs.",example:'profil = {"nom": "Awa", "age": 15}'}
+];
+let activeDictGroup="all";
+function renderDictionary(){const q=($('#dictSearch')?.value||'').toLowerCase().trim();const items=dictionaryItems.filter(x=>(activeDictGroup==='all'||x.group===activeDictGroup)&&(x.term+' '+x.desc+' '+x.example).toLowerCase().includes(q));const root=$('#dictionary');if(!root)return;root.innerHTML=items.length?items.map(x=>'<article class="dict-card"><div class="dict-card-top"><code>'+esc(x.term)+'</code><small>'+esc(x.group.toUpperCase())+'</small></div><p>'+esc(x.desc)+'</p><pre>'+esc(x.example)+'</pre></article>').join(''):'<div class="empty">Aucune commande trouvée. Essaie un autre mot.</div>'}
+if($('#dictionary')){renderDictionary();$('#dictSearch').addEventListener('input',renderDictionary);$('#dictFilters').querySelectorAll('[data-group]').forEach(b=>b.addEventListener('click',()=>{activeDictGroup=b.dataset.group;$('#dictFilters').querySelectorAll('[data-group]').forEach(x=>x.classList.toggle('active',x===b));renderDictionary()}))}
+if($('#runEditor'))$('#runEditor').onclick=()=>{$('#consoleOutput').textContent="L'interface de la console est prête. Le moteur d'exécution Python sera branché dans la prochaine étape.";toast("Console visuelle prête, exécution à venir.")};
+if($('#copyEditor'))$('#copyEditor').onclick=()=>copy($('#codeEditor').value);
+if($('#resetEditor'))$('#resetEditor').onclick=()=>{$('#codeEditor').value='nom = input("Comment tu t\'appelles ? ")\nprint("Bienvenue", nom)\n\n# Écris ton code Python ici';$('#consoleOutput').textContent='Les résultats de ton programme apparaîtront ici.';toast('Éditeur réinitialisé.')};
