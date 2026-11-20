@@ -1,6 +1,6 @@
-const STATIC_CACHE = "academique-shell-v3";
+const STATIC_CACHE = "academique-shell-v4";
 const PDF_CACHE = "academique-pdf-v1";
-const APP_FILES = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest", "./icon.svg", "./pdf/lecon-01-reader.html", "./pdf/lecon-01.md"];
+const APP_FILES = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest", "./icon.svg", "./pdf/lecon-01-reader.html", "./pdf/lecon-01-content.md.gz.b64"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(STATIC_CACHE).then((cache) => cache.addAll(APP_FILES)).then(() => self.skipWaiting()));
