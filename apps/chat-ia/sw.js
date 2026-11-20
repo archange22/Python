@@ -1,5 +1,5 @@
-const APP_CACHE = "academique-chat-ia-shell-v2";
-const LIBRARY_CACHE = "academique-chat-ia-library-v2";
+const APP_CACHE = "academique-chat-ia-shell-v3";
+const LIBRARY_CACHE = "academique-chat-ia-library-v3";
 const APP_FILES = [
   "./",
   "./index.html",
