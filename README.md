@@ -43,22 +43,22 @@ archangekouaho@gmail.com
 https://archange22.github.io/Python/
 
 
+
 ## Applications complémentaires
 
 Académique regroupe trois applications distinctes :
 
 - **Académique** : formations et bibliothèque de cours.
 - **Console Python 3** (apps/python-console-3/) : interpréteur CPython avec Pyodide/WebAssembly. Une première initialisation en ligne est nécessaire pour mettre le moteur en cache ; les scripts utilisant la bibliothèque standard peuvent ensuite être exécutés hors connexion.
-- **Chat IA** (apps/chat-ia/) : assistant local expérimental avec trois modèles au choix : LaMini-Flan-T5-77M, LaMini-Flan-T5-248M et SmolLM2-135M-Instruct. Un seul modèle est chargé à la fois ; chaque modèle doit être téléchargé séparément. Le téléchargement bénéficie de nouvelles tentatives réseau, d'une progression agrégée lorsqu'elle est fournie par le moteur, d'une estimation du stockage, d'un cache navigateur et d'un bouton de réinitialisation du cache. SmolLM2 est principalement documenté pour l'anglais et peut être moins fiable en français. Les réponses restent moins avancées que celles d’un grand modèle cloud.
-- Les statistiques de téléchargement sont conservées localement sur l'appareil et ne sont pas envoyées à un serveur. Elles servent au diagnostic local ; elles ne permettent pas de calculer le taux d'échec global de tous les utilisateurs.
-- En cas de coupure, les fichiers entièrement téléchargés et mis en cache sont réutilisés au prochain essai. Le navigateur ne reprend pas nécessairement au dernier octet le fichier dont le téléchargement a été interrompu.
+- **Chat IA** (apps/chat-ia/) : assistant local expérimental avec trois modèles : LaMini-Flan-T5-77M, LaMini-Flan-T5-248M et SmolLM2-135M-Instruct au format ONNX. Le gestionnaire affiche la progression globale et par fichier, les octets transférés, la vitesse et une estimation du temps restant. Il gère une file ordonnée de modèles, les télécharge séquentiellement, permet pause et reprise, et conserve localement la file si l’application est fermée. La file ne continue pas en arrière-plan : il faut rouvrir l’application et relancer le traitement. SmolLM2 affiche les réponses progressivement ; les longueurs courte, normale et détaillée sont disponibles.
+- Les statistiques de téléchargement sont conservées localement sur l'appareil et ne sont pas envoyées à un serveur. Elles servent au diagnostic local et ne mesurent pas le taux d'échec global.
+- En cas de coupure, les fichiers entièrement téléchargés et mis en cache peuvent être réutilisés. Le navigateur ne reprend pas nécessairement au dernier octet un fichier dont le transfert a été interrompu.
 
-Les deux applications complémentaires possèdent leurs propres pages, manifestes et Service Workers. Elles ne partagent pas leurs données de conversation ou de code avec l’application Académique.
+Les applications complémentaires possèdent leurs propres pages, manifestes et Service Workers. Les conversations et les scripts ne sont pas synchronisés entre les appareils.
 
+### Chat IA : robustesse et suivi
 
-### Chat IA : robustesse du chargement
-
-Le Chat IA utilise Transformers.js 4.3.2. Le chargement interroge le registre des modèles pour connaître les fichiers nécessaires, leur taille totale et leur présence dans le cache lorsque ces métadonnées sont accessibles. Le téléchargement applique trois tentatives sur les erreurs réseau temporaires, puis une nouvelle tentative de chargement du modèle. Les statistiques affichées sont strictement locales à l'appareil : elles ne sont pas envoyées à un serveur et ne mesurent donc pas le taux global d'échec.
+Le Chat IA utilise Transformers.js 4.3.2 et le registre de modèles pour lister les fichiers requis, leurs tailles et leur état de cache lorsque les métadonnées sont disponibles. Les erreurs réseau temporaires déclenchent des tentatives automatiques. Les réponses restent celles de modèles compacts : elles peuvent être inexactes ou moins fiables en français, notamment avec SmolLM2.
 
 
 ## Leçons quotidiennes et bibliothèque
