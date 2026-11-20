@@ -112,6 +112,7 @@ def main() -> None:
     sources = source_files()
     if not sources:
         raise SystemExit("Aucune source de cours disponible.")
+    print(f"{len(sources)} source(s) de cours à convertir en PDF.")
     for subject, number, source in sources:
         render_one(subject, number, source)
 
