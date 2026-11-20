@@ -97,3 +97,10 @@ test("le champ de discussion reste actif sans modèle et après le téléchargem
   assert.match(app, /function handleQueueReady\(\)[\s\S]*?updateGenerationControls\(false\)/);
   assert.match(app, /function initializeApp\(\)[\s\S]*?updateGenerationControls\(false\)/);
 });
+
+test("l’interface indique que le modèle est facultatif", () => {
+  const html = readFileSync(new URL("./index.html", import.meta.url), "utf8");
+  assert.match(html, /SUN prêt · modèle optionnel/);
+  assert.match(html, /Charger pour réponses avancées/);
+  assert.match(html, /SUN est prêt sans modèle/);
+});
