@@ -1,4 +1,4 @@
-const STATIC_CACHE = "academique-shell-v8";
+const STATIC_CACHE = "academique-shell-v9";
 const PDF_CACHE = "academique-pdf-v2";
 const APP_FILES = [
   "./",
@@ -8,7 +8,21 @@ const APP_FILES = [
   "./manifest.webmanifest",
   "./icon.svg",
   "./pdf/lecon-01-reader.html",
-  "./pdf/lecon-01-content.md.gz.b64"
+  "./pdf/lecon-01-content.md.gz.b64",
+  "./apps/python-console-3/index.html",
+  "./apps/python-console-3/styles.css",
+  "./apps/python-console-3/app.js",
+  "./apps/python-console-3/python.worker.js",
+  "./apps/python-console-3/sw.js",
+  "./apps/python-console-3/manifest.webmanifest",
+  "./apps/python-console-3/icon.svg",
+  "./apps/chat-ia/index.html",
+  "./apps/chat-ia/styles.css",
+  "./apps/chat-ia/app.js",
+  "./apps/chat-ia/chat.worker.js",
+  "./apps/chat-ia/sw.js",
+  "./apps/chat-ia/manifest.webmanifest",
+  "./apps/chat-ia/icon.svg"
 ];
 
 self.addEventListener("install", (event) => {
