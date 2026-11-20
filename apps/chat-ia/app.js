@@ -110,6 +110,8 @@ function handleWorkerMessage(event) {
     $("#messageInput").disabled = !modelReady;
     addMessage("assistant", data.message || "Une erreur est survenue pendant la génération.");
   } else if (data.type === "load-error") {
+    worker?.terminate();
+    worker = null;
     setStatus("Modèle non chargé", "error");
     $("#modelStatus").textContent = "Le modèle local n’a pas pu démarrer";
     $("#modelHint").textContent = data.message || "Connecte-toi pour effectuer le premier téléchargement, puis réessaie.";
