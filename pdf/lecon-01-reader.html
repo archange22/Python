@@ -85,7 +85,17 @@ function renderMarkdown(md){
  const tocHtml=toc.length?'<details class="toc"><summary>Sommaire du cours ('+toc.length+' parties)</summary><ol>'+toc.map(t=>'<li><a href="#'+t.id+'">'+esc(t.title)+'</a></li>').join("")+'</ol></details>':"";
  return tocHtml+out.join("\n");
 }
-fetch("./lecon-01.md").then(r=>{if(!r.ok)throw new Error("Impossible de récupérer le document.");return r.text()}).then(md=>{
+async function loadCompressedMarkdown(){
+ const response=await fetch("./lecon-01-content.md.gz.b64");
+ if(!response.ok)throw new Error("Impossible de récupérer le contenu du cours.");
+ const encoded=(await response.text()).trim();
+ if(!("DecompressionStream" in window))throw new Error("Ce navigateur ne prend pas en charge la lecture hors format compressé. Mets ton navigateur à jour.");
+ const binary=atob(encoded);
+ const bytes=Uint8Array.from(binary,char=>char.charCodeAt(0));
+ const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+ return await new Response(stream).text();
+}
+loadCompressedMarkdown().then(md=>{
  const content=document.getElementById("content");content.innerHTML=renderMarkdown(md);content.hidden=false;document.getElementById("status").remove();
 }).catch(err=>{document.getElementById("status").textContent=err.message+" Vérifie ta connexion puis rouvre le cours."});
 </script>
