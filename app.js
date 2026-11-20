@@ -9,10 +9,10 @@ const subjects = [
     description: "Apprends à programmer étape par étape.",
     detail: "Progresse depuis les premières instructions jusqu'à la création de vrais petits programmes, avec des cours conçus pour pratiquer sur Android ou PC.",
     courses: [
-      { id: "py01", title: "Découvrir Python et écrire ses premières instructions", description: "Comprendre Python, préparer Pydroid 3, utiliser print(), écrire des commentaires et réaliser ses premiers exercices.", level: "Débutant", duration: "Leçon 01", available: true, reader: "./pdf/lecon-01-reader.html", pdf: "./pdf/lecon-01-python-school.pdf" },
-      { id: "py02", title: "Les variables et les types de données", description: "Créer des variables et comprendre les textes, nombres entiers, nombres décimaux et booléens.", level: "Débutant", duration: "Leçon 02", available: false, status: "À préparer" },
-      { id: "py03", title: "Les opérations et les expressions", description: "Effectuer des calculs, utiliser les opérateurs et respecter les priorités.", level: "Débutant", duration: "Leçon 03", available: false, status: "À préparer" },
-      { id: "py04", title: "Saisir et convertir des données", description: "Utiliser input(), int(), float() et str() pour rendre un programme interactif.", level: "Débutant", duration: "Leçon 04", available: false, status: "À préparer" }
+      { id: "py01", title: "Découvrir Python et écrire ses premières instructions", description: "Comprendre Python, préparer Pydroid 3, utiliser print(), écrire des commentaires et réaliser ses premiers exercices.", level: "Débutant", duration: "Leçon 01", available: true, reader: "./pdf/reader.html", content: "../pdf/lecon-01-content.md.gz.b64", pdf: "./pdf/lecon-01-python-school.pdf" },
+      { id: "py02", title: "Les variables et les types de données", description: "Créer des variables et comprendre les textes, nombres entiers, nombres décimaux et booléens.", level: "Débutant", duration: "Leçon 02", available: true, reader: "./pdf/reader.html", content: "../pdf/lecon-02.md", pdf: "./pdf/courses/python-02.pdf" },
+      { id: "py03", title: "Les opérations et les expressions", description: "Effectuer des calculs, utiliser les opérateurs et respecter les priorités.", level: "Débutant", duration: "Leçon 03", available: true, reader: "./pdf/reader.html", content: "../pdf/lecon-03.md", pdf: "./pdf/courses/python-03.pdf" },
+      { id: "py04", title: "Saisir et convertir des données", description: "Utiliser input(), int(), float() et str() pour rendre un programme interactif.", level: "Débutant", duration: "Leçon 04", available: true, reader: "./pdf/reader.html", content: "../pdf/lecon-04.md", pdf: "./pdf/courses/python-04.pdf" }
     ],
     roadmap: ["Conditions et opérateurs logiques", "Boucles for et while", "Listes et dictionnaires", "Fonctions et modules", "Fichiers et gestion des erreurs", "Projets pratiques"]
   },
@@ -29,6 +29,13 @@ const subjects = [
     detail: "Apprends à développer des bots Discord, organiser les commandes et automatiser les tâches d'un serveur.",
     courses: [],
     roadmap: ["Découvrir l'API Discord", "Préparer Python et son environnement", "Créer un premier bot", "Commandes et événements", "Rôles, permissions et modération", "Bases de données et hébergement"]
+  },
+  {
+    id: "web", title: "Création de sites Web", icon: "⌘",
+    description: "Construis des sites modernes, lisibles sur téléphone et ordinateur.",
+    detail: "Apprends HTML, CSS et JavaScript en partant de zéro, puis construis progressivement tes propres sites et applications Web.",
+    courses: [],
+    roadmap: ["Comprendre Internet et le Web", "HTML : structurer une page", "CSS : mettre en forme", "Responsive design et mobile", "JavaScript et interactions", "Formulaires et validation", "Hébergement et nom de domaine", "Projets complets"]
   }
 ];
 
@@ -322,8 +329,15 @@ function renderCourse(courseId) {
       '<div class="native-pdf-actions"><a class="small-action primary" href="' + escapeHtml(course.pdf) + '" target="_blank" rel="noopener">Ouvrir le PDF ↗</a>' +
       '<a class="small-action" href="' + escapeHtml(course.pdf) + '" download="' + escapeHtml(fileName) + '">Télécharger le PDF ↓</a></div></section>'
     : '<div class="empty-state"><h3>PDF non disponible</h3><p>Le document de cette leçon sera publié ici lorsqu’il sera prêt.</p></div>';
+  const readerParams = new URLSearchParams({
+    subject: subject.id,
+    course: course.id,
+    title: course.title,
+    pdf: course.pdf ? "../" + course.pdf.replace(/^\.\//, "") : ""
+  });
+  if (course.content) readerParams.set("content", course.content);
   const readerUrl = useAcademiqueReader
-    ? course.reader + "?subject=" + encodeURIComponent(subject.id) + "&pdf=" + encodeURIComponent(course.pdf || "")
+    ? course.reader + "?" + readerParams.toString()
     : "";
 
   $("#appView").innerHTML =
@@ -535,8 +549,36 @@ function render() {
   else renderHome();
 }
 
-applyTheme();
-render();
+async function loadPublishedCourseCatalog() {
+  try {
+    const response = await fetch("./courses/catalog.json", { cache: "no-store" });
+    if (!response.ok) throw new Error("Le catalogue des cours n’a pas pu être chargé.");
+    const catalog = await response.json();
+    if (!catalog || !Array.isArray(catalog.subjects)) return;
+
+    for (const entry of catalog.subjects) {
+      const subject = subjects.find((item) => item.id === entry.id);
+      if (!subject || !Array.isArray(entry.courses)) continue;
+      for (const course of entry.courses) {
+        if (!course || typeof course.id !== "string" || typeof course.title !== "string") continue;
+        const existing = subject.courses.findIndex((item) => item.id === course.id);
+        if (existing >= 0) subject.courses[existing] = { ...subject.courses[existing], ...course };
+        else subject.courses.push(course);
+      }
+      subject.courses.sort((a, b) => String(a.duration || "").localeCompare(String(b.duration || ""), "fr", { numeric: true }));
+    }
+  } catch (error) {
+    console.warn("Le catalogue en ligne n’a pas pu être actualisé. Les cours déjà intégrés restent disponibles.", error);
+  }
+}
+
+async function bootApplication() {
+  await loadPublishedCourseCatalog();
+  applyTheme();
+  render();
+}
+
+bootApplication();
 
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch((error) => {
