@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b1020">
   <meta name="description" content="Chat IA — assistant pédagogique local d’Académique.">
   <meta name="color-scheme" content="dark light">
-  <title>Chat IA — Académique</title>
+  <title>SUN — Académique</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css">
@@ -16,7 +16,7 @@
   <header class="topbar">
     <a class="brand" href="../../index.html#applications">
       <span class="brand-icon">✦</span>
-      <span><strong>Chat IA</strong><small>APPLICATION INDÉPENDANTE</small></span>
+      <span><strong>SUN</strong><small>ASSISTANT D’ACADÉMIQUE</small></span>
     </a>
     <a class="back-link" href="../../index.html#applications">← Académique</a>
   </header>
@@ -25,14 +25,14 @@
     <section class="chat-hero">
       <span class="eyebrow">ASSISTANT PÉDAGOGIQUE LOCAL</span>
       <h1>Une question ?<br><span>On la travaille ensemble.</span></h1>
-      <p>Les modèles fonctionnent directement sur cet appareil. Télécharge les modèles dont tu as besoin, suis chaque fichier et garde les ressources en cache pour les prochaines sessions.</p>
+      <p>SUN peut répondre aux échanges simples immédiatement. Pour les explications approfondies et les discussions libres, charge un modèle local ; les questions de cours peuvent être rapprochées des leçons disponibles.</p>
     </section>
 
     <section class="model-card" aria-labelledby="modelPanelTitle">
       <div class="model-top">
         <div class="model-icon">✦</div>
         <div class="model-copy">
-          <span class="eyebrow" id="modelPanelTitle">MODÈLES IA LOCAUX</span>
+          <span class="eyebrow" id="modelPanelTitle">MODÈLES IA LOCAUX DE SUN</span>
           <strong id="modelStatus">Modèle non chargé</strong>
           <p id="modelHint">Sélectionne un modèle pour examiner les fichiers et l’espace nécessaires.</p>
         </div>
@@ -103,6 +103,8 @@
         <button class="clear-button" id="clearButton" type="button">Nouvelle discussion</button>
       </div>
 
+      <div class="knowledge-status" id="knowledgeStatus" aria-live="polite">Préparation de la bibliothèque des cours…</div>
+
       <div class="chat-settings">
         <label for="performanceModeSelect">Vitesse / qualité</label>
         <select id="performanceModeSelect">
@@ -124,14 +126,14 @@
           <span class="message-avatar">✦</span>
           <div class="message-bubble">
             <strong>Assistant local</strong>
-            <p>Bonjour. Je peux t’aider à revoir une notion de Python, comprendre un concept d’IA ou organiser tes idées de projet. Charge d’abord un modèle pour commencer.</p>
+            <p>Bonjour ! Je suis SUN, l’assistant d’Académique. Tu peux me parler normalement ou me poser une question sur les leçons et les documents de cours.</p>
           </div>
         </article>
       </div>
 
       <form class="composer" id="chatForm">
-        <textarea id="messageInput" rows="1" maxlength="1600" placeholder="Écris ta question…" aria-label="Ton message" disabled></textarea>
-        <button id="sendButton" type="submit" disabled aria-label="Envoyer">↑</button>
+        <textarea id="messageInput" rows="1" maxlength="1600" placeholder="Parle avec SUN ou pose une question sur un cours…" aria-label="Ton message"></textarea>
+        <button id="sendButton" type="submit" aria-label="Envoyer">↑</button>
       </form>
       <div class="composer-foot"><span>Entrée pour envoyer · Maj + Entrée pour une nouvelle ligne</span><span id="counter">0 / 1600</span></div>
     </section>
@@ -141,7 +143,7 @@
       <p>Ces modèles sont compacts et expérimentaux. Ils peuvent se tromper, oublier certains éléments du contexte ou répondre lentement. SmolLM2 est surtout documenté pour l’anglais. Le mode Rapide limite le contexte et le nombre de tokens pour réduire le temps de calcul. Le mode Approfondi autorise des réponses plus longues. SmolLM2 affiche les tokens progressivement ; les modèles T5 affichent leur réponse à la fin. Les fichiers terminés peuvent être réutilisés depuis le cache, mais un fichier interrompu n’est pas forcément repris au dernier octet.</p>
     </section>
 
-    <footer>Chat IA · Application séparée d’Académique</footer>
+    <footer>SUN · Assistant d’Académique</footer>
   </main>
 </body>
 </html>
