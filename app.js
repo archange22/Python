@@ -180,13 +180,24 @@ function renderCourse(courseId) {
 
   const { subject, course } = result;
   const done = appState.completed.includes(course.id);
-  const resource = course.reader || course.pdf;
+  const installed = isInstalledApp();
+  const useAcademiqueReader = installed && Boolean(course.reader);
   const fileName = course.pdf ? course.pdf.split("/").pop() : "";
   const downloadAction = course.pdf
     ? '<a class="secondary-action" href="' + escapeHtml(course.pdf) + '" download="' + escapeHtml(fileName) + '">Télécharger le PDF</a>'
     : "";
+  const pdfNativeActions = course.pdf
+    ? '<div class="native-pdf-panel"><span class="eyebrow">LECTURE PDF DU NAVIGATEUR</span>' +
+      '<h2>Ouvrir le document</h2>' +
+      '<p>Le lecteur intégré Académique est réservé à l’application installée. Depuis le site, le document s’ouvre avec le lecteur PDF déjà disponible dans ton navigateur.</p>' +
+      '<div class="native-pdf-actions"><a class="secondary-action primary-action" href="' + escapeHtml(course.pdf) + '" target="_blank" rel="noopener">Ouvrir le PDF</a>' +
+      '<a class="secondary-action" href="' + escapeHtml(course.pdf) + '" download="' + escapeHtml(fileName) + '">Télécharger le PDF</a></div></div>'
+    : '<p class="reader-help">Le fichier PDF de cette leçon sera bientôt disponible.</p>';
+  const readerUrl = useAcademiqueReader
+    ? course.reader + "?subject=" + encodeURIComponent(subject.id) + "&pdf=" + encodeURIComponent(course.pdf || "")
+    : "";
 
-  $("#appView").innerHTML =
+  $( "#appView" ).innerHTML =
     '<section class="reader-page"><a class="back-link" href="#matiere/' + subject.id + '">← Retour à ' + escapeHtml(subject.title) + '</a>' +
       '<header class="page-heading"><span class="eyebrow">LEÇON</span><h1>' + escapeHtml(course.title) + '</h1>' +
       '<p>' + escapeHtml(course.description) + '</p></header>' +
@@ -194,8 +205,12 @@ function renderCourse(courseId) {
         '<button class="secondary-action primary-action" type="button" data-action="toggle-complete" data-course="' + course.id + '">' +
         (done ? "✓ Terminé" : "Marquer comme terminé") + '</button></div>' +
       (done ? '<p class="completed-message">Le cours est marqué comme terminé sur cet appareil.</p>' : '') +
-      '<iframe class="reader-frame" src="' + escapeHtml(resource) + '" title="Lecture du cours : ' + escapeHtml(course.title) + '"></iframe>' +
-      '<p class="reader-help">' + (course.pdf ? "Télécharge le PDF pour le consulter hors connexion." : "Le cours peut être imprimé ou enregistré en PDF depuis le bouton situé dans le document.") + '</p>' +
+      (useAcademiqueReader
+        ? '<div class="reader-mode-label">Lecteur Académique · Application installée</div><iframe class="reader-frame" src="' + escapeHtml(readerUrl) + '" title="Lecture du cours : ' + escapeHtml(course.title) + '" allow="clipboard-read; clipboard-write"></iframe>'
+        : pdfNativeActions) +
+      '<p class="reader-help">' + (useAcademiqueReader
+        ? "Ta progression de lecture, tes préférences d’affichage et ta dernière position sont enregistrées sur cet appareil."
+        : "Le lecteur personnalisé ne se lance pas depuis le site web. Ouvre le PDF pour utiliser le lecteur de ton navigateur.") + '</p>' +
     '</section>';
   updateNavigation("accueil");
 }
