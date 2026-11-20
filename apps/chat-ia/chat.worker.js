@@ -22,6 +22,11 @@ const MODEL_CONFIG = {
 const TRANSFORMERS_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.2";
 const FETCH_RETRIES = 3;
 const MODEL_LOAD_RETRIES = 2;
+const PERFORMANCE_PROFILES = {
+  fast: { label: "Rapide", short: 36, normal: 56, detailed: 88, history: 2, contextChars: 260 },
+  balanced: { label: "Équilibré", short: 56, normal: 88, detailed: 140, history: 4, contextChars: 340 },
+  quality: { label: "Approfondi", short: 72, normal: 120, detailed: 180, history: 6, contextChars: 420 }
+};
 const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
 
 let generator = null;
@@ -199,6 +204,14 @@ async function loadModel(modelKey) {
     env.useWasmCache = true;
     env.allowRemoteModels = true;
     env.fetch = fetchWithRetry;
+    // Évite de surcharger les téléphones : le multithreading WASM n'est activé
+    // que lorsque le navigateur autorise SharedArrayBuffer.
+    try {
+      const cores = Number(self.navigator?.hardwareConcurrency) || 2;
+      env.backends.onnx.wasm.numThreads = self.crossOriginIsolated
+        ? Math.max(1, Math.min(4, cores))
+        : 1;
+    } catch (error) {}
     if (LogLevel) env.logLevel = LogLevel.WARNING;
 
     try {
@@ -317,6 +330,7 @@ function extractTextGenerationReply(result) {
 }
 
 async function generateReply(data) {
+  const startedAt = Date.now();
   const modelKey = String(data.modelKey || currentModelKey || "lamini-77");
   const config = MODEL_CONFIG[modelKey];
 
@@ -328,12 +342,28 @@ async function generateReply(data) {
   const responseLength = ["short", "normal", "detailed"].includes(data.responseLength)
     ? data.responseLength
     : "normal";
-  const maxTokens = responseLength === "short" ? 72 : responseLength === "detailed" ? 180 : 120;
+  const performanceMode = Object.hasOwn(PERFORMANCE_PROFILES, data.performanceMode)
+    ? data.performanceMode
+    : "fast";
+  const profile = PERFORMANCE_PROFILES[performanceMode];
+  const maxTokens = profile[responseLength];
 
-  send("generation-start", { model: config.label });
+  const compactHistory = (Array.isArray(data.history) ? data.history : [])
+    .slice(-profile.history)
+    .map((item) => ({
+      role: item.role,
+      content: String(item.content || "").slice(0, profile.contextChars)
+    }));
+
+  send("generation-start", {
+    model: config.label,
+    profile: profile.label,
+    maxTokens,
+    startedAt
+  });
 
   if (config.family === "causal" && typeof TextStreamer === "function" && model.tokenizer) {
-    const messages = buildSmolMessages(String(data.message || ""), data.history);
+    const messages = buildSmolMessages(String(data.message || ""), compactHistory);
     const streamer = new TextStreamer(model.tokenizer, {
       skip_prompt: true,
       skip_special_tokens: true,
@@ -345,30 +375,44 @@ async function generateReply(data) {
     const result = await model(messages, {
       max_new_tokens: maxTokens,
       do_sample: false,
-      repetition_penalty: 1.12,
+      num_beams: 1,
+      repetition_penalty: 1.08,
+      use_cache: true,
       streamer
     });
 
     const finalText = extractTextGenerationReply(result).trim();
-    send("reply", { text: finalText, streamed: true });
+    send("reply", {
+      text: finalText,
+      streamed: true,
+      durationMs: Date.now() - startedAt,
+      performanceMode
+    });
     return;
   }
 
   const prompt = buildT5Prompt(
     String(data.message || ""),
-    data.history,
+    compactHistory,
     responseLength
   );
   const result = await model(prompt, {
     max_new_tokens: maxTokens,
     do_sample: false,
-    repetition_penalty: 1.12
+    num_beams: 1,
+    repetition_penalty: 1.08,
+    use_cache: true
   });
 
   const finalText = Array.isArray(result) && result[0]
     ? String(result[0].generated_text || "")
     : "";
-  send("reply", { text: finalText.trim(), streamed: false });
+  send("reply", {
+    text: finalText.trim(),
+    streamed: false,
+    durationMs: Date.now() - startedAt,
+    performanceMode
+  });
 }
 
 async function clearModelCache(modelKey) {
