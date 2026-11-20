@@ -68,3 +68,13 @@ Le catalogue dynamique se trouve dans `courses/catalog.json`. Les sources Markdo
 Chaque leçon publiée doit comporter des explications accessibles, des exemples commentés, des erreurs fréquentes, des exercices, un mini-défi et des corrigés. Le workflow `.github/workflows/build-course-pdfs.yml` génère le PDF associé et vérifie qu'il contient entre 10 et 20 pages. Le lecteur `pdf/reader.html` affiche directement le Markdown dans l'application installée ; le site Web classique propose le PDF au lecteur natif du navigateur ou au téléchargement.
 
 Le catalogue est actualisé depuis le dépôt au démarrage de l'application. Les sources déjà ouvertes sont mises en cache par le Service Worker pour permettre leur relecture hors connexion.
+
+
+### Chat IA : profils de performance
+
+- **Rapide** (profil par défaut) : contexte réduit et plafond de génération plus bas pour limiter le temps de calcul.
+- **Équilibré** : compromis entre contexte, longueur et vitesse.
+- **Approfondi** : davantage de contexte et de tokens, au prix d'une génération généralement plus lente.
+- Le nombre de threads WASM est limité à un sur les navigateurs sans isolation cross-origin et ajusté à 4 au maximum lorsque le navigateur autorise le multithreading.
+- Les générations affichent leur durée mesurée. Ce chiffre dépend du téléphone, du navigateur, du modèle chargé et de la température de l'appareil.
+- Ces réglages optimisent l'exécution ; ils ne transforment pas les petits modèles en modèles de grande capacité et ne garantissent pas une qualité supérieure.
