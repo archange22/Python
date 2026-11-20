@@ -64,8 +64,15 @@ body.reader-focus .layout{max-width:820px}
 body.reader-focus article{padding:clamp(22px,5vw,48px)}
 #content h2,#content h3{scroll-margin-top:85px}
 
+
+.toc-sub{margin-left:10px;list-style:circle}
+.reader-toast{position:fixed;z-index:50;left:50%;bottom:18px;transform:translate(-50%,12px);padding:9px 14px;border-radius:9px;background:#33251e;color:#fff;font-size:12px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.reader-toast.visible{opacity:1;transform:translate(-50%,0)}
+.reader-dark .reader-search input,.reader-dark .reader-search button,.reader-dark .toc{background:#211e1b;color:#f1e7df}
+.reader-dark .reader-meta span{background:#211e1b;color:#f1e7df}
+
 @media(max-width:600px){body{font-size:15px}.top{padding:12px 16px}.hero{margin-top:18px;padding:0 15px}.layout{padding:0 12px 30px}article{padding:17px;border-radius:13px}h2{font-size:21px}pre{font-size:12px;padding:12px}}
-@media print{body{background:#fff;font-size:11pt}.top,.actions,.toc{display:none!important}.hero,.layout{max-width:none;margin:0;padding:0}article{border:0;box-shadow:none;padding:0}.footer{border-top:1px solid #ddd}}
+@media print{body{background:#fff;font-size:11pt}.reading-progress,.top,.actions,.reader-search,.toc{display:none!important}.hero,.layout{max-width:none;margin:0;padding:0}article{border:0;box-shadow:none;padding:0}.footer{border-top:1px solid #ddd}}
 </style>
 </head>
 <body>
