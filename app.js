@@ -11,9 +11,9 @@ const subjects = [
     description: "Apprends les bases de la programmation, puis construis tes propres programmes avec Python.",
     courses: [
       { id: "py01", title: "Les bases de Python", description: "Premiers programmes, affichage et syntaxe.", level: "Débutant", duration: "Leçon 01", available: false, status: "PDF à finaliser" },
-      { id: "py02", title: "Les variables et les types de données", description: "Créer des variables et comprendre str, int, float et bool.", level: "Débutant", duration: "40–55 min", pdf: "./pdf/lecon-02.pdf", available: true },
-      { id: "py03", title: "Les opérations et les expressions", description: "Calculs, opérateurs, priorités et arrondis.", level: "Débutant", duration: "40–55 min", pdf: "./pdf/lecon-03.pdf", available: true },
-      { id: "py04", title: "Saisir et convertir des données", description: "Utiliser input(), int(), float() et str().", level: "Débutant", duration: "45–60 min", pdf: "./pdf/lecon-04.pdf", available: true }
+      { id: "py02", title: "Les variables et les types de données", description: "Créer des variables et comprendre str, int, float et bool.", level: "Débutant", duration: "Leçon 02", available: false, status: "Nouveau PDF à créer" },
+      { id: "py03", title: "Les opérations et les expressions", description: "Calculs, opérateurs, priorités et arrondis.", level: "Débutant", duration: "Leçon 03", available: false, status: "Nouveau PDF à créer" },
+      { id: "py04", title: "Saisir et convertir des données", description: "Utiliser input(), int(), float() et str().", level: "Débutant", duration: "Leçon 04", available: false, status: "Nouveau PDF à créer" }
     ],
     roadmap: ["Conditions et opérateurs logiques", "Boucles for et while", "Listes et dictionnaires", "Fonctions et modules", "Fichiers et gestion des erreurs", "Projets pratiques"]
   },
