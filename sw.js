@@ -1,4 +1,4 @@
-const STATIC_CACHE = "academique-shell-v6";
+const STATIC_CACHE = "academique-shell-v7";
 const PDF_CACHE = "academique-pdf-v2";
 const APP_FILES = [
   "./",
