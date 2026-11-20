@@ -774,6 +774,9 @@ function handleQueueReady() {
   $("#messageInput").disabled = true;
   $("#sendButton").disabled = true;
   $("#generationStatus").textContent = "Téléchargement terminé. Charge le modèle choisi pour discuter.";
+  $("#downloadDetails").textContent = "Téléchargement terminé · " + downloadFiles.length + " fichier(s) suivis.";
+  $("#downloadSpeed").textContent = "Vitesse : terminée";
+  $("#downloadEta").textContent = "Temps restant : 0 s";
   setStatus("Modèle téléchargé et mis en cache", "ready");
   $("#modelStatus").textContent = MODELS[finishedKey]?.name + " · fichiers prêts";
   setTimeout(processQueue, 200);
@@ -871,6 +874,8 @@ function handleWorkerMessage(event) {
     $("#messageInput").disabled = false;
     $("#sendButton").disabled = false;
     $("#generationStatus").textContent = "Prêt à répondre localement.";
+    $("#downloadSpeed").textContent = "Vitesse : terminée";
+    $("#downloadEta").textContent = "Temps restant : 0 s";
     $("#messageInput").focus();
     return;
   }
