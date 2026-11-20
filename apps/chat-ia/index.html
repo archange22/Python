@@ -104,6 +104,12 @@
       </div>
 
       <div class="chat-settings">
+        <label for="performanceModeSelect">Vitesse / qualité</label>
+        <select id="performanceModeSelect">
+          <option value="fast">Rapide · réponses plus courtes</option>
+          <option value="balanced">Équilibré</option>
+          <option value="quality">Approfondi · plus lent</option>
+        </select>
         <label for="responseLengthSelect">Longueur des réponses</label>
         <select id="responseLengthSelect">
           <option value="short">Courte</option>
@@ -132,7 +138,7 @@
 
     <section class="model-warning">
       <strong>Limites à connaître</strong>
-      <p>Ces modèles sont compacts et expérimentaux. Ils peuvent se tromper, oublier certains éléments du contexte ou répondre lentement. SmolLM2 est surtout documenté pour l’anglais. Le streaming des réponses est activé pour ce modèle ; les modèles T5 affichent leur réponse lorsqu’elle est terminée. Les fichiers terminés peuvent être réutilisés depuis le cache, mais un fichier interrompu n’est pas forcément repris au dernier octet.</p>
+      <p>Ces modèles sont compacts et expérimentaux. Ils peuvent se tromper, oublier certains éléments du contexte ou répondre lentement. SmolLM2 est surtout documenté pour l’anglais. Le mode Rapide limite le contexte et le nombre de tokens pour réduire le temps de calcul. Le mode Approfondi autorise des réponses plus longues. SmolLM2 affiche les tokens progressivement ; les modèles T5 affichent leur réponse à la fin. Les fichiers terminés peuvent être réutilisés depuis le cache, mais un fichier interrompu n’est pas forcément repris au dernier octet.</p>
     </section>
 
     <footer>Chat IA · Application séparée d’Académique</footer>
