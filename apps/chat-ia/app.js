@@ -282,17 +282,38 @@ function renderQueue() {
     return;
   }
 
-  for (const entry of downloadQueue) {
+  downloadQueue.forEach((entry, index) => {
     const row = document.createElement("div");
     row.className = "queue-item";
 
     const info = document.createElement("div");
     info.className = "queue-item-info";
     const title = document.createElement("strong");
-    title.textContent = MODELS[entry.modelKey]?.name || entry.modelKey;
+    title.textContent = (index + 1) + ". " + (MODELS[entry.modelKey]?.name || entry.modelKey);
     const state = document.createElement("span");
     state.textContent = statusLabel(entry.status) + (entry.lastError ? " · " + entry.lastError : "");
     info.append(title, state);
+
+    const actions = document.createElement("div");
+    actions.className = "queue-item-actions";
+
+    const up = document.createElement("button");
+    up.type = "button";
+    up.className = "queue-order";
+    up.textContent = "↑";
+    up.title = "Monter dans la file";
+    up.setAttribute("aria-label", "Monter " + (MODELS[entry.modelKey]?.name || entry.modelKey));
+    up.disabled = queueRunning || index === 0;
+    up.addEventListener("click", () => reorderQueue(entry.modelKey, -1));
+
+    const down = document.createElement("button");
+    down.type = "button";
+    down.className = "queue-order";
+    down.textContent = "↓";
+    down.title = "Descendre dans la file";
+    down.setAttribute("aria-label", "Descendre " + (MODELS[entry.modelKey]?.name || entry.modelKey));
+    down.disabled = queueRunning || index === downloadQueue.length - 1;
+    down.addEventListener("click", () => reorderQueue(entry.modelKey, 1));
 
     const remove = document.createElement("button");
     remove.type = "button";
@@ -301,9 +322,20 @@ function renderQueue() {
     remove.disabled = entry.status === "running" || queueRunning;
     remove.addEventListener("click", () => removeQueueItem(entry.modelKey));
 
-    row.append(info, remove);
+    actions.append(up, down, remove);
+    row.append(info, actions);
     container.appendChild(row);
-  }
+  });
+}
+
+function reorderQueue(modelKey, offset) {
+  if (queueRunning) return;
+  const index = downloadQueue.findIndex((item) => item.modelKey === modelKey);
+  const destination = index + offset;
+  if (index < 0 || destination < 0 || destination >= downloadQueue.length) return;
+  const [entry] = downloadQueue.splice(index, 1);
+  downloadQueue.splice(destination, 0, entry);
+  saveQueue();
 }
 
 function addQueueItem() {
