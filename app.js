@@ -1,90 +1,246 @@
-const lessons=[{"id":1,"title":"Les bases de Python","level":"Débutant","time":"15 min","icon":"⌘","desc":"Découvre print(), les variables et les types de données.","goal":"Afficher du texte et stocker des informations.","theory":"Python exécute les instructions de haut en bas. print() affiche un résultat. Une variable garde une information réutilisable.","points":["print('Bonjour') affiche Bonjour.","nom = 'Awa' crée une variable texte.","age = 15 crée une variable numérique.","str, int et float sont des types courants."],"code":"nom = 'Awa'\\nage = 15\\nprint('Bonjour', nom)\\nprint('Tu as', age, 'ans')","task":"Crée deux variables : prenom et ville. Affiche une phrase qui utilise les deux.","tests":["Le programme affiche ton prénom.","Le programme affiche ta ville.","Tu as utilisé deux variables."],"hint":"Utilise print('Je m'appelle', prenom, 'et j'habite à', ville)."},{"id":2,"title":"Les conditions","level":"Débutant","time":"20 min","icon":"◇","desc":"Apprends à faire des choix avec if, elif et else.","goal":"Faire réagir ton programme selon une condition.","theory":"if teste une condition. elif teste une autre possibilité. else s'exécute si aucune condition précédente n'est vraie. N'oublie pas les deux-points et l'indentation.","points":["if age >= 18:","elif age >= 13:","else:","Comparaisons : ==, !=, <, >, <= et >=."],"code":"age = int(input('Ton âge : '))\\nif age >= 18:\\n    print('Adulte')\\nelif age >= 13:\\n    print('Adolescent')\\nelse:\\n    print('Enfant')","task":"Demande une note sur 20. Affiche Très bien si elle est au moins 16, Bien si elle est au moins 12, sinon Continue tes efforts.","tests":["Teste avec 17.","Teste avec 13.","Teste avec 8."],"hint":"Commence par le seuil le plus élevé."},{"id":3,"title":"Les opérateurs logiques","level":"Débutant","time":"15 min","icon":"∧","desc":"Combine plusieurs conditions avec and, or et not.","goal":"Vérifier plusieurs critères dans une décision.","theory":"and exige que les deux conditions soient vraies. or exige qu'au moins une soit vraie. not inverse le résultat.","points":["age >= 13 and age <= 17","jour == 'samedi' or jour == 'dimanche'","not est_connecte"],"code":"age = 16\\na_un_compte = True\\nif age >= 13 and a_un_compte:\\n    print('Accès autorisé')\\nelse:\\n    print('Accès refusé')","task":"Demande un nom et un mot de passe. Affiche Connexion réussie uniquement si le nom vaut nova et le mot de passe python. Utilise and.","tests":["Teste nova et python.","Teste nova et abc.","Teste autre nom et python."],"hint":"La condition compare les deux informations avec and."},{"id":4,"title":"La boucle for","level":"Débutant","time":"20 min","icon":"↻","desc":"Répète une action un nombre précis de fois.","goal":"Automatiser les répétitions avec for et range().","theory":"for parcourt une séquence. range(5) produit les nombres de 0 à 4. Le code indenté est répété.","points":["for i in range(5):","range(1, 6) va de 1 à 5.","L'indentation indique ce qui se répète."],"code":"for i in range(1, 6):\\n    print('Tour numéro', i)","task":"Affiche la table de multiplication d'un nombre choisi par l'utilisateur, de 1 à 10.","tests":["Teste avec 2.","Teste avec 7.","Vérifie que la table va jusqu'à × 10."],"hint":"Utilise range(1, 11)."},{"id":5,"title":"La boucle while","level":"Débutant","time":"20 min","icon":"⟳","desc":"Répète du code tant qu'une condition reste vraie.","goal":"Comprendre les boucles qui dépendent d'une condition.","theory":"while vérifie une condition avant chaque tour. Fais évoluer la condition dans la boucle pour qu'elle puisse s'arrêter.","points":["while compteur < 5:","compteur = compteur + 1","break permet de sortir d'une boucle."],"code":"compteur = 1\\nwhile compteur <= 5:\\n    print(compteur)\\n    compteur += 1","task":"Demande un mot de passe jusqu'à ce que l'utilisateur écrive python. Puis affiche Bienvenue.","tests":["Entre un mauvais mot de passe d'abord.","Entre python ensuite.","Vérifie que la boucle s'arrête."],"hint":"Répète input() dans while tant que le texte n'est pas le bon."},{"id":6,"title":"Les listes","level":"Débutant","time":"25 min","icon":"▤","desc":"Range plusieurs valeurs dans une seule variable.","goal":"Créer, lire et modifier une liste.","theory":"Une liste se crée avec des crochets. Les index commencent à 0. append() ajoute un élément à la fin.","points":["fruits = ['mangue', 'banane']","fruits[0] renvoie mangue.","fruits.append('orange') ajoute un fruit.","len(fruits) donne le nombre d'éléments."],"code":"fruits = ['mangue', 'banane']\\nfruits.append('orange')\\nfor fruit in fruits:\\n    print(fruit)","task":"Crée une liste de trois jeux. Ajoute un quatrième jeu avec append(), puis affiche chaque jeu avec for.","tests":["La liste contient quatre jeux.","Le quatrième apparaît.","Tu utilises une boucle for."],"hint":"Utilise for jeu in jeux: puis print(jeu)."},{"id":7,"title":"Les fonctions","level":"Débutant","time":"25 min","icon":"ƒ","desc":"Organise ton code avec def, paramètres et return.","goal":"Créer des blocs de code réutilisables.","theory":"def définit une fonction. Les paramètres sont les informations reçues. return renvoie un résultat.","points":["def saluer(nom):","return renvoie une valeur.","Une fonction s'exécute quand on l'appelle."],"code":"def addition(a, b):\\n    return a + b\\n\\nresultat = addition(4, 6)\\nprint(resultat)","task":"Crée une fonction carre(nombre) qui renvoie le carré du nombre. Appelle-la avec trois nombres différents.","tests":["carre(2) renvoie 4.","carre(5) renvoie 25.","Le résultat est renvoyé avec return."],"hint":"Le calcul est nombre * nombre."},{"id":8,"title":"Les dictionnaires","level":"Intermédiaire","time":"25 min","icon":"{}","desc":"Associe des clés à des valeurs pour structurer tes données.","goal":"Enregistrer des informations avec des paires clé-valeur.","theory":"Un dictionnaire utilise des accolades. Chaque clé permet de retrouver une valeur. On peut ajouter une entrée avec une affectation.","points":["profil = {'nom': 'Awa', 'age': 15}","profil['nom'] lit une valeur.","profil['ville'] = 'Abidjan' ajoute une entrée.","items() parcourt les clés et les valeurs."],"code":"profil = {'nom': 'Awa', 'age': 15}\\nprofil['ville'] = 'Abidjan'\\nfor cle, valeur in profil.items():\\n    print(cle, ':', valeur)","task":"Crée un dictionnaire livre avec titre, auteur et pages. Affiche chaque information, puis ajoute genre.","tests":["Les trois informations initiales sont présentes.","La clé genre est ajoutée.","Tu parcours le dictionnaire avec items()."],"hint":"Pour ajouter : livre['genre'] = 'aventure'."}];
-const projects=[
-{id:"guess",title:"Jeu de devinette",symbol:"🎯",level:"Débutant",desc:"Le programme choisit un nombre et tu essaies de le trouver.",skills:"Conditions · while · nombres",steps:["Choisis un nombre secret fixe, par exemple 7.","Demande une proposition avec input() et int().","Tant que la réponse est incorrecte, indique si le nombre secret est plus grand ou plus petit.","Quand la réponse est bonne, affiche un message de réussite."],code:"secret = 7\nreponse = 0\nwhile reponse != secret:\n    reponse = int(input('Ton nombre : '))\n    if reponse < secret:\n        print('Plus grand')\n    elif reponse > secret:\n        print('Plus petit')\nprint('Bravo !')"},
-{id:"calc",title:"Calculatrice simple",symbol:"➗",level:"Débutant",desc:"Additionne, soustrais, multiplie et divise.",skills:"Conditions · nombres · input",steps:["Demande deux nombres.","Demande une opération : +, -, * ou /.","Utilise if/elif pour choisir le calcul.","Vérifie que le deuxième nombre n'est pas zéro avant une division."],code:"a = float(input('Premier nombre : '))\nb = float(input('Deuxième nombre : '))\nop = input('Opération (+ - * /) : ')\nif op == '+':\n    print(a + b)\nelif op == '-':\n    print(a - b)\nelif op == '*':\n    print(a * b)\nelif op == '/':\n    if b != 0:\n        print(a / b)\n    else:\n        print('Division impossible')\nelse:\n    print('Opération inconnue')"},
-{id:"quiz",title:"Quiz de connaissances",symbol:"🧠",level:"Intermédiaire",desc:"Pose plusieurs questions et calcule le score final.",skills:"Listes · boucles · conditions",steps:["Crée une liste de questions et une liste de réponses.","Parcours les questions avec for.","Compare chaque réponse à la bonne réponse.","Ajoute un point si la réponse est correcte.","Affiche le score final."],code:"questions = ['Combien font 2 + 2 ?', 'Mot-clé pour une fonction ?']\nreponses = ['4', 'def']\nscore = 0\nfor i in range(len(questions)):\n    rep = input(questions[i] + ' ')\n    if rep.lower() == reponses[i]:\n        score += 1\nprint('Score :', score, '/', len(questions))"}
-];
-let state={lessons:[],projects:[],exercises:0,profile:{name:'Apprenant',avatar:'🐼'}};try{state={...state,...JSON.parse(localStorage.getItem('python-facile')||'{}')}}catch(e){};state.profile={name:'Apprenant',avatar:'🐼',...(state.profile||{})};
-const save=()=>localStorage.setItem('python-facile',JSON.stringify(state)), $=s=>document.querySelector(s), esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function toast(t){let e=$('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200)}
-function stats(){
- const d=state.lessons.length,p=state.projects.length,n=Math.round((d+p)/11*100),xp=d*20+p*50,level=Math.floor(xp/100)+1,within=xp%100,next=lessons.find(l=>!state.lessons.includes(l.id))||lessons[lessons.length-1];
- $('#doneLessons').textContent=d+'/8';$('#doneExercises').textContent=state.exercises;$('#doneProjects').textContent=p+'/3';$('#percent').textContent=n+'%';$('#headerAvatar').textContent=state.profile.avatar;$('#headerName').textContent=state.profile.name||'Mon profil';
- if($('#mobileAvatar'))$('#mobileAvatar').textContent=state.profile.avatar;
- if($('#welcomeName'))$('#welcomeName').textContent=state.profile.name||'Apprenant';
- if($('#topXp'))$('#topXp').textContent=xp+' XP';
- if($('#dashboardLevel'))$('#dashboardLevel').textContent=level;
- if($('#dashboardXp'))$('#dashboardXp').textContent=xp+' XP';
- if($('#levelBar'))$('#levelBar').style.width=within+'%';
- if($('#continueTitle'))$('#continueTitle').textContent=next.title;
- if($('#continueMeta'))$('#continueMeta').textContent=state.lessons.includes(next.id)?'Tu as terminé toutes les leçons. Revois celle-ci pour consolider tes acquis.':next.desc;
- if($('#continuePercent'))$('#continuePercent').textContent=Math.round(d/lessons.length*100)+'%';
- if($('#continueBar'))$('#continueBar').style.width=(d/lessons.length*100)+'%';
- if($('#bar'))$('#bar').style.width=n+'%';
- if($('#continueBtn'))$('#continueBtn').onclick=()=>lesson(next.id);
-}
-const lessonUnits=[
- {title:'Premiers pas en Python',subtitle:'Découvre le langage et écris tes premières instructions.',icon:'🌱',ids:[1,2]},
- {title:'Donner des instructions',subtitle:'Apprends à faire des choix et à répéter des actions.',icon:'🎯',ids:[3,4,5]},
- {title:'Ranger les informations',subtitle:'Organise tes données pour créer des programmes utiles.',icon:'🧰',ids:[6,8]},
- {title:'Créer avec des fonctions',subtitle:'Structure ton code et réutilise tes propres outils.',icon:'🚀',ids:[7]}
-];
-function render(){
- const q=$('#search').value.toLowerCase(),lv=$('#level').value,arr=lessons.filter(l=>(lv==='all'||l.level===lv)&&(l.title+' '+l.desc).toLowerCase().includes(q));
- const html=lessonUnits.map((unit,i)=>{
-  const unitLessons=unit.ids.map(id=>lessons.find(l=>l.id===id)).filter(l=>l&&arr.includes(l));
-  if(!unitLessons.length)return '';
-  const done=unitLessons.filter(l=>state.lessons.includes(l.id)).length,percent=Math.round(done/unit.ids.length*100);
-  return '<section class="unit-card"><div class="unit-heading"><div class="unit-heading-main"><div class="unit-icon">'+unit.icon+'</div><div><small>UNITÉ '+String(i+1).padStart(2,'0')+'</small><h3>'+esc(unit.title)+'</h3><p>'+esc(unit.subtitle)+'</p></div></div><div class="unit-progress"><b>'+done+'/'+unit.ids.length+'</b><small>terminées</small><div class="progress-track"><i style="width:'+percent+'%"></i></div></div></div><div class="path-list">'+unitLessons.map(l=>{
-   const complete=state.lessons.includes(l.id);
-   return '<article class="path-step '+(complete?'is-done':'')+'"><div class="path-node">'+(complete?'⭐':l.icon)+'</div><div class="path-info"><span class="tag">'+esc(l.level)+'</span><h4>'+l.id+'. '+esc(l.title)+'</h4><p>'+esc(l.desc)+'</p></div><div class="path-side"><small>'+(complete?'Terminée':'+20 XP')+'</small><button data-lesson="'+l.id+'">'+(complete?'Revoir':'Démarrer')+' →</button></div></article>';
-  }).join('')+'</div></section>';
- }).join('');
- $('#lessons').innerHTML=html||'<div class="empty">Aucune leçon trouvée. Essaie un autre mot ou niveau.</div>';
- $('#lessons').querySelectorAll('[data-lesson]').forEach(b=>b.onclick=()=>lesson(+b.dataset.lesson));
- $('#projects').innerHTML=projects.map(p=>'<article class="card"><div class="symbol">'+p.symbol+'</div><span class="tag">'+p.level+'</span><h3>'+esc(p.title)+'</h3><p>'+esc(p.desc)+'</p><div class="card-foot"><span>'+esc(p.skills)+'</span><button data-project="'+p.id+'">'+(state.projects.includes(p.id)?'✓ Réalisé':'Voir le guide →')+'</button></div></article>').join('');
- $('#projects').querySelectorAll('[data-project]').forEach(b=>b.onclick=()=>project(b.dataset.project));
-}
-function show(content){$('#content').innerHTML=content;$('#backdrop').hidden=false;document.body.style.overflow='hidden'}
-function close(){ $('#backdrop').hidden=true;document.body.style.overflow=''}
-function copy(text){if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>toast('Code copié !')).catch(()=>toast('Copie indisponible ici.'));else toast('Copie indisponible ici.')}
-function lesson(id){let l=lessons.find(x=>x.id===id),done=state.lessons.includes(id);show('<small>LEÇON '+String(l.id).padStart(2,'0')+' · '+l.level.toUpperCase()+' · '+l.time.toUpperCase()+'</small><h2>'+esc(l.title)+'</h2><p>'+esc(l.goal)+'</p><h3>Comprendre</h3><p>'+esc(l.theory)+'</p><ul>'+l.points.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul><h3>Exemple de code</h3><pre>'+esc(l.code)+'</pre><button class="action" id="copy">Copier le code</button><h3>À toi de jouer</h3><p>'+esc(l.task)+'</p><h3>Tests à effectuer</h3><ul>'+l.tests.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul><button class="action" id="hintBtn">Afficher un indice</button><div class="hint" id="hint" hidden>'+esc(l.hint)+'</div><p><button class="action" id="done">'+(done?'Leçon terminée ✓':'Marquer comme terminée')+'</button></p>');$('#copy').onclick=()=>copy(l.code);$('#hintBtn').onclick=()=>$('#hint').hidden=!$('#hint').hidden;$('#done').onclick=()=>{if(!state.lessons.includes(id))state.lessons.push(id);save();stats();render();toast('Leçon terminée : +20 XP !');lesson(id)}}
-function project(id){let p=projects.find(x=>x.id===id),done=state.projects.includes(id);show('<small>PROJET GUIDÉ · '+p.level.toUpperCase()+'</small><h2>'+p.symbol+' '+esc(p.title)+'</h2><p>'+esc(p.desc)+'</p><h3>Étapes</h3><ol>'+p.steps.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol><h3>Exemple de départ</h3><pre>'+esc(p.code)+'</pre><button class="action" id="copy">Copier le code</button><div class="hint">Recopie le programme dans Pydroid 3, exécute-le et modifie-le pour comprendre chaque partie.</div><button class="action" id="done">'+(done?'Projet déjà réalisé ✓':'Marquer comme réalisé')+'</button>');$('#copy').onclick=()=>copy(p.code);$('#done').onclick=()=>{if(!state.projects.includes(id))state.projects.push(id);save();stats();render();toast('Projet validé : +50 XP !');project(id)}}
+const APP_NAME = "Académique";
+const STORAGE_KEY = "academique-v1";
+const $ = (selector, root = document) => root.querySelector(selector);
+const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+}[char]));
 
-function profile(){const xp=state.lessons.length*20+state.projects.length*50,level=Math.floor(xp/100)+1,within=xp%100;const avatars=['🐼','🦊','🐸','🐯','🐧','🐙','🐲','🦉'];show('<small>TON ESPACE PERSONNEL</small><h2>Mon profil</h2><div class="profile-summary"><div class="big-avatar">'+esc(state.profile.avatar)+'</div><div><b>'+esc(state.profile.name||'Apprenant')+'</b><p>Niveau '+level+' · '+xp+' XP gagnés</p></div></div><div class="xp-label"><span>Progression vers le niveau '+(level+1)+'</span><b>'+within+'/100 XP</b></div><div class="xp-track"><i style="width:'+within+'%"></i></div><div class="profile-stats"><div><b>'+state.lessons.length+'</b><small>Leçons</small></div><div><b>'+state.projects.length+'</b><small>Projets</small></div><div><b>'+xp+'</b><small>XP total</small></div></div><h3>Personnaliser mon profil</h3><label class="profile-label" for="profileName">Ton pseudo</label><input id="profileName" class="profile-input" maxlength="20" value="'+esc(state.profile.name)+'" placeholder="Choisis un pseudo"><p class="profile-label">Choisis ton avatar</p><div class="avatars">'+avatars.map(a=>'<button type="button" class="avatar-choice '+(a===state.profile.avatar?'selected':'')+'" data-avatar="'+a+'">'+a+'</button>').join('')+'</div><button class="action" id="saveProfile">Enregistrer mon profil</button><div class="privacy-note"><b>🔒 Ton profil reste sur cet appareil.</b><br>Le pseudo, l’avatar et ta progression sont enregistrés uniquement dans le stockage local de ce navigateur. Aucun compte ni serveur ne reçoit ces informations. Si tu changes d’appareil ou de navigateur, ton profil ne sera pas transféré. Effacer les données du navigateur peut aussi supprimer ta progression.</div>');let selected=state.profile.avatar;document.querySelectorAll('[data-avatar]').forEach(b=>b.onclick=()=>{selected=b.dataset.avatar;document.querySelectorAll('[data-avatar]').forEach(x=>x.classList.toggle('selected',x.dataset.avatar===selected))});$('#saveProfile').onclick=()=>{const name=$('#profileName').value.trim();if(!name){toast('Entre un pseudo avant d’enregistrer.');return}state.profile={name:name.slice(0,20),avatar:selected};save();stats();toast('Profil enregistré sur cet appareil !');profile()}}
-$('#profileOpen').onclick=profile;if($('#mobileProfile'))$('#mobileProfile').onclick=profile;
-$('#close').onclick=close;$('#backdrop').onclick=e=>{if(e.target===$('#backdrop'))close()};document.onkeydown=e=>{if(e.key==='Escape')close()};$('#search').oninput=render;$('#level').onchange=render;render();stats();
-let promptInstall=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();promptInstall=e;$('#install').hidden=false});$('#install').onclick=async()=>{if(promptInstall){promptInstall.prompt();await promptInstall.userChoice;promptInstall=null}else toast('Ouvre le menu du navigateur pour installer.');};
-if('serviceWorker'in navigator&&location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-/* Dictionnaire Python avec recherche et filtres */
-const dictionaryItems=[
-{term:"print()",group:"Bases",desc:"Affiche du texte ou une valeur dans la console.",example:'print("Bonjour !")'},
-{term:"input()",group:"Bases",desc:"Demande une information à la personne qui utilise le programme.",example:'nom = input("Ton nom : ")'},
-{term:"int()",group:"Bases",desc:"Convertit une valeur en nombre entier.",example:'age = int(input("Âge : "))'},
-{term:"float()",group:"Bases",desc:"Convertit une valeur en nombre décimal.",example:'prix = float("12.5")'},
-{term:"str()",group:"Bases",desc:"Convertit une valeur en texte.",example:'texte = str(2026)'},
-{term:"type()",group:"Bases",desc:"Indique le type d'une valeur.",example:'print(type(15))'},
-{term:"len()",group:"Bases",desc:"Compte le nombre d'éléments ou de caractères.",example:'print(len("Python"))'},
-{term:"if",group:"Conditions",desc:"Exécute un bloc si une condition est vraie.",example:'if age >= 18:\n    print("Adulte")'},
-{term:"elif",group:"Conditions",desc:"Teste une autre condition si le if précédent est faux.",example:'elif age >= 13:\n    print("Ado")'},
-{term:"else",group:"Conditions",desc:"Définit le cas où les conditions précédentes sont fausses.",example:'else:\n    print("Autre cas")'},
-{term:"and / or / not",group:"Conditions",desc:"Combine ou inverse des conditions logiques.",example:'if age >= 13 and age <= 17:\n    print("Autorisé")'},
-{term:"for",group:"Boucles",desc:"Répète un bloc pour chaque élément d'une séquence.",example:'for n in range(3):\n    print(n)'},
-{term:"while",group:"Boucles",desc:"Répète un bloc tant qu'une condition est vraie.",example:'while compteur < 5:\n    compteur += 1'},
-{term:"range()",group:"Boucles",desc:"Génère une suite de nombres, souvent utilisée avec for.",example:'for n in range(1, 6):\n    print(n)'},
-{term:"def",group:"Fonctions",desc:"Crée une fonction réutilisable.",example:'def saluer(nom):\n    print("Salut", nom)'},
-{term:"return",group:"Fonctions",desc:"Renvoie un résultat depuis une fonction.",example:'def carre(n):\n    return n * n'},
-{term:"import",group:"Modules",desc:"Permet d'utiliser les outils d'un module Python.",example:'import random'},
-{term:"random.randint()",group:"Modules",desc:"Choisit un nombre entier aléatoire dans un intervalle.",example:'import random\nn = random.randint(1, 10)'},
-{term:"random.choice()",group:"Modules",desc:"Choisit un élément au hasard dans une séquence.",example:'import random\nchoix = random.choice(["A", "B"])'},
-{term:"random.shuffle()",group:"Modules",desc:"Mélange les éléments d'une liste sur place.",example:'import random\ncartes = [1, 2, 3]\nrandom.shuffle(cartes)'},
-{term:"append()",group:"Collections",desc:"Ajoute un élément à la fin d'une liste.",example:'fruits = ["mangue"]\nfruits.append("orange")'},
-{term:"items()",group:"Collections",desc:"Parcourt les paires clé-valeur d'un dictionnaire.",example:'for cle, valeur in profil.items():\n    print(cle, valeur)'},
-{term:"{} dictionnaire",group:"Collections",desc:"Associe des clés à des valeurs.",example:'profil = {"nom": "Awa", "age": 15}'}
+const subjects = [
+  {
+    id: "python", title: "Python", icon: "🐍",
+    description: "Apprends les bases de la programmation, puis construis tes propres programmes avec Python.",
+    courses: [
+      { id: "py01", title: "Les bases de Python", description: "Premiers programmes, affichage et syntaxe.", level: "Débutant", duration: "Leçon 01", available: false, status: "PDF à finaliser" },
+      { id: "py02", title: "Les variables et les types de données", description: "Créer des variables et comprendre str, int, float et bool.", level: "Débutant", duration: "40–55 min", pdf: "./pdf/lecon-02.pdf", available: true },
+      { id: "py03", title: "Les opérations et les expressions", description: "Calculs, opérateurs, priorités et arrondis.", level: "Débutant", duration: "40–55 min", pdf: "./pdf/lecon-03.pdf", available: true },
+      { id: "py04", title: "Saisir et convertir des données", description: "Utiliser input(), int(), float() et str().", level: "Débutant", duration: "45–60 min", pdf: "./pdf/lecon-04.pdf", available: true }
+    ],
+    roadmap: ["Conditions et opérateurs logiques", "Boucles for et while", "Listes et dictionnaires", "Fonctions et modules", "Fichiers et gestion des erreurs", "Projets pratiques"]
+  },
+  {
+    id: "ia", title: "Intelligence artificielle", icon: "✦",
+    description: "Découvre comment fonctionnent les intelligences artificielles et apprends à en construire progressivement.",
+    courses: [],
+    roadmap: ["Comprendre l'intelligence artificielle", "Python pour l'IA", "Données et préparation des jeux de données", "Machine Learning", "Réseaux de neurones", "Construire un assistant intelligent"]
+  },
+  {
+    id: "discord", title: "Discord", icon: "♫",
+    description: "Apprends à développer des bots Discord, automatiser des tâches et organiser des communautés.",
+    courses: [],
+    roadmap: ["Découvrir l'API Discord", "Préparer Python et son environnement", "Créer un premier bot", "Commandes et événements", "Rôles, permissions et modération", "Bases de données et hébergement"]
+  }
 ];
-let activeDictGroup="all";
-function renderDictionary(){const q=($('#dictSearch')?.value||'').toLowerCase().trim();const items=dictionaryItems.filter(x=>(activeDictGroup==='all'||x.group===activeDictGroup)&&(x.term+' '+x.desc+' '+x.example).toLowerCase().includes(q));const root=$('#dictionary');if(!root)return;root.innerHTML=items.length?items.map(x=>'<article class="dict-card"><div class="dict-card-top"><code>'+esc(x.term)+'</code><small>'+esc(x.group.toUpperCase())+'</small></div><p>'+esc(x.desc)+'</p><pre>'+esc(x.example)+'</pre></article>').join(''):'<div class="empty">Aucune commande trouvée. Essaie un autre mot.</div>'}
-if($('#dictionary')){renderDictionary();$('#dictSearch').addEventListener('input',renderDictionary);$('#dictFilters').querySelectorAll('[data-group]').forEach(b=>b.addEventListener('click',()=>{activeDictGroup=b.dataset.group;$('#dictFilters').querySelectorAll('[data-group]').forEach(x=>x.classList.toggle('active',x===b));renderDictionary()}))}
-if($('#runEditor'))$('#runEditor').onclick=()=>{$('#consoleOutput').textContent="L'interface de la console est prête. Le moteur d'exécution Python sera branché dans la prochaine étape.";toast("Console visuelle prête, exécution à venir.")};
-if($('#copyEditor'))$('#copyEditor').onclick=()=>copy($('#codeEditor').value);
-if($('#resetEditor'))$('#resetEditor').onclick=()=>{$('#codeEditor').value='nom = input("Comment tu t\'appelles ? ")\nprint("Bienvenue", nom)\n\n# Écris ton code Python ici';$('#consoleOutput').textContent='Les résultats de ton programme apparaîtront ici.';toast('Éditeur réinitialisé.')};
+
+let appState = { completed: [] };
+try {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  if (Array.isArray(saved.completed)) appState.completed = saved.completed;
+} catch (error) {
+  console.warn("La progression locale n'a pas pu être lue.", error);
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); }
+  catch (error) { showToast("La progression n'a pas pu être enregistrée sur cet appareil."); }
+}
+
+function showToast(message) {
+  const toast = $("#toast");
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add("visible");
+  window.clearTimeout(showToast.timer);
+  showToast.timer = window.setTimeout(() => toast.classList.remove("visible"), 2600);
+}
+
+function courseById(id) {
+  for (const subject of subjects) {
+    const found = subject.courses.find((course) => course.id === id);
+    if (found) return { subject, course: found };
+  }
+  return null;
+}
+
+function renderHome() {
+  const cards = subjects.map((subject) => {
+    const count = subject.courses.filter((course) => course.available).length;
+    const info = count ? count + (count > 1 ? " PDF disponibles" : " PDF disponible") : "Formation en préparation";
+    return '<a class="subject-card" data-subject="' + subject.id + '" href="#matiere/' + subject.id + '">' +
+      '<span class="subject-icon" aria-hidden="true">' + subject.icon + '</span>' +
+      '<span class="subject-name">' + escapeHtml(subject.title) + '</span>' +
+      '<span class="subject-meta">' + escapeHtml(info) + '</span></a>';
+  }).join("");
+  $("#appView").innerHTML = '<section aria-labelledby="welcomeHeading">' +
+    '<h1 class="welcome-title" id="welcomeHeading">Bonjour, <span>Élève!</span></h1>' +
+    '<h2 class="section-title">Mes matières</h2><div class="subject-grid">' + cards + '</div></section>';
+  updateNavigation("accueil");
+}
+
+function renderSubject(subjectId) {
+  const subject = subjects.find((item) => item.id === subjectId);
+  if (!subject) { location.hash = "#accueil"; return; }
+  const available = subject.courses.filter((course) => course.available);
+  const pending = subject.courses.filter((course) => !course.available);
+  const completedCount = available.filter((course) => appState.completed.includes(course.id)).length;
+  const availableMarkup = available.length
+    ? '<div class="course-list">' + available.map((course) => {
+        const done = appState.completed.includes(course.id);
+        return '<article class="course-card"><div><h3 class="course-title">' + escapeHtml(course.title) + '</h3>' +
+          '<p class="course-description">' + escapeHtml(course.description) + '</p><div class="course-details">' +
+          '<span class="pill">' + escapeHtml(course.level) + '</span><span class="pill">' + escapeHtml(course.duration) + '</span>' +
+          (done ? '<span class="pill">Terminé</span>' : '') + '</div></div>' +
+          '<a class="course-action" href="#cours/' + course.id + '">Lire le PDF →</a></article>';
+      }).join("") + '</div>'
+    : '<div class="pending-note"><span aria-hidden="true">📘</span><div><strong>Les premiers PDF sont en préparation.</strong>Les chapitres sont définis. Les leçons seront publiées sous forme de documents PDF complets, avec les explications, exemples, exercices et corrections dans chaque document.</div></div>';
+  const pendingMarkup = pending.map((course) =>
+    '<article class="course-card"><div><h3 class="course-title">' + escapeHtml(course.title) + '</h3>' +
+    '<p class="course-description">' + escapeHtml(course.description) + '</p><div class="course-details">' +
+    '<span class="pill">' + escapeHtml(course.level) + '</span><span class="pill">' + escapeHtml(course.status) + '</span></div></div>' +
+    '<button class="course-action" type="button" disabled>À venir</button></article>'
+  ).join("");
+  const roadmapMarkup = subject.roadmap.map((item, index) =>
+    '<div class="roadmap-item"><b>' + String(index + 1).padStart(2, "0") + ' · ' + escapeHtml(item) + '</b><small>Programme de formation</small></div>'
+  ).join("");
+  $("#appView").innerHTML = '<section class="subject-page"><a class="back-link" href="#accueil">← Retour à l’accueil</a>' +
+    '<header class="page-heading"><h1>' + escapeHtml(subject.title) + '</h1><p>' + escapeHtml(subject.description) + '</p></header>' +
+    (available.length ? '<div class="content-panel"><h2 class="panel-heading">Mes documents PDF <span class="pill">' + completedCount + '/' + available.length + ' terminés</span></h2>' + availableMarkup + '</div>' : availableMarkup) +
+    (pendingMarkup ? '<div class="content-panel"><h2 class="panel-heading">Prochaines leçons</h2><div class="course-list">' + pendingMarkup + '</div></div>' : '') +
+    '<div class="content-panel"><h2 class="panel-heading">Programme de la formation</h2><div class="roadmap">' + roadmapMarkup + '</div></div></section>';
+  updateNavigation("accueil");
+}
+
+function renderPdf(courseId) {
+  const result = courseById(courseId);
+  if (!result || !result.course.available) { location.hash = "#accueil"; return; }
+  const { subject, course } = result;
+  const done = appState.completed.includes(course.id);
+  const fileName = course.pdf.split("/").pop();
+  $("#appView").innerHTML = '<section class="reader-page"><a class="back-link" href="#matiere/' + subject.id + '">← Retour à ' + escapeHtml(subject.title) + '</a>' +
+    '<header class="page-heading"><h1>' + escapeHtml(course.title) + '</h1><p>' + escapeHtml(course.description) + '</p></header>' +
+    '<div class="pdf-toolbar"><span class="pill">Document PDF · ' + escapeHtml(course.level) + '</span><div class="pdf-toolbar-actions">' +
+    '<a class="secondary-action" href="' + course.pdf + '" download="' + escapeHtml(fileName) + '">↓ Télécharger</a>' +
+    '<button class="secondary-action primary-action" type="button" data-action="toggle-complete" data-course="' + course.id + '">' +
+    (done ? '✓ Terminé' : 'Marquer comme terminé') + '</button></div></div>' +
+    (done ? '<p class="completed-message">Ce document est marqué comme terminé sur cet appareil.</p>' : '') +
+    '<iframe class="reader-frame" src="' + course.pdf + '#toolbar=1&navpanes=0" title="Lecture du PDF : ' + escapeHtml(course.title) + '"></iframe>' +
+    '<p class="reader-help">Le document est aussi téléchargeable pour être consulté hors connexion. Après son premier chargement, l’application tente de le conserver dans le cache de cet appareil.</p></section>';
+  updateNavigation("accueil");
+}
+
+function renderAbout() {
+  $("#appView").innerHTML = '<section class="about-page"><h1 class="about-title">À Propos</h1>' +
+    '<div class="about-intro"><h1>Académique : apprendre le code</h1>' +
+    '<p>Une bibliothèque de formations pratiques consacrées à Python, à l’intelligence artificielle et au développement Discord. Les cours sont proposés en PDF, avec leurs exercices et corrections intégrés.</p></div>' +
+    '<div class="about-menu">' +
+    '<button class="about-menu-item" type="button" data-action="privacy"><span class="about-menu-icon">♧</span><span class="about-menu-label">Politique de confidentialité</span><span class="about-menu-arrow">›</span></button>' +
+    '<button class="about-menu-item" type="button" data-action="rate"><span class="about-menu-icon">☆</span><span class="about-menu-label">Évaluer l’application</span><span class="about-menu-arrow">›</span></button>' +
+    '<button class="about-menu-item" type="button" data-action="share"><span class="about-menu-icon">♧</span><span class="about-menu-label">Partager l’application</span><span class="about-menu-arrow">›</span></button>' +
+    '<button class="about-menu-item" type="button" data-action="other-apps"><span class="about-menu-icon">⠿</span><span class="about-menu-label">Découvrez d’autres applications</span><span class="about-menu-arrow">›</span></button>' +
+    '<button class="about-menu-item" type="button" data-action="contact"><span class="about-menu-icon">✉</span><span class="about-menu-label">Contactez-nous</span><span class="about-menu-arrow">›</span></button>' +
+    '</div></section>';
+  updateNavigation("apropos");
+}
+
+function updateNavigation(active) {
+  const onHome = active === "accueil";
+  $("#homeTab").classList.toggle("active", onHome);
+  $("#aboutTab").classList.toggle("active", !onHome);
+  if (onHome) {
+    $("#homeTab").setAttribute("aria-current", "page");
+    $("#aboutTab").removeAttribute("aria-current");
+  } else {
+    $("#aboutTab").setAttribute("aria-current", "page");
+    $("#homeTab").removeAttribute("aria-current");
+  }
+}
+
+function render() {
+  const route = decodeURIComponent(location.hash.replace(/^#/, "") || "accueil");
+  const pieces = route.split("/");
+  if (pieces[0] === "matiere" && pieces[1]) renderSubject(pieces[1]);
+  else if (pieces[0] === "cours" && pieces[1]) renderPdf(pieces[1]);
+  else if (pieces[0] === "apropos") renderAbout();
+  else renderHome();
+}
+
+function openDialog(title, html) {
+  $("#dialogTitle").textContent = title;
+  $("#dialogContent").innerHTML = html;
+  const dialog = $("#appDialog");
+  if (typeof dialog.showModal === "function") dialog.showModal();
+  else dialog.setAttribute("open", "");
+}
+function closeDialog() {
+  const dialog = $("#appDialog");
+  if (typeof dialog.close === "function") dialog.close();
+  else dialog.removeAttribute("open");
+}
+
+async function shareApp() {
+  const data = {
+    title: APP_NAME,
+    text: "Découvre Académique : des formations PDF pour apprendre Python, l’IA et le développement Discord.",
+    url: location.href.split("#")[0]
+  };
+  try {
+    if (navigator.share) await navigator.share(data);
+    else if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(data.url);
+      showToast("Lien de l’application copié.");
+    } else {
+      openDialog("Partager Académique", '<p>Copie ce lien pour partager l’application :</p><p><code>' + escapeHtml(data.url) + '</code></p>');
+    }
+  } catch (error) {
+    if (error.name !== "AbortError") showToast("Le partage n’a pas pu être ouvert.");
+  }
+}
+
+function handleAction(action, element) {
+  if (action === "close-dialog") return closeDialog();
+  if (action === "privacy") {
+    openDialog("Politique de confidentialité",
+      '<h3>Données enregistrées</h3><p>Académique conserve uniquement sur cet appareil les documents marqués comme terminés. Cette version ne demande pas de compte et ne transmet pas de profil personnel à un serveur.</p>' +
+      '<h3>Stockage local</h3><p>La progression est enregistrée dans le stockage local du navigateur. Effacer les données du navigateur ou changer d’appareil peut supprimer cette progression.</p>' +
+      '<h3>Documents</h3><p>Les PDF sont servis depuis le dépôt public du projet. Leur consultation ou leur téléchargement nécessite une première connexion, sauf lorsqu’ils sont déjà disponibles dans le cache ou dans les téléchargements de l’appareil.</p>' +
+      '<p>Cette page décrit le fonctionnement actuel de l’application. Elle devra être revue si des comptes, statistiques ou services externes sont ajoutés.</p>');
+    return;
+  }
+  if (action === "rate") {
+    openDialog("Évaluer l’application", "<p>La fiche Google Play n’est pas encore publiée. Le lien d’évaluation sera ajouté lorsque l’application sera disponible sur le Play Store.</p>");
+    return;
+  }
+  if (action === "share") return shareApp();
+  if (action === "other-apps") { window.open("https://github.com/archange22", "_blank", "noopener,noreferrer"); return; }
+  if (action === "contact") { window.open("https://github.com/archange22/Python/issues/new", "_blank", "noopener,noreferrer"); return; }
+  if (action === "toggle-complete") {
+    const id = element.dataset.course;
+    if (!id) return;
+    if (appState.completed.includes(id)) appState.completed = appState.completed.filter((item) => item !== id);
+    else appState.completed.push(id);
+    saveState();
+    render();
+    showToast(appState.completed.includes(id) ? "Document marqué comme terminé." : "Progression mise à jour.");
+  }
+}
+
+document.addEventListener("click", (event) => {
+  const routeLink = event.target.closest("[data-route]");
+  if (routeLink) {
+    event.preventDefault();
+    location.hash = "#" + routeLink.dataset.route;
+    return;
+  }
+  const actionButton = event.target.closest("[data-action]");
+  if (actionButton) handleAction(actionButton.dataset.action, actionButton);
+});
+window.addEventListener("hashchange", render);
+$("#appDialog").addEventListener("click", (event) => {
+  if (event.target === $("#appDialog")) closeDialog();
+});
+render();
+
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch((error) => {
+    console.warn("Le mode hors connexion n'a pas pu être initialisé.", error);
+  }));
+}

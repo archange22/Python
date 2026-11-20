@@ -1,25 +1,37 @@
-# Python Facile 🐍
+# Académique
 
-Application gratuite pour apprendre Python en français, pensée pour les débutants et les écrans mobiles.
+Académique est une application web installable (PWA) consacrée à l'apprentissage du code. Son interface mobile reprend une direction visuelle simple : fond crème, cartes blanches, texte brun et accents orange.
 
-## Fonctionnalités
-- Interface ludique avec tableau de bord et parcours en unités.
-- 8 leçons progressives avec exemples, exercices, tests et indices.
-- Progression, niveaux et XP.
-- Profil personnalisable (pseudo et avatar), enregistré uniquement sur l'appareil.
-- Dictionnaire Python consultable avec recherche et catégories.
-- Atelier visuel avec éditeur de code et zone de console (moteur Python réel à connecter).
-- 3 projets guidés : jeu de devinette, calculatrice et quiz.
-- Application web installable (PWA) et mode hors ligne après le premier chargement.
+## Domaines de formation
 
-## Données et confidentialité
-Le pseudo, l'avatar et la progression sont conservés localement dans le navigateur (localStorage). Il n'y a pas de compte ni de synchronisation entre appareils. Effacer les données du navigateur peut supprimer le profil et la progression.
+- Python
+- Intelligence artificielle
+- Développement Discord
 
-## Utilisation
-Ouvre l'application dans un navigateur. Sur Android, ajoute-la à l'écran d'accueil depuis le menu du navigateur. Pour exécuter réellement les exercices Python, utilise Pydroid 3 : l'atelier intégré est pour le moment un éditeur visuel.
+Aucune matière scolaire et aucun système de quiz indépendant ne sont prévus. Les explications, exemples, exercices et corrections doivent être regroupés dans les documents pédagogiques PDF.
 
-## Publication GitHub Pages
-Le site est publié depuis la branche main, dossier racine :
+## Fonctionnalités de l'application
+
+- Accueil présentant les trois domaines de formation.
+- Bibliothèque organisée par domaine et par leçon.
+- Lecture intégrée des PDF et téléchargement.
+- Consultation hors connexion des PDF déjà chargés ou téléchargés.
+- Suivi local des documents terminés.
+- Page À propos, confidentialité, partage, contact et accès au projet.
+- Interface adaptée aux téléphones et aux écrans plus larges.
+
+## Déploiement actuel
+
+Le dépôt est publié comme application web via GitHub Pages :
+
 https://archange22.github.io/Python/
 
-Aucun compte, aucune clé API et aucun serveur backend ne sont nécessaires.
+Sur Android, l'application peut être installée depuis le navigateur lorsqu'il propose l'option d'installation. Cette version est une PWA : elle n'est pas encore un paquet Android AAB prêt à envoyer sur Google Play. La publication Play Store nécessitera une étape de packaging Android, de signature et de vérification des exigences Google.
+
+## Documents PDF
+
+Les documents existants dans le dossier pdf sont conservés. Dans cette version, les PDF Python 02, 03 et 04 sont reliés à l'interface. Le fichier source de la leçon 01 est présent en Markdown, mais le PDF correspondant n'est pas actuellement dans le dépôt. Les cours IA et Discord sont prévus dans le catalogue, mais leurs PDF restent à produire.
+
+## Données et confidentialité
+
+La progression des documents terminés est conservée dans le stockage local du navigateur. Cette version ne demande pas de compte et ne synchronise pas la progression entre plusieurs appareils.

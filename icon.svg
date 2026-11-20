@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="30" fill="#58cc02"/><rect x="17" y="17" width="94" height="94" rx="25" fill="#ffffff" opacity=".18"/><text x="64" y="81" font-family="Arial,sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="#ffffff">Py</text><circle cx="98" cy="29" r="8" fill="#ffc800"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="30" fill="#f36d18"/>
+  <rect x="13" y="13" width="102" height="102" rx="25" fill="#ffffff" opacity=".16"/>
+  <text x="64" y="84" text-anchor="middle" font-family="Arial,sans-serif" font-size="64" font-weight="800" fill="#ffffff">A</text>
+  <circle cx="99" cy="29" r="8" fill="#ffe4a7"/>
+</svg>
