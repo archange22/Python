@@ -57,3 +57,33 @@ button:focus-visible,a:focus-visible,textarea:focus-visible{outline:2px solid va
 .model-warning p{margin:4px 0 0;color:var(--muted);font-size:8px;line-height:1.8}
 footer{margin-top:24px;color:#71829c;font-size:8px;text-align:center}
 @media(max-width:520px){.topbar{padding:10px 13px}.chat-page{width:calc(100% - 24px);padding-top:23px}.chat-hero h1{font-size:37px}.model-card{align-items:flex-start;flex-wrap:wrap;padding:13px}.model-copy{width:calc(100% - 60px)}.load-button{margin-left:55px}.messages{min-height:300px;max-height:52vh;padding:14px 11px}.message{max-width:96%}.chat-toolbar{padding:11px 12px}}
+
+
+/* Model selector and resilient download controls */
+.model-card{display:block;padding:16px}
+.model-top{display:flex;align-items:center;gap:13px}
+.model-buttons{display:flex;flex:0 0 auto;flex-direction:column;gap:7px}
+.cancel-button,.cache-button{min-height:32px;padding:0 10px;border:1px solid var(--line);border-radius:9px;background:var(--surface2);color:var(--muted);font-size:8px;font-weight:850}
+.cancel-button{border-color:rgba(255,141,156,.28);color:var(--danger)}
+.model-controls{display:grid;grid-template-columns:minmax(110px,150px) minmax(0,1fr);align-items:center;gap:8px;margin-top:14px}
+.model-controls label{color:var(--muted);font-size:9px;font-weight:850}
+.model-controls select{width:100%;min-height:38px;padding:0 11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:10px}
+.model-controls select:disabled{opacity:.6}
+.model-description{grid-column:1/-1;margin:0;color:var(--muted);font-size:8px;line-height:1.7}
+.model-card .progress-track{margin-top:13px}
+.download-details,.model-footer{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.download-details{margin-top:7px;color:var(--muted);font-size:8px;font-variant-numeric:tabular-nums}
+.download-details span:first-child{min-width:0;overflow-wrap:anywhere}
+.model-footer{margin-top:11px;padding-top:10px;border-top:1px solid var(--line);color:var(--muted);font-size:7px}
+.cache-button{min-height:28px;white-space:nowrap}
+[hidden]{display:none!important}
+@media(max-width:600px){
+  .model-top{align-items:flex-start;flex-wrap:wrap}
+  .model-copy{flex:1 1 calc(100% - 60px);width:auto}
+  .model-buttons{width:100%;margin-left:55px;flex-direction:row;flex-wrap:wrap}
+  .load-button{margin-left:0}
+  .model-controls{grid-template-columns:1fr;gap:6px}
+  .model-controls select{min-height:42px}
+  .model-description{grid-column:auto}
+  .model-footer{align-items:flex-start;flex-direction:column}
+}
