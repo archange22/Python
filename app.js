@@ -13,7 +13,7 @@ const subjects = [
     description: "Apprends à programmer étape par étape.",
     detail: "Découvre Python progressivement avec des explications simples, des exemples et de la pratique.",
     courses: [
-      { id: "py01", title: "Les bases de Python", description: "Découvrir Python, préparer Pydroid 3, écrire ses premières instructions et comprendre print().", level: "Débutant", duration: "Leçon 01", available: true, reader: "./pdf/lecon-01-reader.html" },
+      { id: "py01", title: "Les bases de Python", description: "Découvrir Python, préparer Pydroid 3, écrire ses premières instructions et comprendre print().", level: "Débutant", duration: "Leçon 01", available: true, reader: "./pdf/lecon-01-reader.html", pdf: "./pdf/lecon-01-python-school.pdf" },
       { id: "py02", title: "Les variables et les types de données", description: "Créer des variables et comprendre str, int, float et bool.", level: "Débutant", duration: "Leçon 02", available: false, status: "À préparer" },
       { id: "py03", title: "Les opérations et les expressions", description: "Calculs, opérateurs, priorités et arrondis.", level: "Débutant", duration: "Leçon 03", available: false, status: "À préparer" },
       { id: "py04", title: "Saisir et convertir des données", description: "Utiliser input(), int(), float() et str().", level: "Débutant", duration: "Leçon 04", available: false, status: "À préparer" }
