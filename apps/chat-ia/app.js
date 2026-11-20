@@ -1,3 +1,6 @@
+import { loadKnowledgeIndex, searchKnowledge } from "./knowledge.js";
+import { getSmallTalkReply, appendSourceReferences } from "./conversation.js";
+
 const STORAGE_KEY = "academique-chat-ia-v1";
 const SELECTED_MODEL_KEY = "academique-chat-ia-selected-model-v1";
 const STATS_KEY = "academique-chat-ia-download-stats-v1";
@@ -25,6 +28,40 @@ const MODELS = {
 };
 
 const $ = (selector) => document.querySelector(selector);
+
+function ensureKnowledgeIndex() {
+  if (!knowledgeIndexPromise) {
+    knowledgeIndexPromise = loadKnowledgeIndex().catch((error) => {
+      knowledgeIndexPromise = null;
+      throw error;
+    });
+  }
+  return knowledgeIndexPromise;
+}
+
+function warmKnowledgeIndex() {
+  $("#knowledgeStatus").textContent = "Préparation de la bibliothèque des cours…";
+  ensureKnowledgeIndex().then((index) => {
+    const count = Array.isArray(index.sources) ? index.sources.length : 0;
+    $("#knowledgeStatus").textContent = count
+      ? "Bibliothèque prête · " + count + " leçons consultables"
+      : "Aucune leçon n’est encore indexée.";
+  }).catch(() => {
+    $("#knowledgeStatus").textContent =
+      "Bibliothèque indisponible pour le moment · vérifie la connexion.";
+  });
+}
+
+function cleanMarkdownForDisplay(value) {
+  return String(value || "")
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/\x60{1,3}/g, "")
+    .replace(/^\s*[-*]\s+/gm, "• ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
 let worker = null;
 let modelReady = false;
 let loading = false;
@@ -46,6 +83,8 @@ let lastSpeedSample = null;
 let smoothedSpeed = 0;
 let fileSavePending = false;
 let downloadPlanTotalBytes = 0;
+let knowledgeIndexPromise = null;
+let currentSources = [];
 
 function readJSON(key, fallback) {
   try {
@@ -443,8 +482,8 @@ function resetWorker() {
   $("#cancelDownloadButton").hidden = true;
   $("#modelSelect").disabled = false;
   $("#loadModelButton").disabled = false;
-  $("#messageInput").disabled = true;
-  $("#sendButton").disabled = true;
+  $("#messageInput").disabled = busy;
+  $("#sendButton").disabled = busy;
   removeTyping();
 }
 
@@ -465,8 +504,8 @@ function startModelLoad(purpose = "manual", modelKey = selectedModel) {
   $("#cancelDownloadButton").hidden = false;
   $("#modelHint").textContent = "Vérification du stockage, du registre et des fichiers du modèle…";
   $("#downloadDetails").textContent = "Préparation du téléchargement…";
-  $("#messageInput").disabled = true;
-  $("#sendButton").disabled = true;
+  $("#messageInput").disabled = busy;
+  $("#sendButton").disabled = busy;
   $("#generationStatus").textContent = purpose === "queue"
     ? "Préparation d’un modèle programmé…"
     : "Chargement du modèle avant la discussion.";
@@ -681,7 +720,7 @@ function addMessage(role, text, save = true) {
   const bubble = document.createElement("div");
   bubble.className = "message-bubble";
   const title = document.createElement("strong");
-  title.textContent = role === "user" ? "Toi" : (MODELS[selectedModel]?.name || "Assistant local");
+  title.textContent = role === "user" ? "Toi" : "SUN";
   const paragraph = document.createElement("p");
   paragraph.textContent = text;
   bubble.append(title, paragraph);
@@ -700,7 +739,7 @@ function addMessage(role, text, save = true) {
 function renderHistory() {
   $("#messages").textContent = "";
   if (!history.length) {
-    addMessage("assistant", "Bonjour. Je peux t’aider à apprendre Python, les mathématiques et les bases de l’intelligence artificielle. Charge un modèle local pour commencer.", false);
+    addMessage("assistant", "Bonjour ! Je suis SUN, l’assistant d’Académique. Tu peux me parler normalement ou me poser une question sur les leçons et les documents de cours.", false);
     return;
   }
   for (const item of history) addMessage(item.role, item.content, false);
@@ -750,8 +789,8 @@ function finishAssistantStream(finalText) {
 
 function updateGenerationControls(isBusy) {
   busy = isBusy;
-  $("#sendButton").disabled = isBusy || !modelReady;
-  $("#messageInput").disabled = isBusy || !modelReady;
+  $("#sendButton").disabled = isBusy;
+  $("#messageInput").disabled = isBusy;
 }
 
 function handleQueueReady() {
@@ -773,9 +812,9 @@ function handleQueueReady() {
   $("#cancelDownloadButton").hidden = true;
   $("#loadModelButton").disabled = false;
   $("#modelSelect").disabled = false;
-  $("#messageInput").disabled = true;
-  $("#sendButton").disabled = true;
-  $("#generationStatus").textContent = "Téléchargement terminé. Charge le modèle choisi pour discuter.";
+  $("#messageInput").disabled = false;
+  $("#sendButton").disabled = false;
+  $("#generationStatus").textContent = "Téléchargement terminé. Les échanges simples restent disponibles.";
   $("#downloadDetails").textContent = "Téléchargement terminé · " + downloadFiles.length + " fichier(s) suivis.";
   $("#downloadSpeed").textContent = "Vitesse : terminée";
   $("#downloadEta").textContent = "Temps restant : 0 s";
@@ -894,8 +933,13 @@ function handleWorkerMessage(event) {
 
   if (data.type === "reply") {
     removeTyping();
-    if (data.streamed) finishAssistantStream(data.text);
-    else addMessage("assistant", data.text || "Je n’ai pas réussi à formuler une réponse. Reformule ta question.");
+    const response = appendSourceReferences(
+      data.text || (streamingMessage?.text || "Je n’ai pas réussi à formuler une réponse. Reformule ta question."),
+      currentSources
+    );
+    currentSources = [];
+    if (data.streamed) finishAssistantStream(response);
+    else addMessage("assistant", response);
     updateGenerationControls(false);
     const seconds = Number.isFinite(data.durationMs) ? (data.durationMs / 1000).toFixed(1) : null;
     $("#generationStatus").textContent = seconds
@@ -907,6 +951,7 @@ function handleWorkerMessage(event) {
 
   if (data.type === "generation-error") {
     removeTyping();
+    currentSources = [];
     if (streamingMessage) finishAssistantStream(streamingMessage.text);
     addMessage("assistant", explainError(data.message || "Erreur pendant la génération."));
     updateGenerationControls(false);
@@ -1094,14 +1139,62 @@ function clearModelCache() {
 async function sendMessage(event) {
   event.preventDefault();
   const text = $("#messageInput").value.trim();
-  if (!text || !worker || !modelReady || busy) return;
+  if (!text || busy) return;
 
   $("#messageInput").value = "";
   updateCounter();
   addMessage("user", text);
+
+  const smallTalk = getSmallTalkReply(text);
+  if (smallTalk) {
+    currentSources = [];
+    addMessage("assistant", smallTalk);
+    $("#generationStatus").textContent = "Échange simple · aucune génération nécessaire.";
+    return;
+  }
+
   updateGenerationControls(true);
-  $("#generationStatus").textContent = "Le modèle prépare sa réponse…";
+  $("#generationStatus").textContent = "Recherche dans les leçons et les PDF de cours…";
   addTyping();
+
+  let sources = [];
+  try {
+    const index = await ensureKnowledgeIndex();
+    sources = searchKnowledge(index, text, 3);
+    const count = Array.isArray(index.sources) ? index.sources.length : 0;
+    $("#knowledgeStatus").textContent =
+      "Bibliothèque prête · " + count + " leçons consultables";
+  } catch (error) {
+    $("#knowledgeStatus").textContent =
+      "Recherche documentaire indisponible · réponse générale possible.";
+  }
+  currentSources = sources;
+
+  if (!worker || !modelReady) {
+    removeTyping();
+    if (sources.length) {
+      const excerpt = cleanMarkdownForDisplay(sources[0].text).slice(0, 720);
+      const reply = appendSourceReferences(
+        "J’ai retrouvé ce passage dans le cours :\n\n" + excerpt,
+        sources
+      );
+      addMessage("assistant", reply);
+      $("#generationStatus").textContent = "Extrait retrouvé sans charger le modèle.";
+    } else {
+      addMessage(
+        "assistant",
+        "Pour répondre à cette question avec une explication complète, charge un modèle local. Les salutations et les recherches dans les leçons restent disponibles sans lui."
+      );
+      $("#generationStatus").textContent = "Modèle local nécessaire pour cette réponse.";
+    }
+    currentSources = [];
+    updateGenerationControls(false);
+    return;
+  }
+
+  $("#generationStatus").textContent = sources.length
+    ? "Le modèle prépare une réponse avec " + sources.length + " référence(s)…"
+    : "Le modèle prépare sa réponse…";
 
   worker.postMessage({
     type: "generate",
@@ -1109,7 +1202,12 @@ async function sendMessage(event) {
     message: text,
     history: history.slice(0, -1).slice(-8),
     responseLength,
-    performanceMode
+    performanceMode,
+    sources: sources.map((source) => ({
+      label: source.label,
+      section: source.section,
+      text: source.text
+    }))
   });
 }
 
@@ -1164,6 +1262,9 @@ function initializeApp() {
   renderFileList();
   renderHistory();
   updateCounter();
+  warmKnowledgeIndex();
+  $("#messageInput").disabled = false;
+  $("#sendButton").disabled = false;
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js").catch((error) => {
@@ -1193,6 +1294,7 @@ $("#messageInput").addEventListener("keydown", (event) => {
 });
 $("#clearButton").addEventListener("click", () => {
   history = [];
+  currentSources = [];
   saveHistory();
   renderHistory();
 });
