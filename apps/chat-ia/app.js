@@ -4,6 +4,7 @@ const STATS_KEY = "academique-chat-ia-download-stats-v1";
 const QUEUE_KEY = "academique-chat-ia-download-queue-v2";
 const FILES_KEY = "academique-chat-ia-download-files-v2";
 const RESPONSE_LENGTH_KEY = "academique-chat-ia-response-length-v1";
+const PERFORMANCE_MODE_KEY = "academique-chat-ia-performance-mode-v1";
 
 const MODELS = {
   "lamini-77": {
@@ -31,6 +32,7 @@ let busy = false;
 let history = [];
 let selectedModel = "lamini-77";
 let responseLength = "normal";
+let performanceMode = "fast";
 let stats = {};
 let downloadQueue = [];
 let downloadFiles = [];
@@ -895,7 +897,11 @@ function handleWorkerMessage(event) {
     if (data.streamed) finishAssistantStream(data.text);
     else addMessage("assistant", data.text || "Je n’ai pas réussi à formuler une réponse. Reformule ta question.");
     updateGenerationControls(false);
-    $("#generationStatus").textContent = "Réponse terminée.";
+    const seconds = Number.isFinite(data.durationMs) ? (data.durationMs / 1000).toFixed(1) : null;
+    $("#generationStatus").textContent = seconds
+      ? "Réponse terminée en " + seconds + " s · mode " +
+        ({ fast: "rapide", balanced: "équilibré", quality: "approfondi" }[data.performanceMode] || "local")
+      : "Réponse terminée.";
     return;
   }
 
@@ -1029,6 +1035,13 @@ function changeResponseLength() {
   persist(RESPONSE_LENGTH_KEY, responseLength);
 }
 
+function changePerformanceMode() {
+  performanceMode = $("#performanceModeSelect").value;
+  persist(PERFORMANCE_MODE_KEY, performanceMode);
+  const labels = { fast: "Rapide", balanced: "Équilibré", quality: "Approfondi" };
+  $("#generationStatus").textContent = "Mode " + labels[performanceMode] + " sélectionné.";
+}
+
 function clearModelCache() {
   if (loading || queueRunning) return;
   const confirmed = window.confirm("Effacer les fichiers en cache de " + MODELS[selectedModel].name + " ? Les prochains chargements devront retélécharger les fichiers.");
@@ -1095,7 +1108,8 @@ async function sendMessage(event) {
     modelKey: selectedModel,
     message: text,
     history: history.slice(0, -1).slice(-8),
-    responseLength
+    responseLength,
+    performanceMode
   });
 }
 
@@ -1109,6 +1123,9 @@ function initializeApp() {
 
   responseLength = localStorage.getItem(RESPONSE_LENGTH_KEY) || "normal";
   if (!["short", "normal", "detailed"].includes(responseLength)) responseLength = "normal";
+
+  performanceMode = localStorage.getItem(PERFORMANCE_MODE_KEY) || "fast";
+  if (!["fast", "balanced", "quality"].includes(performanceMode)) performanceMode = "fast";
 
   stats = readJSON(STATS_KEY, {});
   if (!stats || typeof stats !== "object" || Array.isArray(stats)) stats = {};
@@ -1141,6 +1158,7 @@ function initializeApp() {
 
   $("#modelSelect").value = selectedModel;
   $("#responseLengthSelect").value = responseLength;
+  $("#performanceModeSelect").value = performanceMode;
   setModelDescription();
   renderQueue();
   renderFileList();
@@ -1159,6 +1177,7 @@ $("#loadModelButton").addEventListener("click", ensureWorker);
 $("#cancelDownloadButton").addEventListener("click", cancelDownload);
 $("#modelSelect").addEventListener("change", changeModel);
 $("#responseLengthSelect").addEventListener("change", changeResponseLength);
+$("#performanceModeSelect").addEventListener("change", changePerformanceMode);
 $("#clearModelCacheButton").addEventListener("click", clearModelCache);
 $("#queueModelButton").addEventListener("click", addQueueItem);
 $("#startQueueButton").addEventListener("click", startQueue);
