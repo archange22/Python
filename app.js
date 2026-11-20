@@ -168,7 +168,7 @@ function renderApplicationCards() {
     '<span class="app-product-meta">Python 3 · WebAssembly · Mode hors ligne</span></div><span class="app-product-arrow">↗</span></a>' +
     '<a class="app-product-card app-product-ai" href="./apps/chat-ia/index.html">' +
     '<div class="app-product-icon">✦</div><div class="app-product-content"><span class="eyebrow">ASSISTANT PÉDAGOGIQUE</span>' +
-    '<h3>Chat IA</h3><p>Discute avec un petit modèle d’intelligence artificielle exécuté localement sur ton appareil, sans clé API.</p>' +
+    '<h3>SUN</h3><p>Discute avec ton assistant local et recherche des réponses dans les leçons d’Académique.</p>' +
     '<span class="app-product-meta">Modèle local · Téléchargement initial requis</span></div><span class="app-product-arrow">↗</span></a>';
 }
 
@@ -180,7 +180,7 @@ function renderApplications() {
     '<div class="apps-intro"><span class="apps-intro-mark">A+</span><div><strong>Trois applications, un même univers.</strong>' +
     '<p>Ouvre chaque outil séparément. Tu peux aussi l’ajouter à l’écran d’accueil depuis son propre menu d’installation.</p></div></div>' +
     '<div class="apps-product-grid">' + renderApplicationCards() + '</div>' +
-    '<p class="reader-footnote">La Console Python télécharge son moteur une première fois. Le Chat IA télécharge son modèle local avant de pouvoir répondre ; une fois en cache, il peut fonctionner sans connexion si le navigateur conserve ses fichiers.</p>' +
+    '<p class="reader-footnote">La Console Python télécharge son moteur une première fois. SUN peut répondre aux échanges simples et rechercher les leçons sans modèle ; charge un modèle local pour les explications approfondies.</p>' +
     '<footer class="app-footer">© ' + new Date().getFullYear() + ' Académique · Applications complémentaires.</footer></section>';
   setActiveNavigation("applications");
 }
