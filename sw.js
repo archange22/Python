@@ -1,4 +1,4 @@
-const STATIC_CACHE = "academique-shell-v10";
+const STATIC_CACHE = "academique-shell-v11";
 const PDF_CACHE = "academique-pdf-v2";
 const APP_FILES = [
   "./",
@@ -9,6 +9,14 @@ const APP_FILES = [
   "./icon.svg",
   "./pdf/lecon-01-reader.html",
   "./pdf/lecon-01-content.md.gz.b64",
+  "./pdf/reader.html",
+  "./courses/catalog.json",
+  "./pdf/lecon-02.md",
+  "./pdf/lecon-03.md",
+  "./pdf/lecon-04.md",
+  "./courses/ia/lesson-01.md",
+  "./courses/discord/lesson-01.md",
+  "./courses/web/lesson-01.md",
   "./apps/python-console-3/index.html",
   "./apps/python-console-3/styles.css",
   "./apps/python-console-3/app.js",
@@ -50,6 +58,22 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  if (url.pathname.endsWith("/courses/catalog.json")) {
+    event.respondWith(
+      fetch(request).then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy));
+        }
+        return response;
+      }).catch(() => caches.match(request).then((cached) => cached || new Response(
+        "{\\"version\\":1,\\"subjects\\":[]}",
+        { status: 200, headers: { "Content-Type": "application/json; charset=utf-8" } }
+      )))
+    );
+    return;
+  }
 
   if (url.pathname.toLowerCase().endsWith(".pdf")) {
     const update = fetch(request).then((response) => {
