@@ -1,0 +1,52 @@
+name: Build course PDFs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "courses/**/*.md"
+      - "courses/catalog.json"
+      - "pdf/lecon-0[234].md"
+      - "scripts/build_course_pdfs.py"
+      - ".github/workflows/build-course-pdfs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-course-pdfs
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install PDF dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc python3-pip python3-venv
+          python3 -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install beautifulsoup4 weasyprint pypdf
+
+      - name: Build all 10–20 page course PDFs
+        run: .venv/bin/python scripts/build_course_pdfs.py
+
+      - name: Commit generated PDFs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pdf/courses/*.pdf
+          if git diff --cached --quiet; then
+            echo "No PDF changes."
+          else
+            git commit -m "Génère les PDF des cours Académique [skip ci]"
+            git pull --rebase origin main
+            git push
+          fi
