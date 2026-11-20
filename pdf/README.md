@@ -1,20 +1,23 @@
-# Ressources pédagogiques — PythonSchool
+# Ressources pédagogiques — Académique
 
-## Leçon 01 : Découvrir Python
+## Organisation des cours
 
-- `lecon-01-python-school.pdf` : PDF complet de 41 pages, avec les exercices, les corrections et la mention ©pythonschool.
-- `lecon-01-reader.html` : lecteur pédagogique avancé, réservé à l'application Académique installée (PWA).
-- `lecon-01-content.md.gz.b64` : contenu complet compressé, chargé par le lecteur de l'application.
-- `lecon-01.md` : ancienne source Markdown courte, conservée pour référence.
+- `lecon-01-python-school.pdf` : première leçon Python historique, conservée.
+- `lecon-02.md` à `lecon-04.md` : sources des leçons Python 02 à 04.
+- `courses/<parcours>/lesson-NN.md` : sources des nouvelles leçons Python, IA, Discord et Web.
+- `courses/catalog.json` : catalogue dynamique consommé par l’application.
+- `courses/<parcours>-NN.pdf` : PDF générés dans ce dossier pour chaque source de cours.
+- `reader.html` : lecteur pédagogique commun, utilisé uniquement dans l’application Académique installée.
+- `lecon-01-reader.html` : ancien lecteur réservé à la leçon 01, conservé pour compatibilité.
 
-### Comportement d'ouverture
+## Règles de production
 
-- Dans l'application installée : ouverture du lecteur Académique intégré.
-- Depuis le site dans un navigateur classique : le lecteur personnalisé n'est pas lancé ; le PDF s'ouvre avec le lecteur natif du navigateur ou peut être téléchargé.
-- Si le lecteur personnalisé est ouvert directement hors de l'application, il redirige vers le PDF.
+Chaque nouvelle leçon vise 10 à 20 pages PDF A4. Elle doit contenir des explications adaptées aux débutants, des exemples commentés, des erreurs fréquentes, des exercices progressifs, un mini-défi et des corrigés. Le pied de page porte la mention ©pythonschool.
 
-### Fonctions du lecteur intégré
+Le workflow `.github/workflows/build-course-pdfs.yml` génère automatiquement les PDF dès que des sources ou le catalogue changent. Il vérifie le nombre réel de pages avant de publier les fichiers.
 
-Sommaire avec accès direct aux parties, recherche dans le cours, taille de texte réglable, thèmes sépia/clair/sombre, mode lecture calme, progression de lecture, reprise à la dernière position, copie des exemples de code et impression / export PDF.
+## Lecture sans téléchargement manuel
 
-Le lecteur est une vue de lecture HTML légère construite à partir de la source du cours. Le PDF reste disponible séparément pour le lecteur PDF natif du navigateur et le téléchargement.
+Dans l’application PWA installée, `reader.html` affiche directement le fichier Markdown du cours. La progression, la recherche, la taille du texte, les thèmes et la position de lecture sont conservés localement. Le Service Worker met en cache les sources après leur premier chargement.
+
+Depuis le site ouvert dans un navigateur classique, le lecteur intégré n’est pas utilisé : l’utilisateur ouvre le PDF avec son lecteur natif ou télécharge le fichier. Le PDF reste donc une solution de secours et une copie consultable séparément.
