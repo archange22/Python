@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-20",
+  "subjects": [
+    {
+      "id": "ia",
+      "courses": [
+        {
+          "id": "ia01",
+          "title": "Comprendre l’intelligence artificielle",
+          "description": "Découvrir l’IA, ses grandes familles, les données, les modèles, les prompts et ses limites.",
+          "level": "Débutant",
+          "duration": "Leçon 01",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/ia/lesson-01.md",
+          "pdf": "./pdf/courses/ia-01.pdf"
+        }
+      ]
+    },
+    {
+      "id": "discord",
+      "courses": [
+        {
+          "id": "discord01",
+          "title": "Comprendre Discord et préparer son premier bot",
+          "description": "Découvrir les serveurs, les salons, les rôles, les permissions et les bases des bots Discord.",
+          "level": "Débutant",
+          "duration": "Leçon 01",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/discord/lesson-01.md",
+          "pdf": "./pdf/courses/discord-01.pdf"
+        }
+      ]
+    },
+    {
+      "id": "web",
+      "courses": [
+        {
+          "id": "web01",
+          "title": "Comprendre le Web et créer sa première page",
+          "description": "Apprendre HTML, CSS et JavaScript en construisant une page responsive, pas à pas.",
+          "level": "Débutant",
+          "duration": "Leçon 01",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/web/lesson-01.md",
+          "pdf": "./pdf/courses/web-01.pdf"
+        }
+      ]
+    }
+  ]
+}
