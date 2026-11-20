@@ -13,7 +13,7 @@ const subjects = [
     description: "Passe de tes premières lignes de code à la création de vrais petits programmes.",
     detail: "Apprends les bases pas à pas, comprends chaque instruction et entraîne-toi avec des exemples concrets.",
     courses: [
-      { id: "py01", title: "Les bases de Python", description: "Découvrir Python, écrire ses premières instructions et comprendre la syntaxe.", level: "Débutant", duration: "Leçon 01", available: false, status: "PDF à finaliser" },
+      { id: "py01", title: "Les bases de Python", description: "Découvrir Python, préparer Pydroid 3, écrire ses premières instructions et comprendre print().", level: "Débutant", duration: "Leçon 01", available: true, status: "Cours complet disponible", reader: "./pdf/lecon-01-reader.html" },
       { id: "py02", title: "Les variables et les types de données", description: "Créer des variables et comprendre str, int, float et bool.", level: "Débutant", duration: "Leçon 02", available: false, status: "Nouveau PDF à créer" },
       { id: "py03", title: "Les opérations et les expressions", description: "Calculs, opérateurs, priorités et arrondis.", level: "Débutant", duration: "Leçon 03", available: false, status: "Nouveau PDF à créer" },
       { id: "py04", title: "Saisir et convertir des données", description: "Utiliser input(), int(), float() et str().", level: "Débutant", duration: "Leçon 04", available: false, status: "Nouveau PDF à créer" }
@@ -168,21 +168,28 @@ function renderSubject(subjectId) {
 
 function renderPdf(courseId) {
   const result = courseById(courseId);
-  if (!result || !result.course.available || !result.course.pdf) { location.hash = "#accueil"; return; }
+  if (!result || !result.course.available || (!result.course.pdf && !result.course.reader)) {
+    location.hash = "#accueil";
+    return;
+  }
   const { subject, course } = result;
   const done = appState.completed.includes(course.id);
-  const fileName = course.pdf.split("/").pop();
+  const resource = course.reader || course.pdf;
+  const fileName = course.pdf ? course.pdf.split("/").pop() : "";
+  const downloadAction = course.pdf
+    ? '<a class="secondary-action" href="' + escapeHtml(course.pdf) + '" download="' + escapeHtml(fileName) + '">↓ Télécharger le PDF</a>'
+    : '';
 
   $("#appView").innerHTML =
     '<section class="reader-page"><a class="back-link" href="#matiere/' + subject.id + '"><span aria-hidden="true">←</span> Retour à ' + escapeHtml(subject.title) + '</a>' +
       '<header class="page-heading"><span class="eyebrow">LECTURE DU COURS</span><h1>' + escapeHtml(course.title) + '</h1><p>' + escapeHtml(course.description) + '</p></header>' +
-      '<div class="pdf-toolbar"><span class="pill">Document PDF · ' + escapeHtml(course.level) + '</span><div class="pdf-toolbar-actions">' +
-      '<a class="secondary-action" href="' + escapeHtml(course.pdf) + '" download="' + escapeHtml(fileName) + '">↓ Télécharger</a>' +
+      '<div class="pdf-toolbar"><span class="pill">' + (course.pdf ? 'Document PDF' : 'Lecture intégrée') + ' · ' + escapeHtml(course.level) + '</span><div class="pdf-toolbar-actions">' +
+      downloadAction +
       '<button class="secondary-action primary-action" type="button" data-action="toggle-complete" data-course="' + course.id + '">' +
       (done ? '✓ Terminé' : 'Marquer comme terminé') + '</button></div></div>' +
       (done ? '<p class="completed-message">Ce document est marqué comme terminé sur cet appareil.</p>' : '') +
-      '<iframe class="reader-frame" src="' + escapeHtml(course.pdf) + '#toolbar=1&navpanes=0" title="Lecture du PDF : ' + escapeHtml(course.title) + '"></iframe>' +
-      '<p class="reader-help">Tu peux aussi télécharger ce document pour le consulter hors connexion.</p></section>';
+      '<iframe class="reader-frame" src="' + escapeHtml(resource) + (course.pdf && !course.reader ? '#toolbar=1&navpanes=0' : '') + '" title="Lecture du cours : ' + escapeHtml(course.title) + '"></iframe>' +
+      '<p class="reader-help">' + (course.pdf ? 'Tu peux télécharger ce PDF pour le consulter hors connexion.' : 'Le cours se lit directement ici. Le bouton « Imprimer / Enregistrer en PDF » est disponible en haut du document.') + '</p></section>';
   updateNavigation("accueil");
 }
 
