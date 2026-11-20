@@ -24,7 +24,7 @@ const STOP_WORDS = new Set([
   "notre", "nous", "on", "ou", "par", "pas", "pour", "que", "qui", "sa", "se",
   "ses", "son", "sur", "ta", "te", "tes", "toi", "ton", "tu", "un", "une",
   "vos", "votre", "vous", "y", "c", "estce", "quoi", "comment", "faire",
-  "peux", "peut", "lecon", "cours", "pdf", "dans"
+  "peux", "peut", "lecon", "cours", "pdf", "dans", "numero", "num"
 ]);
 
 const SYNONYMS = {
@@ -338,15 +338,18 @@ function expandQueryWeights(queryTokens, index) {
 export function searchKnowledge(index, query, limit = 3) {
   if (!index || !Array.isArray(index.chunks) || !index.chunks.length) return [];
 
-  const queryTokens = tokenize(query);
+  const queryTokens = tokenize(query).filter((token) => token !== "numero" && token !== "num");
   const explicitLesson = normalize(query).match(
     /\b(?:lecon|lesson)(?:\s+(?:numero|n))?\s+(\d{1,2})\b/
   );
   const requestedLesson = explicitLesson
     ? String(Number(explicitLesson[1])).padStart(2, "0")
     : null;
+  const scoringTokens = requestedLesson
+    ? queryTokens.filter((token) => token !== requestedLesson && token !== String(Number(requestedLesson)))
+    : queryTokens;
 
-  const weights = expandQueryWeights(queryTokens, index);
+  const weights = expandQueryWeights(scoringTokens, index);
   const resultsBySource = new Map();
   const total = index.chunks.length;
   const averageLength = Math.max(1, Number(index.averageLength || 1));
@@ -378,7 +381,7 @@ export function searchKnowledge(index, query, limit = 3) {
     if (normalizedQuery.length > 4 && normalizedSection.includes(normalizedQuery)) {
       score += 1.25;
     }
-    if (requestedLesson && queryTokens.length === 0) score = Math.max(score, 0.8);
+    if (requestedLesson && scoringTokens.length === 0) score = Math.max(score, 0.8);
 
     const previous = resultsBySource.get(chunk.id);
     if (!previous || score > previous.score) {
