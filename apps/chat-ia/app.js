@@ -811,14 +811,15 @@ function handleQueueReady() {
   queueCurrentKey = null;
   $("#cancelDownloadButton").hidden = true;
   $("#loadModelButton").disabled = false;
+  $("#loadModelButton").textContent = "Charger pour discuter";
   $("#modelSelect").disabled = false;
-  $("#messageInput").disabled = false;
-  $("#sendButton").disabled = false;
-  $("#generationStatus").textContent = "Téléchargement terminé. Les échanges simples restent disponibles.";
+  updateGenerationControls(false);
+  $("#generationStatus").textContent =
+    "Modèle téléchargé, pas encore chargé en mémoire. Tu peux discuter sans lui ou le charger pour les réponses libres.";
   $("#downloadDetails").textContent = "Téléchargement terminé · " + downloadFiles.length + " fichier(s) suivis.";
   $("#downloadSpeed").textContent = "Vitesse : terminée";
   $("#downloadEta").textContent = "Temps restant : 0 s";
-  setStatus("Modèle téléchargé et mis en cache", "ready");
+  setStatus("SUN prêt · modèle téléchargé", "ready");
   $("#modelStatus").textContent = MODELS[finishedKey]?.name + " · fichiers prêts";
   setTimeout(processQueue, 200);
 }
@@ -914,7 +915,7 @@ function handleWorkerMessage(event) {
     $("#modelSelect").disabled = false;
     $("#messageInput").disabled = false;
     $("#sendButton").disabled = false;
-    $("#generationStatus").textContent = "Prêt à répondre localement.";
+    $("#generationStatus").textContent = "Modèle local chargé · SUN peut répondre librement.";
     $("#downloadSpeed").textContent = "Vitesse : terminée";
     $("#downloadEta").textContent = "Temps restant : 0 s";
     $("#messageInput").focus();
@@ -1145,7 +1146,7 @@ async function sendMessage(event) {
   updateCounter();
   addMessage("user", text);
 
-  const smallTalk = getSmallTalkReply(text);
+  const smallTalk = getSmallTalkReply(text, history.slice(0, -1));
   if (smallTalk) {
     currentSources = [];
     addMessage("assistant", smallTalk);
@@ -1263,8 +1264,7 @@ function initializeApp() {
   renderHistory();
   updateCounter();
   warmKnowledgeIndex();
-  $("#messageInput").disabled = false;
-  $("#sendButton").disabled = false;
+  updateGenerationControls(false);
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js").catch((error) => {
