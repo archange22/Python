@@ -16,7 +16,7 @@ const MODEL_CONFIG = {
   }
 };
 
-const TRANSFORMERS_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
+const TRANSFORMERS_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.2";
 const FETCH_RETRIES = 3;
 const MODEL_LOAD_RETRIES = 2;
 
@@ -97,11 +97,34 @@ async function loadModel(modelKey) {
 
   loadingPromise = (async () => {
     send("status", { message: "Chargement de la bibliothèque d’intelligence artificielle…" });
-    const { pipeline, env } = await import(TRANSFORMERS_URL);
+    const { pipeline, env, ModelRegistry } = await import(TRANSFORMERS_URL);
     env.useBrowserCache = true;
     env.useWasmCache = true;
     env.allowRemoteModels = true;
     env.fetch = fetchWithRetry;
+
+    // Best-effort metadata lookup: it tells the interface the real aggregate
+    // model size and whether the browser already has every required artifact.
+    try {
+      const files = await ModelRegistry.get_pipeline_files(config.task, config.id, {});
+      const metadata = await Promise.all(files.map((file) =>
+        ModelRegistry.get_file_metadata(config.id, file)
+      ));
+      const totalBytes = metadata.reduce((sum, item) =>
+        sum + (Number.isFinite(item?.size) ? item.size : 0), 0
+      );
+      const cached = await ModelRegistry.is_pipeline_cached(config.task, config.id, {});
+      send("model-info", {
+        model: config.label,
+        totalBytes,
+        cached: Boolean(cached),
+        fileCount: files.length
+      });
+    } catch (metadataError) {
+      send("status", {
+        message: "Taille exacte indisponible ; le chargement du modèle continue."
+      });
+    }
 
     let lastError = null;
     for (let attempt = 1; attempt <= MODEL_LOAD_RETRIES; attempt += 1) {
