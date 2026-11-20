@@ -1,12 +1,13 @@
 {
-  "name": "Académique — Apprendre, créer, progresser",
+  "name": "Académique — Apprendre, comprendre, construire",
   "short_name": "Académique",
   "description": "Formations pour apprendre Python, l'intelligence artificielle et le développement Discord.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#fff8f1",
-  "theme_color": "#fff8f1",
+  "orientation": "any",
+  "background_color": "#090e1b",
+  "theme_color": "#0b1020",
   "icons": [
     {
       "src": "icon.svg",
