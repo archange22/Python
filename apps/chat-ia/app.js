@@ -278,6 +278,24 @@ function handleWorkerMessage(event) {
     setStatus("Nouvelle tentative de téléchargement…");
     $("#modelHint").textContent = data.message || "Le réseau a répondu par une erreur temporaire. Les fichiers déjà en cache seront réutilisés.";
     $("#downloadDetails").textContent = "Tentative " + data.attempt + " / " + data.maxAttempts;
+  } else if (data.type === "model-info") {
+    if (Number.isFinite(data.totalBytes) && data.totalBytes > 0) {
+      const realSize = formatBytes(data.totalBytes);
+      $("#modelHint").textContent = data.cached
+        ? "Modèle déjà présent dans le cache : " + realSize + " · " + data.fileCount + " fichiers vérifiés."
+        : "Taille réelle estimée par le registre du modèle : " + realSize + " · " +
+          data.fileCount + " fichiers à charger. Garde une marge d’espace libre.";
+      try {
+        const estimate = await navigator.storage?.estimate?.();
+        if (estimate && Number.isFinite(estimate.quota) && Number.isFinite(estimate.usage)) {
+          const free = Math.max(0, estimate.quota - estimate.usage);
+          if (free < data.totalBytes) {
+            $("#modelHint").textContent += " Attention : l’espace estimé disponible (" +
+              formatBytes(free) + ") est inférieur à cette taille.";
+          }
+        }
+      } catch (error) {}
+    }
   } else if (data.type === "progress") {
     if (Number.isFinite(data.progress)) setProgress(data.progress, data.loaded, data.total);
     if (data.file) {
