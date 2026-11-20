@@ -38,26 +38,24 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (url.pathname.toLowerCase().endsWith(".pdf")) {
-    event.respondWith((async () => {
-      const cache = await caches.open(PDF_CACHE);
-      const cached = await cache.match(request);
-      const networkUpdate = fetch(request).then((response) => {
-        if (response.ok) cache.put(request, response.clone());
-        return response;
-      });
-      if (cached) {
-        event.waitUntil(networkUpdate.catch(() => undefined));
-        return cached;
+    const update = fetch(request).then((response) => {
+      if (response.ok) {
+        return caches.open(PDF_CACHE).then((cache) => cache.put(request, response.clone())).then(() => response);
       }
-      try {
-        return await networkUpdate;
-      } catch (error) {
-        return new Response(
+      return response;
+    }).catch(() => null);
+
+    // Register the background cache update while the fetch event is still active.
+    event.waitUntil(update.then(() => undefined));
+    event.respondWith(
+      caches.open(PDF_CACHE).then((cache) => cache.match(request)).then((cached) => {
+        if (cached) return cached;
+        return update.then((response) => response || new Response(
           "Ce document n’est pas encore disponible hors connexion. Reconnecte-toi pour le télécharger.",
           { status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" } }
-        );
-      }
-    })());
+        ));
+      })
+    );
     return;
   }
 
