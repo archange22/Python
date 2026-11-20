@@ -1,4 +1,5 @@
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { buildSearchIndex, searchKnowledge, tokenize } from "./knowledge.js";
 import { appendSourceReferences, getSmallTalkReply } from "./conversation.js";
@@ -26,7 +27,7 @@ test("SUN comprend les salutations et abréviations sans modèle", () => {
   assert.match(getSmallTalkReply("Bonjour") || "", /SUN/);
   assert.match(getSmallTalkReply("slt cv ?") || "", /fonctionne correctement/);
   assert.match(getSmallTalkReply("ça va ?") || "", /fonctionne correctement/);
-  assert.match(getSmallTalkReply("wesh sava") || "", /SUN/);
+  assert.match(getSmallTalkReply("wesh sava") || "", /fonctionne correctement/);
 });
 
 test("SUN répond à une conversation courante sans modèle", () => {
@@ -75,4 +76,17 @@ test("la réponse ajoute une référence précise", () => {
   }]);
   assert.match(result, /Python Facile — Leçon 01/);
   assert.match(result, /Afficher avec print/);
+});
+
+test("le champ de discussion reste actif sans modèle et après le téléchargement", () => {
+  const html = readFileSync(new URL("./index.html", import.meta.url), "utf8");
+  const app = readFileSync(new URL("./app.js", import.meta.url), "utf8");
+  const textarea = html.match(/<textarea[^>]*id="messageInput"[^>]*>/)?.[0] || "";
+  const sendButton = html.match(/<button[^>]*id="sendButton"[^>]*>/)?.[0] || "";
+  assert.ok(textarea);
+  assert.ok(sendButton);
+  assert.doesNotMatch(textarea, /\bdisabled\b/);
+  assert.doesNotMatch(sendButton, /\bdisabled\b/);
+  assert.match(app, /function handleQueueReady\(\)[\s\S]*?updateGenerationControls\(false\)/);
+  assert.match(app, /function initializeApp\(\)[\s\S]*?updateGenerationControls\(false\)/);
 });
