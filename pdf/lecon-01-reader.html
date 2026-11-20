@@ -86,7 +86,7 @@ function renderMarkdown(md){
   if(line.trim().startsWith("```")){
    flushP();flushL();const lang=line.trim().slice(3).trim();const code=[];i++;
    while(i<lines.length&&!lines[i].trim().startsWith("```")){code.push(lines[i]);i++}
-   out.push('<pre><code class="language-'+esc(lang)+'">'+esc(code.join("\n"))+'</code></pre>');i++;continue;
+   out.push('<pre><button class="copy-code" type="button">Copier</button><code class="language-'+esc(lang)+'">'+esc(code.join("\n"))+'</code></pre>');i++;continue;
   }
   if(!line.trim()){flushP();flushL();i++;continue}
   if(/^\|.*\|$/.test(line.trim())){
@@ -97,7 +97,7 @@ function renderMarkdown(md){
    continue;
   }
   const hm=line.match(/^(#{1,4})\s+(.+)$/);
-  if(hm){flushP();flushL();const level=hm[1].length,title=hm[2].replace(/\s+#+$/,""),id=slug(title);out.push('<h'+level+' id="'+id+'">'+inline(title)+'</h'+level+'>');if(level===2)toc.push({id,title});i++;continue}
+  if(hm){flushP();flushL();const level=hm[1].length,title=hm[2].replace(/\s+#+$/,""),id=slug(title);out.push('<h'+level+' id="'+id+'">'+inline(title)+'</h'+level+'>');if(level===2||level===3)toc.push({id,title,level});i++;continue}
   if(/^---+$/.test(line.trim())){flushP();flushL();out.push("<hr>");i++;continue}
   if(/^>\s?/.test(line)){flushP();flushL();out.push("<blockquote>"+inline(line.replace(/^>\s?/,""))+"</blockquote>");i++;continue}
   const ol=line.match(/^\s*\d+\.\s+(.+)$/),ul=line.match(/^\s*[-*]\s+(.+)$/);
@@ -105,7 +105,7 @@ function renderMarkdown(md){
   flushL();paragraph.push(line.trim());i++;
  }
  flushP();flushL();
- const tocHtml=toc.length?'<details class="toc"><summary>Sommaire du cours ('+toc.length+' parties)</summary><ol>'+toc.map(t=>'<li><a href="#'+t.id+'">'+esc(t.title)+'</a></li>').join("")+'</ol></details>':"";
+ const tocHtml=toc.length?'<details class="toc"><summary>Sommaire du cours ('+toc.length+' parties)</summary><ol>'+toc.map(t=>'<li class="'+(t.level===3?'toc-sub':'')+'"><a href="#'+t.id+'">'+esc(t.title)+'</a></li>').join("")+'</ol></details>':"";
  return tocHtml+out.join("\n");
 }
 async function loadCompressedMarkdown(){
