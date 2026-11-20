@@ -1,6 +1,6 @@
 const PYODIDE_VERSION = "314.0.8";
 const STORAGE_KEY = "academique-python-console-v1";
-const DEFAULT_CODE = 'nom = input("Comment tu t\\'appelles ? ")\\nprint("Bonjour", nom)\\nprint("Bienvenue dans Python 3 !")\\n\\nfor nombre in range(1, 4):\\n    print("Étape", nombre)';
+const DEFAULT_CODE = "nom = input(\"Ton prénom ? \")\nprint(\"Bonjour\", nom)\nprint(\"Bienvenue dans Python 3 !\")\n\nfor nombre in range(1, 4):\n    print(\"Étape\", nombre)";
 const $ = (selector) => document.querySelector(selector);
 
 const editor = $("#codeEditor");
