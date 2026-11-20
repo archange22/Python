@@ -1,5 +1,5 @@
 const STATIC_CACHE = "academique-shell-v6";
-const PDF_CACHE = "academique-pdf-v1";
+const PDF_CACHE = "academique-pdf-v2";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -22,10 +22,9 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(
-        keys.filter((key) =>
-          (key.startsWith("academique-shell-") && key !== STATIC_CACHE)
-        ).map((key) => caches.delete(key))
+      .then((keys) => Promise.all(keys
+        .filter((key) => key.startsWith("academique-shell-") && key !== STATIC_CACHE)
+        .map((key) => caches.delete(key))
       ))
       .then(() => self.clients.claim())
   );
@@ -33,32 +32,56 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
-  if (request.method !== "GET" || new URL(request.url).origin !== self.location.origin) return;
+  if (request.method !== "GET") return;
 
-  const isPdf = new URL(request.url).pathname.toLowerCase().endsWith(".pdf");
-  if (isPdf) {
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+
+  if (url.pathname.toLowerCase().endsWith(".pdf")) {
+    const update = fetch(request).then((response) => {
+      if (response.ok) {
+        return caches.open(PDF_CACHE).then((cache) => cache.put(request, response.clone())).then(() => response);
+      }
+      return response;
+    }).catch(() => null);
+
+    // Register the background cache update while the fetch event is still active.
+    event.waitUntil(update.then(() => undefined));
+    event.respondWith(
+      caches.open(PDF_CACHE).then((cache) => cache.match(request)).then((cached) => {
+        if (cached) return cached;
+        return update.then((response) => response || new Response(
+          "Ce document n’est pas encore disponible hors connexion. Reconnecte-toi pour le télécharger.",
+          { status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" } }
+        ));
+      })
+    );
+    return;
+  }
+
+  if (request.mode === "navigate") {
     event.respondWith(
       fetch(request).then((response) => {
         if (response.ok) {
           const copy = response.clone();
-          caches.open(PDF_CACHE).then((cache) => cache.put(request, copy));
+          caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy));
         }
         return response;
-      }).catch(() => caches.match(request).then((cached) => cached || new Response(
-        "Ce document n'a pas encore été téléchargé sur cet appareil. Reconnecte-toi pour l'ouvrir.",
-        { status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" } }
-      )))
+      }).catch(() => caches.match(request).then((cached) => cached || caches.match("./index.html")))
     );
     return;
   }
 
   event.respondWith(
-    caches.match(request).then((cached) => cached || fetch(request).then((response) => {
-      if (response.ok) {
-        const copy = response.clone();
-        caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy));
-      }
-      return response;
-    }))
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request).then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy));
+        }
+        return response;
+      });
+    })
   );
 });
