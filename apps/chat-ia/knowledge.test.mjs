@@ -32,6 +32,7 @@ test("SUN comprend les salutations et abréviations sans modèle", () => {
 
 test("SUN répond à une conversation courante sans modèle", () => {
   assert.match(getSmallTalkReply("je vais bien et toi") || "", /Tant mieux/);
+  assert.match(getSmallTalkReply("et toi") || "", /fonctionne correctement/);
   assert.match(getSmallTalkReply("tu fais quoi") || "", /discuter/);
   assert.match(getSmallTalkReply("on peut discuter") || "", /Oui/);
   assert.match(getSmallTalkReply("tu peux fonctionner sans modèle") || "", /Oui/);
@@ -57,6 +58,12 @@ test("la recherche retrouve la bonne leçon et sa section", () => {
 test("la recherche tolère une petite faute de frappe", () => {
   const results = searchKnowledge(index, "a quoi sert pritn pour afficher");
   assert.equal(results[0]?.label, "Python Facile — Leçon 01");
+});
+
+test("une demande avec seulement le numéro de leçon trouve ses passages", () => {
+  const results = searchKnowledge(index, "leçon 02");
+  assert.ok(results.length > 0);
+  assert.ok(results.every((result) => result.lessonNumber === "02"));
 });
 
 test("une demande explicite de numéro de leçon filtre les résultats", () => {
