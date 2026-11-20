@@ -500,8 +500,23 @@ function handleWorkerError(message) {
   handleLoadFailure(message || "Erreur du moteur Web Worker.");
 }
 
+function markIncompleteFilesInterrupted() {
+  let changed = false;
+  for (const file of downloadFiles) {
+    if (["preparing", "downloading", "retry"].includes(file.status)) {
+      file.status = "interrupted";
+      changed = true;
+    }
+  }
+  if (changed) {
+    renderFileList();
+    saveFilesSoon();
+  }
+}
+
 function handleLoadFailure(message) {
   updateStat("failures");
+  markIncompleteFilesInterrupted();
   const failedKey = selectedModel;
   const purpose = activeLoadPurpose;
   const item = downloadQueue.find((entry) => entry.modelKey === failedKey);
@@ -749,6 +764,7 @@ function handleQueueReady() {
 
   if (worker) worker.terminate();
   worker = null;
+  markIncompleteFilesInterrupted();
   loading = false;
   modelReady = false;
   queueCurrentKey = null;
@@ -977,6 +993,7 @@ function cancelDownload() {
 
   updateStat("cancellations");
   resetWorker();
+  markIncompleteFilesInterrupted();
   setStatus("Chargement arrêté", "error");
   $("#modelHint").textContent = "Le chargement a été arrêté. Les fichiers complètement enregistrés peuvent être réutilisés au prochain essai.";
   $("#downloadDetails").textContent = "Arrêt demandé.";
