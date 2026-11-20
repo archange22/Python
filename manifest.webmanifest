@@ -1,7 +1,7 @@
 {
   "name": "Académique — Apprendre, comprendre, construire",
   "short_name": "Académique",
-  "description": "Formations pour apprendre Python, l'intelligence artificielle et le développement Discord.",
+  "description": "Formations pour apprendre Python, l'intelligence artificielle, Discord et la création de sites Web.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
