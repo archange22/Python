@@ -179,7 +179,10 @@ function onProgress(info) {
 
 async function loadModel(modelKey) {
   if (generator && currentModelKey === modelKey) return generator;
-  if (loadingPromise) return loadingPromise;
+  if (loadingPromise) {
+    const alreadyLoading = await loadingPromise;
+    return alreadyLoading.generator;
+  }
 
   const config = MODEL_CONFIG[modelKey];
   if (!config) {
