@@ -1,4 +1,4 @@
-const APP_CACHE = "academique-chat-ia-shell-v3";
+const APP_CACHE = "academique-sun-shell-v4";
 const LIBRARY_CACHE = "academique-chat-ia-library-v3";
 const APP_FILES = [
   "./",
@@ -6,6 +6,8 @@ const APP_FILES = [
   "./styles.css",
   "./app.js",
   "./chat.worker.js",
+  "./knowledge.js",
+  "./conversation.js",
   "./manifest.webmanifest",
   "./icon.svg"
 ];
@@ -50,7 +52,7 @@ self.addEventListener("activate", (event) => {
     caches.keys()
       .then((keys) => Promise.all(keys
         .filter((key) =>
-          (key.startsWith("academique-chat-ia-shell-") && key !== APP_CACHE) ||
+          (key.startsWith("academique-sun-shell-") && key !== APP_CACHE) ||
           (key.startsWith("academique-chat-ia-library-") && key !== LIBRARY_CACHE)
         )
         .map((key) => caches.delete(key))
