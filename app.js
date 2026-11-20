@@ -1,4 +1,3 @@
-const APP_NAME = "Académique";
 const CONTACT_EMAIL = "archangekouaho@gmail.com";
 const STORAGE_KEY = "academique-v2";
 const LEGACY_STORAGE_KEY = "academique-v1";
@@ -35,7 +34,7 @@ const subjects = [
 
 const emptyState = () => ({
   completed: [], favorites: [], notes: {}, history: [], lastCourse: null,
-  readerPositions: {}, theme: "dark"
+  theme: "dark"
 });
 
 function loadState() {
@@ -48,7 +47,6 @@ function loadState() {
       state.notes = saved.notes && typeof saved.notes === "object" ? saved.notes : {};
       state.history = Array.isArray(saved.history) ? saved.history : [];
       state.lastCourse = typeof saved.lastCourse === "string" ? saved.lastCourse : null;
-      state.readerPositions = saved.readerPositions && typeof saved.readerPositions === "object" ? saved.readerPositions : {};
       state.theme = saved.theme === "light" ? "light" : "dark";
     } else {
       const legacy = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY) || "{}");
@@ -156,7 +154,6 @@ function renderCourseRow(subject, course, options = {}) {
 }
 
 function renderHome() {
-  const published = totalPublishedCourses();
   const completed = appState.completed.length;
   const favoriteCount = appState.favorites.length;
   const last = appState.lastCourse ? courseById(appState.lastCourse) : null;
@@ -454,11 +451,6 @@ function handleAction(action, element) {
     showToast("Notes enregistrées.");
   } else if (action === "install-app") {
     installApp();
-  } else if (action === "privacy") {
-    openDialog("Confidentialité et données",
-      '<h3>Stockage</h3><p>La progression, les favoris, les notes et la position de lecture sont conservés dans le stockage local du navigateur.</p>' +
-      '<h3>Compte et synchronisation</h3><p>Cette version ne demande pas de compte et ne synchronise pas les données entre plusieurs appareils.</p>' +
-      '<h3>Documents</h3><p>Les documents sont hébergés avec l’application. Une première connexion peut être nécessaire pour les charger.</p>');
   }
 }
 
