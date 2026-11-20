@@ -37,7 +37,8 @@ self.addEventListener("fetch", (event) => {
   const isModelRuntime = url.hostname === "cdn.jsdelivr.net" ||
     url.hostname === "huggingface.co" ||
     url.hostname.endsWith(".huggingface.co") ||
-    url.hostname === "xethub.hf.co";
+    url.hostname === "xethub.hf.co" ||
+    url.hostname.endsWith(".xethub.hf.co");
 
   if (isModelRuntime) {
     event.respondWith((async () => {
