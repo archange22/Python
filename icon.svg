@@ -1,6 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <rect width="128" height="128" rx="30" fill="#f36d18"/>
-  <rect x="13" y="13" width="102" height="102" rx="25" fill="#ffffff" opacity=".16"/>
-  <text x="64" y="84" text-anchor="middle" font-family="Arial,sans-serif" font-size="64" font-weight="800" fill="#ffffff">A</text>
-  <circle cx="99" cy="29" r="8" fill="#ffe4a7"/>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#20264f"/>
+      <stop offset=".58" stop-color="#111a33"/>
+      <stop offset="1" stop-color="#102b3b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b5a8ff"/>
+      <stop offset=".55" stop-color="#8d7cff"/>
+      <stop offset="1" stop-color="#52ddc7"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="30" fill="url(#background)"/>
+  <circle cx="103" cy="23" r="37" fill="#8d7cff" opacity=".15"/>
+  <circle cx="23" cy="111" r="39" fill="#52ddc7" opacity=".08"/>
+  <path d="M64 24 29 100h18l17-40 17 40h18L64 24Z" fill="#f4f2ff"/>
+  <path d="M48 81h32" stroke="url(#accent)" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="98" cy="91" r="7" fill="#52ddc7"/>
 </svg>
