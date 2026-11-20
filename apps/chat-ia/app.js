@@ -42,6 +42,7 @@ let streamingMessage = null;
 let lastSpeedSample = null;
 let smoothedSpeed = 0;
 let fileSavePending = false;
+let downloadPlanTotalBytes = 0;
 
 function readJSON(key, fallback) {
   try {
@@ -490,6 +491,7 @@ function handleLoadFailure(message) {
 }
 
 function updatePlan(data) {
+  downloadPlanTotalBytes = Number.isFinite(data.totalBytes) ? data.totalBytes : 0;
   downloadFiles = (data.files || []).map((file) => ({
     file: file.file,
     size: file.size || null,
@@ -514,9 +516,10 @@ function updatePlan(data) {
     navigator.storage.estimate().then((estimate) => {
       if (!loading || !Number.isFinite(estimate.quota) || !Number.isFinite(estimate.usage)) return;
       const free = Math.max(0, estimate.quota - estimate.usage);
-      if (free < totalBytes) {
+      const remainingRequired = Math.max(0, totalBytes - cachedBytes);
+      if (free < remainingRequired) {
         $("#modelHint").textContent += " Attention : espace estimé restant " + formatBytes(free) +
-          ", inférieur à la taille totale connue.";
+          ", inférieur au volume encore à récupérer (" + formatBytes(remainingRequired) + ").";
       } else {
         $("#modelHint").textContent += " Espace estimé restant : " + formatBytes(free) + ".";
       }
@@ -557,7 +560,8 @@ function updateFileProgress(data) {
   if (Number.isFinite(data.progress)) file.progress = data.progress;
   file.status = "downloading";
 
-  const knownTotal = downloadFiles.reduce((sum, item) => sum + (item.size || 0), 0);
+  const knownTotal = downloadPlanTotalBytes ||
+    downloadFiles.reduce((sum, item) => sum + (item.size || 0), 0);
   const loaded = downloadFiles.reduce((sum, item) => {
     if (["cached", "done"].includes(item.status)) return sum + (item.size || item.loaded || 0);
     return sum + (item.loaded || 0);
@@ -578,6 +582,7 @@ function updateFileProgress(data) {
 }
 
 function updateOverallProgress(data) {
+  if (Number.isFinite(data.total) && data.total > 0) downloadPlanTotalBytes = data.total;
   if (data.files && typeof data.files === "object") {
     for (const [fileName, value] of Object.entries(data.files)) {
       let file = downloadFiles.find((item) => item.file === fileName);
@@ -795,6 +800,13 @@ function handleWorkerMessage(event) {
     }
 
     modelReady = true;
+    const matchingQueueItem = downloadQueue.find((item) => item.modelKey === selectedModel);
+    if (matchingQueueItem && ["queued", "interrupted", "failed"].includes(matchingQueueItem.status)) {
+      matchingQueueItem.status = "done";
+      matchingQueueItem.lastError = "";
+      matchingQueueItem.completedAt = Date.now();
+      saveQueue();
+    }
     setStatus("Modèle local prêt", "ready");
     $("#modelStatus").textContent = MODELS[selectedModel].name + " est prêt";
     $("#modelHint").textContent = "Le modèle est chargé et les fichiers requis ont été vérifiés par le moteur.";
@@ -976,6 +988,15 @@ function clearModelCache() {
       $("#modelHint").textContent = "Cache du modèle effacé. Les conversations et les autres modèles sont conservés.";
       $("#downloadDetails").textContent = data.filesDeleted + " fichier(s) supprimé(s) du cache.";
       $("#modelStatus").textContent = "Cache du modèle effacé";
+      downloadFiles = [];
+      downloadPlanTotalBytes = 0;
+      saveFilesSoon();
+      const queueEntry = downloadQueue.find((item) => item.modelKey === selectedModel);
+      if (queueEntry && queueEntry.status === "done") {
+        queueEntry.status = "queued";
+        queueEntry.lastError = "";
+        saveQueue();
+      }
       setStatus("Cache réinitialisé", "ready");
       renderFileList();
     } else if (data.type === "cache-clear-error") {
