@@ -172,3 +172,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .queue-item-actions{display:flex;align-items:center;gap:4px;flex:0 0 auto}
 .queue-order{display:grid;place-items:center;width:27px;height:27px;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--surface2);color:var(--muted);font-size:13px;font-weight:900}
 .queue-order:disabled{opacity:.25;cursor:not-allowed}
+
+
+/* SUN documentary search status */
+.knowledge-status{padding:9px 15px;border-bottom:1px solid var(--line);background:rgba(84,217,197,.045);color:var(--muted);font-size:8px;line-height:1.6}
