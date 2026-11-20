@@ -68,7 +68,7 @@ self.addEventListener("fetch", (event) => {
         }
         return response;
       }).catch(() => caches.match(request).then((cached) => cached || new Response(
-        "{\\"version\\":1,\\"subjects\\":[]}",
+        '{"version":1,"subjects":[]}',
         { status: 200, headers: { "Content-Type": "application/json; charset=utf-8" } }
       )))
     );
