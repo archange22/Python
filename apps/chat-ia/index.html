@@ -25,25 +25,25 @@
     <section class="chat-hero">
       <span class="eyebrow">ASSISTANT PÉDAGOGIQUE LOCAL</span>
       <h1>Une question ?<br><span>On la travaille ensemble.</span></h1>
-      <p>Choisis un modèle, télécharge-le une seule fois sur cet appareil, puis utilise-le localement. Aucune clé API ni compte n’est nécessaire.</p>
+      <p>Les modèles fonctionnent directement sur cet appareil. Télécharge les modèles dont tu as besoin, suis chaque fichier et garde les ressources en cache pour les prochaines sessions.</p>
     </section>
 
     <section class="model-card" aria-labelledby="modelPanelTitle">
       <div class="model-top">
         <div class="model-icon">✦</div>
         <div class="model-copy">
-          <span class="eyebrow" id="modelPanelTitle">GESTION DES MODÈLES LOCAUX</span>
+          <span class="eyebrow" id="modelPanelTitle">MODÈLES IA LOCAUX</span>
           <strong id="modelStatus">Modèle non chargé</strong>
-          <p id="modelHint">Sélectionne un modèle pour voir sa taille indicative et ses caractéristiques avant le téléchargement.</p>
+          <p id="modelHint">Sélectionne un modèle pour examiner les fichiers et l’espace nécessaires.</p>
         </div>
         <div class="model-buttons">
-          <button id="loadModelButton" class="load-button" type="button">Télécharger le modèle</button>
-          <button id="cancelDownloadButton" class="cancel-button" type="button" hidden>Annuler</button>
+          <button id="loadModelButton" class="load-button" type="button">Charger pour discuter</button>
+          <button id="cancelDownloadButton" class="cancel-button" type="button" hidden>Arrêter</button>
         </div>
       </div>
 
       <div class="model-controls">
-        <label for="modelSelect">Modèle à utiliser</label>
+        <label for="modelSelect">Modèle sélectionné</label>
         <select id="modelSelect">
           <option value="lamini-77">LaMini-Flan-T5-77M · léger</option>
           <option value="lamini-248">LaMini-Flan-T5-248M · plus complet</option>
@@ -52,16 +52,48 @@
         <p id="modelDescription" class="model-description"></p>
       </div>
 
-      <div class="progress-track" role="progressbar" aria-label="Progression du chargement du modèle" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="progress-track overall-progress" role="progressbar" aria-label="Progression globale du chargement" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
         <div id="modelProgress" class="progress-fill"></div>
       </div>
       <div class="download-details">
-        <span id="downloadDetails">Aucun téléchargement en cours.</span>
-        <span id="downloadPercent">0 %</span>
+        <span id="downloadDetails">Aucun chargement en cours.</span>
+        <strong id="downloadPercent">0 %</strong>
+      </div>
+      <div class="download-metrics">
+        <span id="downloadSpeed">Vitesse : —</span>
+        <span id="downloadEta">Temps restant : —</span>
       </div>
       <div class="model-footer">
         <span id="downloadStats">Les statistiques restent sur cet appareil.</span>
-        <button id="clearModelCacheButton" class="cache-button" type="button">Réinitialiser le cache IA</button>
+        <button id="clearModelCacheButton" class="cache-button" type="button">Nettoyer le cache IA</button>
+      </div>
+    </section>
+
+    <section class="download-manager" aria-labelledby="downloadManagerTitle">
+      <div class="manager-heading">
+        <div>
+          <span class="eyebrow">GESTIONNAIRE</span>
+          <h2 id="downloadManagerTitle">Téléchargements programmés</h2>
+          <p>Ajoute des modèles à la file, change leur ordre et lance-les un par un pour limiter la mémoire. Garde cette page ouverte pendant le téléchargement ; la file est conservée si tu la fermes, mais elle ne télécharge pas en arrière-plan.</p>
+        </div>
+        <span class="manager-state" id="queueSummary">File vide</span>
+      </div>
+      <div class="queue-actions">
+        <button id="queueModelButton" class="secondary-button" type="button">+ Planifier ce modèle</button>
+        <button id="startQueueButton" class="load-button" type="button">Lancer la file</button>
+        <button id="pauseQueueButton" class="cancel-button" type="button" hidden>Mettre en pause</button>
+        <button id="clearQueueButton" class="cache-button" type="button">Vider la file</button>
+      </div>
+      <div id="downloadQueueList" class="queue-list" aria-live="polite">
+        <p class="empty-state">Aucun modèle programmé.</p>
+      </div>
+
+      <div class="file-list-heading">
+        <strong>Fichiers du dernier modèle analysé</strong>
+        <span id="fileCountLabel">En attente d’un diagnostic</span>
+      </div>
+      <div id="downloadFileList" class="download-file-list">
+        <p class="empty-state">La liste détaillée apparaît avant le chargement, lorsque le registre du modèle répond.</p>
       </div>
     </section>
 
@@ -69,6 +101,16 @@
       <div class="chat-toolbar">
         <div><span class="online-indicator" id="statusDot"></span><span id="statusLabel">En attente du moteur</span></div>
         <button class="clear-button" id="clearButton" type="button">Nouvelle discussion</button>
+      </div>
+
+      <div class="chat-settings">
+        <label for="responseLengthSelect">Longueur des réponses</label>
+        <select id="responseLengthSelect">
+          <option value="short">Courte</option>
+          <option value="normal" selected>Normale</option>
+          <option value="detailed">Détaillée</option>
+        </select>
+        <span id="generationStatus">Le modèle local n’est pas encore chargé.</span>
       </div>
 
       <div class="messages" id="messages" role="log" aria-live="polite">
@@ -82,15 +124,15 @@
       </div>
 
       <form class="composer" id="chatForm">
-        <textarea id="messageInput" rows="1" maxlength="1200" placeholder="Écris ta question…" aria-label="Ton message" disabled></textarea>
+        <textarea id="messageInput" rows="1" maxlength="1600" placeholder="Écris ta question…" aria-label="Ton message" disabled></textarea>
         <button id="sendButton" type="submit" disabled aria-label="Envoyer">↑</button>
       </form>
-      <div class="composer-foot"><span>Entrée pour envoyer · Maj + Entrée pour un retour à la ligne</span><span id="counter">0 / 1200</span></div>
+      <div class="composer-foot"><span>Entrée pour envoyer · Maj + Entrée pour une nouvelle ligne</span><span id="counter">0 / 1600</span></div>
     </section>
 
     <section class="model-warning">
-      <strong>Téléchargement, stockage et qualité</strong>
-      <p>Le téléchargement initial nécessite Internet. Les fichiers terminés sont conservés dans le cache du navigateur ; en cas de coupure, le chargement peut être relancé et les fichiers déjà mis en cache sont réutilisés. Le fichier interrompu peut devoir être téléchargé à nouveau. Garde assez d’espace libre et évite de fermer l’application pendant le chargement. Les modèles sont expérimentaux : leurs réponses peuvent être inexactes. SmolLM2 est principalement documenté pour l’anglais et peut être moins fiable en français.</p>
+      <strong>Limites à connaître</strong>
+      <p>Ces modèles sont compacts et expérimentaux. Ils peuvent se tromper, oublier certains éléments du contexte ou répondre lentement. SmolLM2 est surtout documenté pour l’anglais. Le streaming des réponses est activé pour ce modèle ; les modèles T5 affichent leur réponse lorsqu’elle est terminée. Les fichiers terminés peuvent être réutilisés depuis le cache, mais un fichier interrompu n’est pas forcément repris au dernier octet.</p>
     </section>
 
     <footer>Chat IA · Application séparée d’Académique</footer>
