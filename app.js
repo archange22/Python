@@ -183,7 +183,7 @@ function renderCourse(courseId) {
   const installed = isInstalledApp();
   const useAcademiqueReader = installed && Boolean(course.reader);
   const fileName = course.pdf ? course.pdf.split("/").pop() : "";
-  const downloadAction = course.pdf
+  const downloadAction = installed && course.pdf
     ? '<a class="secondary-action" href="' + escapeHtml(course.pdf) + '" download="' + escapeHtml(fileName) + '">Télécharger le PDF</a>'
     : "";
   const pdfNativeActions = course.pdf
