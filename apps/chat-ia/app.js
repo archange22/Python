@@ -811,7 +811,7 @@ function handleQueueReady() {
   queueCurrentKey = null;
   $("#cancelDownloadButton").hidden = true;
   $("#loadModelButton").disabled = false;
-  $("#loadModelButton").textContent = "Charger pour discuter";
+  $("#loadModelButton").textContent = "Charger pour réponses avancées";
   $("#modelSelect").disabled = false;
   updateGenerationControls(false);
   $("#generationStatus").textContent =
@@ -1005,7 +1005,7 @@ function processQueue() {
     }
     $("#modelSelect").disabled = false;
     $("#loadModelButton").disabled = false;
-    $("#loadModelButton").textContent = "Charger pour discuter";
+    $("#loadModelButton").textContent = "Charger pour réponses avancées";
     $("#generationStatus").textContent = "Tous les modèles programmés ont été traités.";
     setStatus("File de téléchargement terminée", "ready");
     renderQueue();
@@ -1069,9 +1069,9 @@ function changeModel() {
   setProgress(0);
   resetSpeed();
   setStatus("Modèle non chargé");
-  $("#modelStatus").textContent = "Modèle non chargé";
+  $("#modelStatus").textContent = "SUN prêt · modèle optionnel";
   $("#downloadDetails").textContent = "Aucun chargement en cours.";
-  $("#loadModelButton").textContent = "Charger pour discuter";
+  $("#loadModelButton").textContent = "Charger pour réponses avancées";
   setModelDescription();
   renderHistory();
 }
