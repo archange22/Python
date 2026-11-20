@@ -2,23 +2,27 @@ const MODEL_CONFIG = {
   "lamini-77": {
     id: "Xenova/LaMini-Flan-T5-77M",
     task: "text2text-generation",
-    label: "LaMini-Flan-T5-77M"
+    label: "LaMini-Flan-T5-77M",
+    family: "t5"
   },
   "lamini-248": {
     id: "Xenova/LaMini-Flan-T5-248M",
     task: "text2text-generation",
-    label: "LaMini-Flan-T5-248M"
+    label: "LaMini-Flan-T5-248M",
+    family: "t5"
   },
   "smollm2-135": {
-    id: "HuggingFaceTB/SmolLM2-135M-Instruct",
+    id: "onnx-community/SmolLM2-135M-Instruct-ONNX-GQA",
     task: "text-generation",
-    label: "SmolLM2-135M-Instruct"
+    label: "SmolLM2-135M-Instruct",
+    family: "causal"
   }
 };
 
 const TRANSFORMERS_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.2";
 const FETCH_RETRIES = 3;
 const MODEL_LOAD_RETRIES = 2;
+const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
 
 let generator = null;
 let currentModelKey = null;
@@ -32,58 +36,142 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function isRetryableStatus(status) {
-  return status === 408 || status === 425 || status === 429 ||
-    status === 500 || status === 502 || status === 503 || status === 504;
+function shortRequestName(input) {
+  try {
+    const url = new URL(typeof input === "string" ? input : input.url);
+    return url.pathname.split("/").slice(-2).join("/");
+  } catch (error) {
+    return "fichier distant";
+  }
 }
 
 async function fetchWithRetry(input, init = {}) {
   let lastError = null;
+
   for (let attempt = 1; attempt <= FETCH_RETRIES; attempt += 1) {
     try {
-      if (init.signal?.aborted) throw new DOMException("Téléchargement annulé", "AbortError");
+      if (init.signal?.aborted) {
+        throw new DOMException("Téléchargement annulé", "AbortError");
+      }
+
       const response = await fetch(input, init);
-      if (!isRetryableStatus(response.status) || attempt === FETCH_RETRIES) {
+      if (!RETRYABLE_STATUS.has(response.status) || attempt === FETCH_RETRIES) {
         return response;
       }
+
       try { await response.body?.cancel(); } catch (error) {}
-      send("status", {
-        message: "Le serveur distant répond temporairement (" + response.status + "). Nouvelle tentative…"
+      send("network-retry", {
+        attempt: attempt + 1,
+        maxAttempts: FETCH_RETRIES,
+        file: shortRequestName(input),
+        reason: "HTTP " + response.status
       });
     } catch (error) {
       lastError = error;
-      if (error?.name === "AbortError" || attempt === FETCH_RETRIES) throw error;
-      send("status", { message: "Coupure réseau détectée. Nouvelle tentative automatique…" });
+      if (error?.name === "AbortError" || attempt === FETCH_RETRIES) {
+        throw error;
+      }
+      send("network-retry", {
+        attempt: attempt + 1,
+        maxAttempts: FETCH_RETRIES,
+        file: shortRequestName(input),
+        reason: error?.message || "Connexion interrompue"
+      });
     }
-    await sleep(700 * Math.pow(2, attempt - 1));
+
+    await sleep(600 * Math.pow(2, attempt - 1));
   }
+
   throw lastError || new Error("Échec réseau après plusieurs tentatives.");
+}
+
+function safeMetadataSize(metadata) {
+  return Number.isFinite(metadata?.size) && metadata.size > 0 ? metadata.size : null;
+}
+
+async function inspectModel(config, ModelRegistry) {
+  const options = config.options || {};
+  const files = await ModelRegistry.get_pipeline_files(config.task, config.id, options);
+
+  let cacheResult = null;
+  try {
+    cacheResult = await ModelRegistry.is_pipeline_cached_files(config.task, config.id, options);
+  } catch (error) {
+    // File metadata remains useful even if the cache index is temporarily unavailable.
+  }
+
+  const cachedMap = new Map(
+    (cacheResult?.files || []).map((item) => [item.file, Boolean(item.cached)])
+  );
+
+  const fileDetails = await Promise.all(files.map(async (file) => {
+    let metadata = null;
+    try {
+      metadata = await ModelRegistry.get_file_metadata(config.id, file, options);
+    } catch (error) {}
+
+    return {
+      file,
+      size: safeMetadataSize(metadata),
+      exists: metadata ? metadata.exists !== false : null,
+      cached: cachedMap.get(file) === true,
+      status: cachedMap.get(file) === true ? "cached" : "waiting",
+      progress: cachedMap.get(file) === true ? 100 : 0,
+      loaded: cachedMap.get(file) === true ? safeMetadataSize(metadata) : 0
+    };
+  }));
+
+  const totalBytes = fileDetails.reduce((sum, item) => sum + (item.size || 0), 0);
+  const cachedBytes = fileDetails.reduce((sum, item) =>
+    sum + (item.cached ? (item.size || 0) : 0), 0
+  );
+
+  send("download-plan", {
+    modelKey: Object.keys(MODEL_CONFIG).find((key) => MODEL_CONFIG[key] === config),
+    model: config.label,
+    files: fileDetails,
+    totalBytes,
+    cachedBytes,
+    cachedCount: fileDetails.filter((item) => item.cached).length,
+    fileCount: fileDetails.length
+  });
 }
 
 function onProgress(info) {
   if (!info || typeof info !== "object") return;
+
   if (info.status === "progress_total") {
-    send("progress", {
+    send("overall-progress", {
       progress: info.progress,
       loaded: info.loaded,
       total: info.total,
-      file: "Ensemble des fichiers du modèle"
+      files: info.files || null
     });
     return;
   }
-  if (info.status === "progress") {
-    send("progress", {
+
+  if (info.status === "initiate" || info.status === "download") {
+    send("file-status", {
       file: info.file || "Fichier du modèle",
-      fileProgress: info.progress,
+      status: info.status === "initiate" ? "preparing" : "downloading",
+      name: info.name || ""
+    });
+    return;
+  }
+
+  if (info.status === "progress") {
+    send("file-progress", {
+      file: info.file || "Fichier du modèle",
+      progress: info.progress,
       loaded: info.loaded,
       total: info.total
     });
     return;
   }
-  if (info.status === "initiate" || info.status === "download") {
-    send("status", {
-      message: (info.status === "initiate" ? "Préparation : " : "Téléchargement : ") +
-        (info.file || "fichiers du modèle")
+
+  if (info.status === "done") {
+    send("file-complete", {
+      file: info.file || "Fichier du modèle"
     });
   }
 }
@@ -93,36 +181,26 @@ async function loadModel(modelKey) {
   if (loadingPromise) return loadingPromise;
 
   const config = MODEL_CONFIG[modelKey];
-  if (!config) throw new Error("Modèle inconnu. Recharge l’application et sélectionne un modèle disponible.");
+  if (!config) {
+    throw new Error("Modèle inconnu. Recharge l’application et sélectionne un modèle disponible.");
+  }
 
   loadingPromise = (async () => {
-    send("status", { message: "Chargement de la bibliothèque d’intelligence artificielle…" });
-    const { pipeline, env, ModelRegistry } = await import(TRANSFORMERS_URL);
+    send("status", { message: "Initialisation de la bibliothèque IA…" });
+
+    const { pipeline, env, ModelRegistry, TextStreamer } = await import(TRANSFORMERS_URL);
+
     env.useBrowserCache = true;
     env.useWasmCache = true;
     env.allowRemoteModels = true;
     env.fetch = fetchWithRetry;
+    env.logLevel = "warning";
 
-    // Best-effort metadata lookup: it tells the interface the real aggregate
-    // model size and whether the browser already has every required artifact.
     try {
-      const files = await ModelRegistry.get_pipeline_files(config.task, config.id, {});
-      const metadata = await Promise.all(files.map((file) =>
-        ModelRegistry.get_file_metadata(config.id, file)
-      ));
-      const totalBytes = metadata.reduce((sum, item) =>
-        sum + (Number.isFinite(item?.size) ? item.size : 0), 0
-      );
-      const cached = await ModelRegistry.is_pipeline_cached(config.task, config.id, {});
-      send("model-info", {
-        model: config.label,
-        totalBytes,
-        cached: Boolean(cached),
-        fileCount: files.length
-      });
-    } catch (metadataError) {
-      send("status", {
-        message: "Taille exacte indisponible ; le chargement du modèle continue."
+      await inspectModel(config, ModelRegistry);
+    } catch (error) {
+      send("plan-warning", {
+        message: "Le détail des fichiers n’a pas pu être obtenu avant le chargement. Le moteur va quand même essayer."
       });
     }
 
@@ -132,82 +210,161 @@ async function loadModel(modelKey) {
         send("status", {
           message: attempt === 1
             ? "Préparation du modèle " + config.label + "…"
-            : "Nouvel essai du chargement du modèle…"
+            : "Nouvelle tentative de préparation du modèle…"
         });
+
         generator = await pipeline(config.task, config.id, {
+          ...(config.options || {}),
           progress_callback: onProgress
         });
+
         currentModelKey = modelKey;
-        send("ready", { model: config.label });
-        return generator;
+        send("ready", { model: config.label, modelKey, family: config.family });
+        return { generator, TextStreamer };
       } catch (error) {
         generator = null;
         currentModelKey = null;
         lastError = error;
+
         if (attempt < MODEL_LOAD_RETRIES) {
-          send("retry", {
+          send("load-retry", {
             attempt: attempt + 1,
             maxAttempts: MODEL_LOAD_RETRIES,
-            message: "Une tentative a échoué. Le moteur va réessayer ; les fichiers déjà terminés et mis en cache pourront être réutilisés."
+            reason: error?.message || String(error)
           });
-          await sleep(1000 * attempt);
+          await sleep(900 * attempt);
         }
       }
     }
+
     throw lastError || new Error("Le modèle n’a pas pu être chargé.");
   })();
 
   try {
-    return await loadingPromise;
+    const loaded = await loadingPromise;
+    return loaded.generator;
   } finally {
     loadingPromise = null;
   }
 }
 
-function buildT5Prompt(message, history) {
-  const previous = (Array.isArray(history) ? history : []).slice(-6).map((item) => {
-    return (item.role === "user" ? "Élève : " : "Assistant : ") + String(item.content || "").slice(0, 500);
-  }).join("\n");
+function buildT5Prompt(message, history, responseLength) {
+  const previous = (Array.isArray(history) ? history : [])
+    .slice(-6)
+    .map((item) => {
+      const role = item.role === "assistant" ? "Assistant" : "Élève";
+      return role + " : " + String(item.content || "").slice(0, 360);
+    })
+    .join("\n");
+
+  const lengthInstruction = responseLength === "short"
+    ? "Réponds en quelques phrases."
+    : responseLength === "detailed"
+      ? "Donne une explication progressive, avec les étapes et un exemple si utile, sans répéter."
+      : "Réponds de façon claire et structurée, avec un exemple si utile.";
 
   return [
-    "Tu es un assistant pédagogique francophone pour une personne qui apprend Python, l'intelligence artificielle et le développement.",
-    "Réponds en français simple, avec des explications exactes, courtes et structurées. Décompose les étapes si c'est utile.",
-    "N'invente pas de faits. Signale clairement tes incertitudes.",
-    "Historique récent :",
-    previous || "Aucun échange précédent.",
-    "Nouvelle question :",
-    String(message || "").slice(0, 1200),
-    "Réponse en français :"
+    "Tu es l’assistant pédagogique d’Académique.",
+    "Tu aides un élève francophone à apprendre Python, la programmation, les mathématiques et les notions d’intelligence artificielle.",
+    "Écris en français simple. Sois exact, patient et méthodique.",
+    lengthInstruction,
+    "Pour une question de code, explique l’idée puis donne un petit exemple exécutable.",
+    "Pour un calcul, détaille les étapes et vérifie le résultat.",
+    "N’invente pas de faits, de résultats de test ou de sources. Dis quand tu n’es pas certain.",
+    "Historique de la discussion :",
+    previous || "Aucun historique.",
+    "Question actuelle :",
+    String(message || "").slice(0, 1600),
+    "Réponse :"
   ].join("\n\n");
 }
 
-async function buildSmolPrompt(message, history, model) {
+function buildSmolMessages(message, history) {
   const messages = [
     {
       role: "system",
-      content: "Tu es un assistant pédagogique. Réponds toujours en français simple. Aide à apprendre Python, l'intelligence artificielle, les mathématiques et le développement. Explique clairement, n'invente pas et reconnais tes incertitudes."
-    },
-    ...(Array.isArray(history) ? history.slice(-6) : []).map((item) => ({
-      role: item.role === "assistant" ? "assistant" : "user",
-      content: String(item.content || "").slice(0, 500)
-    })),
-    { role: "user", content: String(message || "").slice(0, 1200) }
+      content: "Tu es NOVA, l’assistant pédagogique local d’Académique. Tu aides en français à apprendre Python, la programmation, les mathématiques et les bases de l’intelligence artificielle. Réponds dans la langue de l’élève, avec des phrases claires et des étapes simples. Pour le code, donne un exemple court et explique comment l’exécuter. Pour les calculs, montre les étapes. Ne prétends jamais avoir exécuté du code ou consulté Internet. Si tu ne sais pas, reconnais-le."
+    }
   ];
 
-  try {
-    const tokenizer = model.tokenizer;
-    if (tokenizer && typeof tokenizer.apply_chat_template === "function") {
-      return await tokenizer.apply_chat_template(messages, {
-        tokenize: false,
-        add_generation_prompt: true
-      });
-    }
-  } catch (error) {}
+  for (const item of (Array.isArray(history) ? history.slice(-6) : [])) {
+    messages.push({
+      role: item.role === "assistant" ? "assistant" : "user",
+      content: String(item.content || "").slice(0, 420)
+    });
+  }
 
-  return messages.map((item) =>
-    (item.role === "system" ? "Instruction" : item.role === "user" ? "Élève" : "Assistant") +
-    ": " + item.content
-  ).join("\n") + "\nAssistant :";
+  messages.push({
+    role: "user",
+    content: String(message || "").slice(0, 1600)
+  });
+
+  return messages;
+}
+
+function extractTextGenerationReply(result) {
+  const generated = Array.isArray(result) && result[0] ? result[0].generated_text : null;
+  if (Array.isArray(generated)) {
+    const last = generated[generated.length - 1];
+    return typeof last?.content === "string" ? last.content : "";
+  }
+  return typeof generated === "string" ? generated : "";
+}
+
+async function generateReply(data) {
+  const modelKey = String(data.modelKey || currentModelKey || "lamini-77");
+  const config = MODEL_CONFIG[modelKey];
+
+  if (!config) throw new Error("Modèle de réponse inconnu.");
+
+  const model = await loadModel(modelKey);
+  const loaded = await loadingPromise;
+  const TextStreamer = loaded?.TextStreamer;
+
+  const responseLength = ["short", "normal", "detailed"].includes(data.responseLength)
+    ? data.responseLength
+    : "normal";
+  const maxTokens = responseLength === "short" ? 72 : responseLength === "detailed" ? 180 : 120;
+
+  send("generation-start", { model: config.label });
+
+  if (config.family === "causal" && typeof TextStreamer === "function" && model.tokenizer) {
+    const messages = buildSmolMessages(String(data.message || ""), data.history);
+    const streamer = new TextStreamer(model.tokenizer, {
+      skip_prompt: true,
+      skip_special_tokens: true,
+      callback_function: (piece) => {
+        if (piece) send("token", { text: piece });
+      }
+    });
+
+    const result = await model(messages, {
+      max_new_tokens: maxTokens,
+      do_sample: false,
+      repetition_penalty: 1.12,
+      streamer
+    });
+
+    const finalText = extractTextGenerationReply(result).trim();
+    send("reply", { text: finalText, streamed: true });
+    return;
+  }
+
+  const prompt = buildT5Prompt(
+    String(data.message || ""),
+    data.history,
+    responseLength
+  );
+  const result = await model(prompt, {
+    max_new_tokens: maxTokens,
+    do_sample: false,
+    repetition_penalty: 1.12
+  });
+
+  const finalText = Array.isArray(result) && result[0]
+    ? String(result[0].generated_text || "")
+    : "";
+  send("reply", { text: finalText.trim(), streamed: false });
 }
 
 self.addEventListener("message", async (event) => {
@@ -218,8 +375,8 @@ self.addEventListener("message", async (event) => {
       await loadModel(String(data.modelKey || "lamini-77"));
     } catch (error) {
       send("load-error", {
-        message: (error && error.message ? error.message : String(error)) +
-          " Le chargement a été essayé plusieurs fois. Vérifie la connexion, l’espace libre et réessaie."
+        message: (error?.message || String(error)) +
+          " Vérifie la connexion, le stockage disponible et la compatibilité de l’appareil, puis réessaie."
       });
     }
     return;
@@ -227,25 +384,11 @@ self.addEventListener("message", async (event) => {
 
   if (data.type === "generate") {
     try {
-      const modelKey = String(data.modelKey || currentModelKey || "lamini-77");
-      const model = await loadModel(modelKey);
-      const config = MODEL_CONFIG[modelKey];
-      const prompt = config.task === "text-generation"
-        ? await buildSmolPrompt(String(data.message || ""), data.history, model)
-        : buildT5Prompt(String(data.message || ""), data.history);
-      const result = await model(prompt, {
-        max_new_tokens: config.task === "text-generation" ? 144 : 120,
-        do_sample: false,
-        repetition_penalty: 1.1,
-        return_full_text: false
-      });
-      let reply = Array.isArray(result) && result[0]
-        ? String(result[0].generated_text || result[0].text || "")
-        : "";
-      if (reply.startsWith(prompt)) reply = reply.slice(prompt.length);
-      send("reply", { text: reply.trim() });
+      await generateReply(data);
     } catch (error) {
-      send("error", { message: error && error.message ? error.message : String(error) });
+      send("generation-error", {
+        message: error?.message || String(error)
+      });
     }
   }
 });
