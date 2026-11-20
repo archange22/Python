@@ -380,7 +380,7 @@ function renderAbout() {
     '<section class="about-card"><span class="about-card-icon">◈</span><div class="about-card-copy"><span class="eyebrow">FONCTIONNEMENT</span><h2>Une application installable</h2><p>Académique fonctionne comme une PWA. Les contenus déjà mis en cache peuvent être consultés hors connexion. Aucun compte n’est nécessaire dans cette version.</p></div></section>' +
     '<section class="panel support-apps-panel"><div class="panel-title-row"><div><span class="eyebrow">SUPPORT & OUTILS</span><h2>Besoin d’un autre outil ?</h2><p class="panel-subtitle">Retrouve les deux applications complémentaires d’Académique.</p></div></div>' +
     '<div class="support-app-links"><a href="./apps/python-console-3/index.html"><span class="support-app-symbol">⌘</span><span><strong>Console Python 3</strong><small>Programmer, même hors connexion après initialisation</small></span><b>↗</b></a>' +
-    '<a href="./apps/chat-ia/index.html"><span class="support-app-symbol">✦</span><span><strong>Chat IA</strong><small>Assistant pédagogique avec modèle local</small></span><b>↗</b></a></div></section>' +
+    '<a href="./apps/chat-ia/index.html"><span class="support-app-symbol">✦</span><span><strong>SUN</strong><small>Assistant avec recherche dans les cours</small></span><b>↗</b></a></div></section>' +
     '<p class="about-legal">© ' + new Date().getFullYear() + ' Académique. Les progrès, favoris et notes sont conservés localement sur cet appareil. Cette version ne fournit pas encore de fichier APK indépendant.</p></section>';
   setActiveNavigation("");
 }
