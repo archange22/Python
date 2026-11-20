@@ -149,6 +149,21 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(237,114,47,.38);
 .bottom-nav-link.active { color: var(--orange-dark); }
 .nav-icon { font-size: 20px; line-height: 1.2; }
 
+
+.reader-mode-label { margin: 10px 0 6px; color: var(--orange-dark); font-size: 10px; font-weight: 950; letter-spacing: .08em; }
+.reader-frame { height: min(82vh, 980px); min-height: 560px; border-radius: 16px; }
+.native-pdf-panel { margin: 14px 0; padding: 22px; border: 1px solid #f0dac9; border-radius: 18px; background: linear-gradient(120deg,#fff,#fff5ed); box-shadow: var(--shadow); }
+.native-pdf-panel h2 { margin: 6px 0; font-size: 21px; font-weight: 950; }
+.native-pdf-panel p { max-width: 630px; color: var(--muted); font-size: 12px; line-height: 1.7; }
+.native-pdf-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.native-pdf-actions > * { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.reader-help { color: var(--muted); font-size: 11px; line-height: 1.6; }
+@media (max-width: 480px) {
+  .reader-frame { height: 75vh; min-height: 480px; }
+  .native-pdf-panel { padding: 17px 14px; }
+  .native-pdf-actions > * { flex: 1; }
+}
+
 @media (max-width: 700px) {
   .app-view { width: calc(100% - 30px); padding-top: 22px; }
   .subject-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
