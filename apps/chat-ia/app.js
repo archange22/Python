@@ -49,12 +49,14 @@ function saveStats() {
 
 function renderStats() {
   const current = stats[selectedModel] || { attempts: 0, successes: 0, failures: 0 };
-  const failureRate = current.attempts
-    ? Math.round((current.failures / current.attempts) * 100)
+  const completed = Math.max(0, current.attempts - (current.cancellations || 0));
+  const failureRate = completed
+    ? Math.round((current.failures / completed) * 100)
     : 0;
   $("#downloadStats").textContent = current.attempts
     ? "Sur cet appareil : " + current.successes + " réussi(s), " + current.failures +
-      " échec(s) sur " + current.attempts + " essai(s) · " + failureRate + " % d’échec"
+      " échec(s), " + (current.cancellations || 0) + " annulation(s) · " + failureRate +
+      " % d’échec parmi les chargements terminés"
     : "Aucun essai enregistré sur cet appareil. Ces statistiques ne sont pas envoyées.";
 }
 
@@ -73,8 +75,15 @@ function recordSuccess() {
 }
 
 function recordFailure() {
-  const current = stats[selectedModel] || { attempts: 0, successes: 0, failures: 0 };
+  const current = stats[selectedModel] || { attempts: 0, successes: 0, failures: 0, cancellations: 0 };
   current.failures += 1;
+  stats[selectedModel] = current;
+  saveStats();
+}
+
+function recordCancellation() {
+  const current = stats[selectedModel] || { attempts: 0, successes: 0, failures: 0, cancellations: 0 };
+  current.cancellations = (current.cancellations || 0) + 1;
   stats[selectedModel] = current;
   saveStats();
 }
@@ -316,6 +325,7 @@ function handleWorkerMessage(event) {
 
 function cancelDownload() {
   if (!loading) return;
+  recordCancellation();
   resetWorker();
   setStatus("Téléchargement annulé", "error");
   $("#modelHint").textContent = "Le chargement a été arrêté. Les fichiers déjà terminés peuvent rester en cache ; relance pour continuer.";
@@ -326,6 +336,7 @@ function cancelDownload() {
 function changeModel() {
   const next = $("#modelSelect").value;
   if (!MODELS[next] || next === selectedModel) return;
+  if (loading) recordCancellation();
   resetWorker();
   selectedModel = next;
   try { localStorage.setItem(SELECTED_MODEL_KEY, selectedModel); } catch (error) {}
@@ -340,6 +351,7 @@ function changeModel() {
 async function clearModelCache() {
   const confirmed = window.confirm("Supprimer les modèles et fichiers IA mis en cache dans ce navigateur ? Les prochains chargements devront retélécharger les fichiers.");
   if (!confirmed) return;
+  if (loading) recordCancellation();
   resetWorker();
   try {
     const keys = await caches.keys();
