@@ -53,3 +53,8 @@ Académique regroupe trois applications distinctes :
 - En cas de coupure, les fichiers entièrement téléchargés et mis en cache sont réutilisés au prochain essai. Le navigateur ne reprend pas nécessairement au dernier octet le fichier dont le téléchargement a été interrompu.
 
 Les deux applications complémentaires possèdent leurs propres pages, manifestes et Service Workers. Elles ne partagent pas leurs données de conversation ou de code avec l’application Académique.
+
+
+### Chat IA : robustesse du chargement
+
+Le Chat IA utilise Transformers.js 4.3.2. Le chargement interroge le registre des modèles pour connaître les fichiers nécessaires, leur taille totale et leur présence dans le cache lorsque ces métadonnées sont accessibles. Le téléchargement applique trois tentatives sur les erreurs réseau temporaires, puis une nouvelle tentative de chargement du modèle. Les statistiques affichées sont strictement locales à l'appareil : elles ne sont pas envoyées à un serveur et ne mesurent donc pas le taux global d'échec.
