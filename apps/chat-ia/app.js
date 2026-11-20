@@ -270,7 +270,7 @@ async function ensureWorker() {
   }
 }
 
-function handleWorkerMessage(event) {
+async function handleWorkerMessage(event) {
   const data = event.data || {};
   if (data.type === "status") {
     setStatus(data.message || "Chargement du modèle…");
