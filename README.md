@@ -50,15 +50,15 @@ Académique regroupe trois applications distinctes :
 
 - **Académique** : formations et bibliothèque de cours.
 - **Console Python 3** (apps/python-console-3/) : interpréteur CPython avec Pyodide/WebAssembly. Une première initialisation en ligne est nécessaire pour mettre le moteur en cache ; les scripts utilisant la bibliothèque standard peuvent ensuite être exécutés hors connexion.
-- **Chat IA** (apps/chat-ia/) : assistant local expérimental avec trois modèles : LaMini-Flan-T5-77M, LaMini-Flan-T5-248M et SmolLM2-135M-Instruct au format ONNX. Le gestionnaire affiche la progression globale et par fichier, les octets transférés, la vitesse et une estimation du temps restant. Il gère une file ordonnée de modèles, les télécharge séquentiellement, permet pause et reprise, et conserve localement la file si l’application est fermée. La file ne continue pas en arrière-plan : il faut rouvrir l’application et relancer le traitement. SmolLM2 affiche les réponses progressivement ; les longueurs courte, normale et détaillée sont disponibles.
+- **SUN** (apps/chat-ia/) : assistant local expérimental avec trois modèles : LaMini-Flan-T5-77M, LaMini-Flan-T5-248M et SmolLM2-135M-Instruct au format ONNX. Le gestionnaire affiche la progression globale et par fichier, les octets transférés, la vitesse et une estimation du temps restant. Il gère une file ordonnée de modèles, les télécharge séquentiellement, permet pause et reprise, et conserve localement la file si l’application est fermée. La file ne continue pas en arrière-plan : il faut rouvrir l’application et relancer le traitement. SmolLM2 affiche les réponses progressivement ; les longueurs courte, normale et détaillée sont disponibles.
 - Les statistiques de téléchargement sont conservées localement sur l'appareil et ne sont pas envoyées à un serveur. Elles servent au diagnostic local et ne mesurent pas le taux d'échec global.
 - En cas de coupure, les fichiers entièrement téléchargés et mis en cache peuvent être réutilisés. Le navigateur ne reprend pas nécessairement au dernier octet un fichier dont le transfert a été interrompu.
 
-Les applications complémentaires possèdent leurs propres pages, manifestes et Service Workers. Les conversations et les scripts ne sont pas synchronisés entre les appareils.
+Les applications complémentaires possèdent leurs propres pages, manifestes et Service Workers. Les conversations et les scripts ne sont pas synchronisés entre les appareils. La recherche documentaire de SUN conserve localement un index des leçons déjà téléchargées ; le premier chargement des sources nécessite une connexion.
 
-### Chat IA : robustesse et suivi
+### SUN : conversation, recherche documentaire et robustesse
 
-Le Chat IA utilise Transformers.js 4.3.2 et le registre de modèles pour lister les fichiers requis, leurs tailles et leur état de cache lorsque les métadonnées sont disponibles. Les erreurs réseau temporaires déclenchent des tentatives automatiques. Les réponses restent celles de modèles compacts : elles peuvent être inexactes ou moins fiables en français, notamment avec SmolLM2.
+Le SUN utilise Transformers.js 4.3.2 et le registre de modèles pour lister les fichiers requis, leurs tailles et leur état de cache lorsque les métadonnées sont disponibles. Les erreurs réseau temporaires déclenchent des tentatives automatiques. Les réponses restent celles de modèles compacts : elles peuvent être inexactes ou moins fiables en français, notamment avec SmolLM2.
 
 
 ## Leçons quotidiennes et bibliothèque
