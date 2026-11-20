@@ -28,9 +28,15 @@ https://archange22.github.io/Python/
 
 Sur Android, l'application peut être installée depuis le navigateur lorsqu'il propose l'option d'installation. Cette version est une PWA : elle n'est pas encore un paquet Android AAB prêt à envoyer sur Google Play. La publication Play Store nécessitera une étape de packaging Android, de signature et de vérification des exigences Google.
 
-## Documents PDF
+## Leçon 01 — PythonSchool
 
-Les documents existants dans le dossier pdf sont conservés. Dans cette version, les PDF Python 02, 03 et 04 sont reliés à l'interface. Le fichier source de la leçon 01 est présent en Markdown, mais le PDF correspondant n'est pas actuellement dans le dépôt. Les cours IA et Discord sont prévus dans le catalogue, mais leurs PDF restent à produire.
+La première leçon Python est disponible dans l'application, avec une lecture intégrée adaptée aux téléphones. Elle explique les bases de la programmation, la prise en main de Pydroid 3, `print()`, le texte, les nombres, les commentaires et les erreurs fréquentes. Elle comprend 10 exercices progressifs, leurs corrigés, un mini-projet et une validation des acquis.
+
+- Lecteur intégré : `pdf/lecon-01-reader.html`
+- Contenu pédagogique source compressé : `pdf/lecon-01-content.md.gz.b64`
+- Version PDF de 41 pages : fournie séparément ; le fichier PDF binaire n'est pas encore stocké dans ce dépôt.
+
+Les leçons suivantes restent à préparer et à relier à la bibliothèque. Les cours IA et Discord sont également prévus dans le catalogue, mais leurs documents restent à produire.
 
 ## Données et confidentialité
 
