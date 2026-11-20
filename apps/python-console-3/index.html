@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#09111f">
+  <meta name="description" content="Console Python 3 — exécute du vrai code Python dans ton navigateur, puis continue hors connexion.">
+  <meta name="color-scheme" content="dark light">
+  <title>Console Python 3 — Académique</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../../index.html#applications">
+      <span class="brand-icon">⌘</span>
+      <span><strong>Console Python 3</strong><small>APPLICATION INDÉPENDANTE</small></span>
+    </a>
+    <a class="back-link" href="../../index.html#applications">← Académique</a>
+  </header>
+
+  <main class="page">
+    <section class="intro">
+      <span class="eyebrow">ENVIRONNEMENT PYTHON</span>
+      <h1>Ton code.<br><span>Ton terminal.</span></h1>
+      <p>Écris du Python, lance ton programme et consulte le résultat ici. Le moteur s’exécute sur ton appareil, sans serveur Python distant.</p>
+      <div class="status-line"><span class="status-dot" id="statusDot"></span><span id="runtimeStatus">Préparation de la console…</span></div>
+    </section>
+
+    <section class="workspace" aria-label="Éditeur et terminal Python">
+      <div class="panel editor-panel">
+        <div class="panel-head">
+          <div><span class="panel-kicker">ÉDITEUR</span><h2>main.py</h2></div>
+          <div class="editor-actions">
+            <button class="small-button" id="sampleButton" type="button">Exemple</button>
+            <button class="small-button" id="resetButton" type="button">Réinitialiser</button>
+          </div>
+        </div>
+        <textarea id="codeEditor" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Code Python" wrap="off">nom = input("Comment tu t'appelles ? ")
+print("Bonjour", nom)
+print("Bienvenue dans Python 3 !")
+
+for nombre in range(1, 4):
+    print("Étape", nombre)</textarea>
+        <div class="editor-foot"><span>Python 3 · Bibliothèque standard</span><span id="codeLength">0 caractères</span></div>
+        <div class="run-actions">
+          <button class="run-button" id="runButton" type="button" disabled><span>▶</span> Exécuter</button>
+          <button class="stop-button" id="stopButton" type="button" disabled>■ Arrêter</button>
+          <button class="small-button" id="prepareButton" type="button">Préparer hors ligne</button>
+        </div>
+      </div>
+
+      <div class="panel terminal-panel">
+        <div class="panel-head">
+          <div><span class="panel-kicker">SORTIE DU PROGRAMME</span><h2>Terminal</h2></div>
+          <button class="small-button" id="clearButton" type="button">Effacer</button>
+        </div>
+        <div class="terminal-screen" id="terminalOutput" role="log" aria-live="polite">
+          <div class="terminal-welcome">Académique Python Console<br>Le moteur Python se prépare…</div>
+        </div>
+        <form class="stdin-form" id="stdinForm" hidden>
+          <label id="stdinPrompt" for="stdinValue">Entrée demandée par Python</label>
+          <div class="stdin-controls">
+            <input id="stdinValue" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
+            <button type="submit">Envoyer</button>
+          </div>
+        </form>
+        <div class="terminal-foot"><span><i class="online-dot"></i> Exécution locale</span><span id="executionState">En attente</span></div>
+      </div>
+    </section>
+
+    <section class="offline-note">
+      <span class="offline-icon">⌁</span>
+      <div><strong>Mode hors connexion</strong><p>Connecte-toi une première fois et attends le statut « Python prêt ». Le moteur WebAssembly sera alors mis en cache. Ensuite, les scripts utilisant la bibliothèque standard pourront être exécutés sans Internet. Les bibliothèques supplémentaires doivent être téléchargées séparément. Dans cette version, utilise input() dans le script principal (pas encore à l’intérieur de fonctions synchrones).</p></div>
+    </section>
+    <footer>Console Python 3 · Une application séparée d’Académique</footer>
+  </main>
+</body>
+</html>

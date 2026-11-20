@@ -40,3 +40,14 @@ archangekouaho@gmail.com
 ## Site
 
 https://archange22.github.io/Python/
+
+
+## Applications complémentaires
+
+Académique regroupe trois applications distinctes :
+
+- **Académique** : formations et bibliothèque de cours.
+- **Console Python 3** (apps/python-console-3/) : interpréteur CPython avec Pyodide/WebAssembly. Une première initialisation en ligne est nécessaire pour mettre le moteur en cache ; les scripts utilisant la bibliothèque standard peuvent ensuite être exécutés hors connexion.
+- **Chat IA** (apps/chat-ia/) : assistant local expérimental reposant sur un modèle compact exécuté dans le navigateur. Le moteur et les poids du modèle doivent être téléchargés une première fois. Les réponses sont moins avancées que celles d’un grand modèle cloud.
+
+Les deux applications complémentaires possèdent leurs propres pages, manifestes et Service Workers. Elles ne partagent pas leurs données de conversation ou de code avec l’application Académique.

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="Chat IA — assistant pédagogique local d’Académique.">
+  <meta name="color-scheme" content="dark light">
+  <title>Chat IA — Académique</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../../index.html#applications">
+      <span class="brand-icon">✦</span>
+      <span><strong>Chat IA</strong><small>APPLICATION INDÉPENDANTE</small></span>
+    </a>
+    <a class="back-link" href="../../index.html#applications">← Académique</a>
+  </header>
+
+  <main class="chat-page">
+    <section class="chat-hero">
+      <span class="eyebrow">ASSISTANT PÉDAGOGIQUE LOCAL</span>
+      <h1>Une question ?<br><span>On la travaille ensemble.</span></h1>
+      <p>Un petit modèle d’intelligence artificielle s’exécute directement dans ton navigateur. Aucune clé API ni compte n’est nécessaire.</p>
+    </section>
+
+    <section class="model-card">
+      <div class="model-icon">✦</div>
+      <div class="model-copy">
+        <span class="eyebrow">MOTEUR LOCAL EXPÉRIMENTAL · 77 M DE PARAMÈTRES</span>
+        <strong id="modelStatus">Modèle non chargé</strong>
+        <p id="modelHint">Le premier chargement nécessite Internet et environ 125 Mo de fichiers de modèle. Une fois mis en cache, le chat peut fonctionner hors connexion.</p>
+        <div class="progress-track"><div id="modelProgress" class="progress-fill"></div></div>
+      </div>
+      <button id="loadModelButton" class="load-button" type="button">Charger l’IA</button>
+    </section>
+
+    <section class="chat-shell">
+      <div class="chat-toolbar">
+        <div><span class="online-indicator" id="statusDot"></span><span id="statusLabel">En attente du moteur</span></div>
+        <button class="clear-button" id="clearButton" type="button">Nouvelle discussion</button>
+      </div>
+
+      <div class="messages" id="messages" role="log" aria-live="polite">
+        <article class="message assistant">
+          <span class="message-avatar">✦</span>
+          <div class="message-bubble">
+            <strong>Assistant local</strong>
+            <p>Bonjour. Je peux t’aider à revoir une notion de Python, comprendre un concept d’IA ou organiser tes idées de projet. Charge d’abord le modèle pour commencer.</p>
+          </div>
+        </article>
+      </div>
+
+      <form class="composer" id="chatForm">
+        <textarea id="messageInput" rows="1" maxlength="1200" placeholder="Écris ta question…" aria-label="Ton message" disabled></textarea>
+        <button id="sendButton" type="submit" disabled aria-label="Envoyer">↑</button>
+      </form>
+      <div class="composer-foot"><span>Entrée pour envoyer · Maj + Entrée pour un retour à la ligne</span><span id="counter">0 / 1200</span></div>
+    </section>
+
+    <section class="model-warning">
+      <strong>À connaître avant de l’utiliser</strong>
+      <p>Ce modèle compact est expérimental : ses réponses peuvent être courtes, lentes ou inexactes, notamment en français. Il est moins performant qu’un grand modèle cloud. Vérifie les informations importantes. Tes messages restent dans le stockage local de ce navigateur ; ils ne sont pas envoyés à un serveur de conversation.</p>
+    </section>
+
+    <footer>Chat IA · Application séparée d’Académique</footer>
+  </main>
+</body>
+</html>
