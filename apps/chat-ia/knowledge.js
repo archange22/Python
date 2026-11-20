@@ -1,4 +1,4 @@
-const CACHE_KEY = "sun-course-index-v1";
+const CACHE_KEY = "sun-course-index-v2";
 const CACHE_MAX_AGE = 6 * 60 * 60 * 1000;
 const CATALOG_URL = new URL("../../courses/catalog.json", import.meta.url);
 
@@ -24,27 +24,33 @@ const STOP_WORDS = new Set([
   "notre", "nous", "on", "ou", "par", "pas", "pour", "que", "qui", "sa", "se",
   "ses", "son", "sur", "ta", "te", "tes", "toi", "ton", "tu", "un", "une",
   "vos", "votre", "vous", "y", "c", "estce", "quoi", "comment", "faire",
-  "peux", "peut", "dans", "lecon", "cours", "pdf"
+  "peux", "peut", "lecon", "cours", "pdf", "dans"
 ]);
 
 const SYNONYMS = {
-  afficher: ["print", "affichage", "console", "montrer"],
-  print: ["afficher", "affichage", "console"],
-  variable: ["variables", "valeur", "stockage", "donnee"],
-  variables: ["variable", "valeur", "stockage"],
-  boucle: ["for", "while", "repeter", "iteration"],
-  fonction: ["def", "procedure", "parametre"],
-  python: ["py", "programmation", "code"],
-  code: ["programmation", "python", "programme"],
-  discord: ["serveur", "salon", "bot", "role"],
-  bot: ["discord", "robot", "automatisation"],
+  afficher: ["print", "affichage", "console", "montrer", "ecrire"],
+  print: ["afficher", "affichage", "console", "montrer"],
+  variable: ["variables", "valeur", "stockage", "donnee", "nom"],
+  variables: ["variable", "valeur", "stockage", "donnee"],
+  boucle: ["for", "while", "repeter", "iteration", "repetition"],
+  fonction: ["def", "procedure", "parametre", "return"],
+  python: ["py", "programmation", "code", "programme"],
+  code: ["programmation", "python", "programme", "instruction"],
+  discord: ["serveur", "salon", "bot", "role", "permission"],
+  bot: ["discord", "robot", "automatisation", "commande"],
   ia: ["intelligence", "artificielle", "modele", "apprentissage"],
-  modele: ["ia", "intelligence", "artificielle"],
-  calcul: ["addition", "soustraction", "multiplication", "division"],
-  nombre: ["entier", "decimal", "numerique"],
-  texte: ["chaine", "caractere", "string"],
-  erreur: ["bug", "exception", "syntaxe", "corriger"],
-  web: ["html", "css", "javascript", "page", "site"]
+  modele: ["ia", "intelligence", "artificielle", "reseau"],
+  calcul: ["addition", "soustraction", "multiplication", "division", "operation"],
+  nombre: ["entier", "decimal", "numerique", "int", "float"],
+  texte: ["chaine", "caractere", "string", "str"],
+  erreur: ["bug", "exception", "syntaxe", "corriger", "probleme"],
+  web: ["html", "css", "javascript", "page", "site"],
+  pdf: ["document", "cours", "lecon", "fichier"],
+  addition: ["somme", "plus", "calcul"],
+  soustraction: ["difference", "moins", "calcul"],
+  image: ["photo", "illustration", "visuel"],
+  liste: ["tableau", "list", "elements"],
+  dictionnaire: ["dict", "cle", "valeur"]
 };
 
 function normalize(value) {
@@ -68,7 +74,9 @@ export function tokenize(value) {
 }
 
 function lessonNumberFrom(value) {
-  const match = String(value || "").match(/(?:leçon|lesson|lecon)[^\d]{0,8}0*(\d{1,3})/i);
+  const match = String(value || "").match(
+    /(?:leçon|lesson|lecon)(?:\s+(?:numéro|numero|n[°.]?))?[^0-9]{0,8}0*(\d{1,3})/i
+  );
   return match ? String(Number(match[1])).padStart(2, "0") : null;
 }
 
@@ -100,7 +108,7 @@ function markdownSections(markdown, fallbackTitle) {
   return sections;
 }
 
-function splitSection(section, maxChars = 850) {
+function splitSection(section, maxChars = 760) {
   const paragraphs = section.body.split(/\n\s*\n/).map((part) => part.trim()).filter(Boolean);
   const chunks = [];
   let current = "";
@@ -145,8 +153,7 @@ export function buildSearchIndex(sources) {
     };
     validSources.push(metadata);
 
-    const sections = markdownSections(source.content, metadata.title);
-    for (const section of sections) {
+    for (const section of markdownSections(source.content, metadata.title)) {
       for (const text of splitSection(section)) {
         const tokens = tokenize(
           metadata.subject + " " + metadata.title + " " + section.heading + " " + text
@@ -175,11 +182,12 @@ export function buildSearchIndex(sources) {
   }
 
   return {
-    version: 1,
+    version: 2,
     savedAt: Date.now(),
     sources: validSources,
     chunks,
     documentFrequency,
+    vocabulary: Object.keys(documentFrequency),
     averageLength: chunks.length ? totalLength / chunks.length : 0
   };
 }
@@ -207,7 +215,7 @@ function makeCatalogSources(catalog) {
 function readCachedIndex() {
   try {
     const saved = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
-    if (saved?.version === 1 && Array.isArray(saved.chunks)) return saved;
+    if (saved?.version === 2 && Array.isArray(saved.chunks)) return saved;
   } catch (error) {}
   return null;
 }
@@ -216,7 +224,7 @@ function saveCachedIndex(index) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(index));
   } catch (error) {
-    // The chat and model caches must remain usable if storage is full.
+    // A full browser quota must not prevent chat or model usage.
   }
 }
 
@@ -236,9 +244,7 @@ export async function loadKnowledgeIndex(options = {}) {
       ...LEGACY_PYTHON_LESSONS
     ];
     const unique = new Map();
-    for (const source of definitions) {
-      unique.set(source.id, source);
-    }
+    for (const source of definitions) unique.set(source.id, source);
 
     const results = await Promise.allSettled(
       [...unique.values()].map(async (source) => {
@@ -248,9 +254,7 @@ export async function loadKnowledgeIndex(options = {}) {
         const heading = content.match(/^#\s+(.+)$/m)?.[1]?.trim();
         return {
           ...source,
-          title: source.id.startsWith("python-")
-            ? (heading || source.title)
-            : source.title,
+          title: source.id.startsWith("python-") ? (heading || source.title) : source.title,
           content
         };
       })
@@ -270,35 +274,94 @@ export async function loadKnowledgeIndex(options = {}) {
   }
 }
 
+function editDistanceAtMostOne(left, right) {
+  if (left === right) return true;
+  if (Math.abs(left.length - right.length) > 1) return false;
+  if (left.length === right.length) {
+    const differences = [];
+    for (let i = 0; i < left.length; i += 1) {
+      if (left[i] !== right[i]) differences.push(i);
+      if (differences.length > 2) return false;
+    }
+    if (differences.length === 1) return true;
+    return differences.length === 2 &&
+      differences[1] === differences[0] + 1 &&
+      left[differences[0]] === right[differences[1]] &&
+      left[differences[1]] === right[differences[0]];
+  }
+
+  const shorter = left.length < right.length ? left : right;
+  const longer = left.length < right.length ? right : left;
+  let i = 0;
+  let j = 0;
+  let skipped = false;
+  while (i < shorter.length && j < longer.length) {
+    if (shorter[i] === longer[j]) {
+      i += 1;
+      j += 1;
+    } else if (skipped) {
+      return false;
+    } else {
+      skipped = true;
+      j += 1;
+    }
+  }
+  return true;
+}
+
+function expandQueryWeights(queryTokens, index) {
+  const weights = new Map();
+  const vocabulary = Array.isArray(index.vocabulary) ? index.vocabulary : [];
+  for (const token of queryTokens) {
+    weights.set(token, Math.max(weights.get(token) || 0, 1));
+    for (const synonym of SYNONYMS[token] || []) {
+      if (!weights.has(synonym)) weights.set(synonym, 0.52);
+    }
+
+    const known = Boolean(index.documentFrequency?.[token]) ||
+      Boolean(SYNONYMS[token]);
+    if (!known && token.length >= 5) {
+      let found = 0;
+      for (const candidate of vocabulary) {
+        if (Math.abs(candidate.length - token.length) > 1) continue;
+        if (editDistanceAtMostOne(token, candidate)) {
+          weights.set(candidate, Math.max(weights.get(candidate) || 0, 0.42));
+          found += 1;
+          if (found >= 3) break;
+        }
+      }
+    }
+  }
+  return weights;
+}
+
 export function searchKnowledge(index, query, limit = 3) {
   if (!index || !Array.isArray(index.chunks) || !index.chunks.length) return [];
 
   const queryTokens = tokenize(query);
-  const explicitLesson = normalize(query).match(/\b(?:lecon|lesson)\s+(\d{1,2})\b/);
+  const explicitLesson = normalize(query).match(
+    /\b(?:lecon|lesson)(?:\s+(?:numero|n))?\s+(\d{1,2})\b/
+  );
   const requestedLesson = explicitLesson
     ? String(Number(explicitLesson[1])).padStart(2, "0")
     : null;
 
-  const weights = new Map();
-  for (const token of queryTokens) {
-    weights.set(token, Math.max(weights.get(token) || 0, 1));
-    for (const synonym of SYNONYMS[token] || []) {
-      if (!weights.has(synonym)) weights.set(synonym, 0.48);
-    }
-  }
-
+  const weights = expandQueryWeights(queryTokens, index);
   const resultsBySource = new Map();
   const total = index.chunks.length;
   const averageLength = Math.max(1, Number(index.averageLength || 1));
   const k1 = 1.35;
   const b = 0.72;
+  const normalizedQuery = normalize(query);
 
   for (const chunk of index.chunks) {
     if (requestedLesson && chunk.lessonNumber !== requestedLesson) continue;
 
     let score = 0;
     for (const [term, weight] of weights) {
-      const frequency = chunk.tokens.reduce((count, token) => count + (token === term ? 1 : 0), 0);
+      const frequency = chunk.tokens.reduce(
+        (count, token) => count + (token === term ? 1 : 0), 0
+      );
       if (!frequency) continue;
 
       const df = index.documentFrequency?.[term] || 0;
@@ -307,15 +370,15 @@ export function searchKnowledge(index, query, limit = 3) {
         1 - b + b * chunk.length / averageLength
       );
       score += weight * idf * (frequency * (k1 + 1)) / denominator;
-      if (chunk.titleTokens.includes(term)) score += weight * idf * 1.15;
-      if (chunk.headingTokens.includes(term)) score += weight * idf * 1.45;
+      if (chunk.titleTokens.includes(term)) score += weight * idf * 1.2;
+      if (chunk.headingTokens.includes(term)) score += weight * idf * 1.55;
     }
 
-    const normalizedQuery = normalize(query);
-    if (normalizedQuery.length > 4 && normalize(chunk.section).includes(normalizedQuery)) {
-      score += 1.2;
+    const normalizedSection = normalize(chunk.section);
+    if (normalizedQuery.length > 4 && normalizedSection.includes(normalizedQuery)) {
+      score += 1.25;
     }
-    if (!score && requestedLesson) score = 0.8;
+    if (requestedLesson && queryTokens.length === 0) score = Math.max(score, 0.8);
 
     const previous = resultsBySource.get(chunk.id);
     if (!previous || score > previous.score) {
@@ -327,7 +390,7 @@ export function searchKnowledge(index, query, limit = 3) {
         label: chunk.label,
         section: chunk.section,
         url: chunk.url,
-        text: chunk.text.slice(0, 950),
+        text: chunk.text.slice(0, 850),
         score
       });
     }
@@ -335,6 +398,6 @@ export function searchKnowledge(index, query, limit = 3) {
 
   return [...resultsBySource.values()]
     .filter((result) => result.score >= 0.55)
-    .sort((a, b) => b.score - a.score)
+    .sort((left, right) => right.score - left.score)
     .slice(0, Math.max(1, Math.min(5, limit)));
 }
