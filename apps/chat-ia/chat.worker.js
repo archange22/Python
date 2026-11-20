@@ -25,6 +25,7 @@ const MODEL_LOAD_RETRIES = 2;
 const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
 
 let generator = null;
+let TextStreamerClass = null;
 let currentModelKey = null;
 let loadingPromise = null;
 
@@ -188,13 +189,14 @@ async function loadModel(modelKey) {
   loadingPromise = (async () => {
     send("status", { message: "Initialisation de la bibliothèque IA…" });
 
-    const { pipeline, env, ModelRegistry, TextStreamer } = await import(TRANSFORMERS_URL);
+    const { pipeline, env, ModelRegistry, TextStreamer, LogLevel } = await import(TRANSFORMERS_URL);
+    TextStreamerClass = TextStreamer || null;
 
     env.useBrowserCache = true;
     env.useWasmCache = true;
     env.allowRemoteModels = true;
     env.fetch = fetchWithRetry;
-    env.logLevel = "warning";
+    if (LogLevel) env.logLevel = LogLevel.WARNING;
 
     try {
       await inspectModel(config, ModelRegistry);
@@ -318,8 +320,7 @@ async function generateReply(data) {
   if (!config) throw new Error("Modèle de réponse inconnu.");
 
   const model = await loadModel(modelKey);
-  const loaded = await loadingPromise;
-  const TextStreamer = loaded?.TextStreamer;
+  const TextStreamer = TextStreamerClass;
 
   const responseLength = ["short", "normal", "detailed"].includes(data.responseLength)
     ? data.responseLength
@@ -367,8 +368,36 @@ async function generateReply(data) {
   send("reply", { text: finalText.trim(), streamed: false });
 }
 
+async function clearModelCache(modelKey) {
+  const config = MODEL_CONFIG[modelKey];
+  if (!config) throw new Error("Modèle inconnu.");
+
+  const { ModelRegistry } = await import(TRANSFORMERS_URL);
+  const result = await ModelRegistry.clear_pipeline_cache(
+    config.task,
+    config.id,
+    config.options || {}
+  );
+  send("cache-cleared", {
+    model: config.label,
+    filesDeleted: result?.filesDeleted || 0,
+    filesCached: result?.filesCached || 0
+  });
+}
+
 self.addEventListener("message", async (event) => {
   const data = event.data || {};
+
+  if (data.type === "clear-cache") {
+    try {
+      await clearModelCache(String(data.modelKey || "lamini-77"));
+    } catch (error) {
+      send("cache-clear-error", {
+        message: error?.message || String(error)
+      });
+    }
+    return;
+  }
 
   if (data.type === "load") {
     try {
