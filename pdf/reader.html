@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fff7ef">
+<title>Lecteur Académique</title>
+<style>
+:root{--paper:#fff7ef;--ink:#451b13;--muted:#86695d;--orange:#ee6b19;--line:#f0dfd1;--card:#fff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.75 system-ui,-apple-system,"Segoe UI",sans-serif}
+.top{padding:16px max(18px,calc((100vw - 900px)/2));background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:900;letter-spacing:.08em;color:var(--orange);font-size:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+button{border:1px solid var(--line);background:#fff7ef;color:var(--ink);border-radius:10px;padding:8px 12px;font-weight:700}
+.hero{max-width:900px;margin:26px auto 18px;padding:0 22px}
+.eyebrow{font-size:11px;letter-spacing:.16em;font-weight:900;color:var(--orange)}
+h1{font-size:clamp(28px,5vw,42px);line-height:1.15;letter-spacing:-.04em;margin:8px 0}
+.subtitle{color:var(--muted);margin:0}
+.layout{max-width:900px;margin:0 auto;padding:0 22px 46px}
+.toc{border:1px solid var(--line);border-radius:16px;background:#fff;padding:16px 20px;margin:20px 0}
+.toc summary{cursor:pointer;font-weight:900}
+.toc ol{padding-left:22px;margin:12px 0 0}
+.toc a{color:#9f4b1d;text-decoration:none}
+article{background:#fff;border:1px solid var(--line);border-radius:18px;padding:clamp(18px,4vw,34px);box-shadow:0 3px 14px #643a190b}
+h2{font-size:24px;line-height:1.3;margin:34px 0 12px;padding-top:8px;border-top:1px solid #f5eee8}
+h3{font-size:19px;line-height:1.35;margin:25px 0 8px}
+h4{font-size:16px;margin:20px 0 6px}
+p{margin:10px 0}
+ul,ol{padding-left:25px}
+li{margin:5px 0}
+strong{font-weight:800}
+blockquote{margin:18px 0;padding:13px 17px;background:#fff5ec;border-left:4px solid var(--orange);border-radius:0 10px 10px 0}
+pre{overflow:auto;background:#241f1d;color:#fff4e9;padding:16px;border-radius:12px;line-height:1.55;font-size:14px}
+code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+p code,li code,td code{background:#fff0e4;color:#a94d15;padding:2px 5px;border-radius:5px;font-size:.92em}
+table{width:100%;border-collapse:collapse;display:block;overflow-x:auto;margin:16px 0}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:#fff3e9}
+hr{border:0;border-top:1px solid var(--line);margin:25px 0}
+.footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
+#status{padding:20px;color:var(--muted)}
+
+:root{--reader-size:16px}
+body{font-size:var(--reader-size)}
+body.reader-dark{--paper:#171513;--ink:#f1e7df;--muted:#b4a398;--orange:#ff9b60;--line:#3b332d;--card:#211e1b;color-scheme:dark}
+body.reader-dark .top,body.reader-dark article,body.reader-dark .toc{background:#211e1b;color:#f1e7df}
+body.reader-white{--paper:#f4f6f8;--ink:#18212b;--muted:#65717e;--orange:#d95e21;--line:#dfe4e9;--card:#fff}
+.reading-progress{position:fixed;z-index:30;top:0;left:0;width:100%;height:4px;background:transparent}
+.reading-progress span{display:block;width:0;height:100%;background:var(--orange);transition:width .1s linear}
+.reader-search{max-width:900px;margin:9px auto 0;padding:0 22px;display:flex;gap:7px;align-items:center}
+.reader-search input{flex:1;min-width:0;min-height:36px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink)}
+.reader-search span{min-width:68px;color:var(--muted);font-size:11px;text-align:center}
+.reader-search button{padding:6px 10px}
+.reader-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;color:var(--muted);font-size:11px}
+.reader-meta span{padding:4px 9px;border:1px solid var(--line);border-radius:99px;background:var(--card)}
+.copy-code{float:right;margin:0 0 6px 8px;padding:4px 8px;border:1px solid #ffffff40;border-radius:7px;background:#ffffff20;color:#fff;font-size:10px}
+pre{clear:both}
+#content mark{background:#ffe08a;color:#34220f;border-radius:3px;padding:0 2px}
+#content mark.active-match{outline:2px solid var(--orange)}
+body.reader-focus .top,body.reader-focus .reader-search,body.reader-focus .toc,body.reader-focus .reader-meta{display:none}
+body.reader-focus .layout{max-width:820px}
+body.reader-focus article{padding:clamp(22px,5vw,48px)}
+#content h2,#content h3{scroll-margin-top:85px}
+
+
+.toc-sub{margin-left:10px;list-style:circle}
+.reader-toast{position:fixed;z-index:50;left:50%;bottom:18px;transform:translate(-50%,12px);padding:9px 14px;border-radius:9px;background:#33251e;color:#fff;font-size:12px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.reader-toast.visible{opacity:1;transform:translate(-50%,0)}
+.reader-dark .reader-search input,.reader-dark .reader-search button,.reader-dark .toc{background:#211e1b;color:#f1e7df}
+.reader-dark .reader-meta span{background:#211e1b;color:#f1e7df}
+
+@media(max-width:600px){body{font-size:15px}.top{padding:12px 16px}.hero{margin-top:18px;padding:0 15px}.layout{padding:0 12px 30px}article{padding:17px;border-radius:13px}h2{font-size:21px}pre{font-size:12px;padding:12px}}
+@media print{body{background:#fff;font-size:11pt}.reading-progress,.top,.actions,.reader-search,.toc{display:none!important}.hero,.layout{max-width:none;margin:0;padding:0}article{border:0;box-shadow:none;padding:0}.footer{border-top:1px solid #ddd}}
+</style>
+</head>
+<body>
+<div class="reading-progress"><span id="progressFill"></span></div><header class="top"><span class="brand">ACADÉMIQUE · PYTHONSCHOOL</span><div class="actions"><button type="button" id="backButton">← Retour</button><button type="button" id="smaller">A−</button><button type="button" id="bigger">A+</button><button type="button" id="themeButton">Thème</button><button type="button" id="focusButton">Lecture calme</button><button type="button" id="printButton">Imprimer / PDF</button></div></header><div class="reader-search"><input id="searchInput" type="search" placeholder="Rechercher dans le cours…" aria-label="Rechercher dans le cours"><span id="searchCount" aria-live="polite"></span><button type="button" id="prevMatch">↑</button><button type="button" id="nextMatch">↓</button></div>
+<section class="hero"><span class="eyebrow">LEÇON 01 · DÉBUTANT ABSOLU</span><h1 id="courseTitle">Chargement du cours…</h1><p class="subtitle">Cours progressif · Exemples sur Android avec Pydroid 3 · Exercices et corrections inclus</p><div class="reader-meta"><span id="readingTime">Durée de lecture : calcul…</span><span id="progressLabel">0 % lu</span><span id="resumeLabel">Progression enregistrée sur cet appareil</span></div></section>
+<div class="layout"><div id="status">Chargement du cours…</div><article id="content" hidden></article></div>
+<footer class="footer">©pythonschool · Leçon 01 — Python</footer>
+<script>
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const inline=s=>esc(s).replace(/\x60([^\x60]+)\x60/g,"<code>$1</code>").replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>").replace(/\*([^*]+)\*/g,"<em>$1</em>");
+const slug=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+function renderMarkdown(md){
+ const lines=md.replace(/\r/g,"").split("\n"),out=[],toc=[];let i=0,paragraph=[],list=null;
+ const flushP=()=>{if(paragraph.length){out.push("<p>"+inline(paragraph.join(" "))+"</p>");paragraph=[]}};
+ const flushL=()=>{if(list){out.push("</"+list+">");list=null}};
+ while(i<lines.length){
+  const line=lines[i];
+  if(line.trim().startsWith("```")){
+   flushP();flushL();const lang=line.trim().slice(3).trim();const code=[];i++;
+   while(i<lines.length&&!lines[i].trim().startsWith("```")){code.push(lines[i]);i++}
+   out.push('<pre><button class="copy-code" type="button">Copier</button><code class="language-'+esc(lang)+'">'+esc(code.join("\n"))+'</code></pre>');i++;continue;
+  }
+  if(!line.trim()){flushP();flushL();i++;continue}
+  if(/^\|.*\|$/.test(line.trim())){
+   flushP();flushL();const rows=[];
+   while(i<lines.length&&/^\|.*\|$/.test(lines[i].trim())){rows.push(lines[i].trim().split("|").slice(1,-1).map(x=>x.trim()));i++}
+   const useful=rows.filter(r=>!r.every(c=>/^:?-{3,}:?$/.test(c)));
+   if(useful.length){const head=useful[0],body=useful.slice(1);out.push("<table><thead><tr>"+head.map(c=>"<th>"+inline(c)+"</th>").join("")+"</tr></thead><tbody>"+body.map(r=>"<tr>"+r.map(c=>"<td>"+inline(c)+"</td>").join("")+"</tr>").join("")+"</tbody></table>")}
+   continue;
+  }
+  const hm=line.match(/^(#{1,4})\s+(.+)$/);
+  if(hm){flushP();flushL();const level=hm[1].length,title=hm[2].replace(/\s+#+$/,""),id=slug(title);out.push('<h'+level+' id="'+id+'">'+inline(title)+'</h'+level+'>');if(level===2||level===3)toc.push({id,title,level});i++;continue}
+  if(/^---+$/.test(line.trim())){flushP();flushL();out.push("<hr>");i++;continue}
+  if(/^>\s?/.test(line)){flushP();flushL();out.push("<blockquote>"+inline(line.replace(/^>\s?/,""))+"</blockquote>");i++;continue}
+  const ol=line.match(/^\s*\d+\.\s+(.+)$/),ul=line.match(/^\s*[-*]\s+(.+)$/);
+  if(ol||ul){flushP();const kind=ol?"ol":"ul";if(list!==kind){flushL();out.push("<"+kind+">");list=kind}out.push("<li>"+inline((ol||ul)[1])+"</li>");i++;continue}
+  flushL();paragraph.push(line.trim());i++;
+ }
+ flushP();flushL();
+ const tocHtml=toc.length?'<details class="toc"><summary>Sommaire du cours ('+toc.length+' parties)</summary><ol>'+toc.map(t=>'<li class="'+(t.level===3?'toc-sub':'')+'"><a href="#'+t.id+'">'+esc(t.title)+'</a></li>').join("")+'</ol></details>':"";
+ return tocHtml+out.join("\n");
+}
+async function loadCompressedMarkdown(){
+ const source = new URL(readerSource, location.href);
+ if(source.origin !== location.origin)throw new Error("La source du cours doit provenir du site Académique.");
+ const response=await fetch(source.href);
+ if(!response.ok)throw new Error("Impossible de récupérer le contenu du cours.");
+ const body=(await response.text()).trim();
+ if(!source.pathname.endsWith(".gz.b64"))return body;
+ if(!("DecompressionStream" in window))throw new Error("Ce navigateur ne prend pas en charge la décompression du cours.");
+ const binary=atob(body);
+ const bytes=Uint8Array.from(binary,char=>char.charCodeAt(0));
+ const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+ return await new Response(stream).text();
+}
+const readerParams = new URLSearchParams(location.search);
+const readerPdf = readerParams.get("pdf") || "./lecon-01-python-school.pdf";
+const readerSource = readerParams.get("content") || "./lecon-01-content.md.gz.b64";
+const readerCourse = readerParams.get("course") || "python-01";
+const readerSubject = readerParams.get("subject") || "python";
+const readerTitle = readerParams.get("title") || "Découvrir Python et écrire ses premières instructions";
+let readerStarted=false,searchResults=[],searchIndex=-1,saveTimer=0;
+const readerStateKey="academique-reader-"+readerCourse;
+document.getElementById("courseTitle").textContent=readerTitle;
+document.title=readerTitle+" — Académique";
+document.querySelector(".hero .eyebrow").textContent=readerSubject.toUpperCase()+" · LECTURE ACADÉMIQUE";
+function isStandalone(){return window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true}
+function returnToApp(){if(window.parent!==window){window.parent.postMessage({type:"ACADEMIQUE_READER_BACK",subject:readerSubject},location.origin)}else{history.back()}}
+function openPdfFallback(){try{window.location.replace(new URL(readerPdf,location.href).href)}catch(error){document.getElementById("status").textContent="Le PDF n’est pas disponible."}}
+function toastReader(message){let node=document.getElementById("readerToast");if(!node){node=document.createElement("div");node.id="readerToast";node.className="reader-toast";document.body.appendChild(node)}node.textContent=message;node.classList.add("visible");clearTimeout(toastReader.timer);toastReader.timer=setTimeout(()=>node.classList.remove("visible"),1800)}
+function clearSearchMarks(){document.querySelectorAll("#content mark").forEach(mark=>mark.replaceWith(document.createTextNode(mark.textContent)));document.getElementById("content").normalize();searchResults=[];searchIndex=-1}
+function goToSearchResult(index){if(!searchResults.length)return;if(index<0)index=searchResults.length-1;if(index>=searchResults.length)index=0;if(searchResults[searchIndex])searchResults[searchIndex].classList.remove("active-match");searchIndex=index;searchResults[index].classList.add("active-match");searchResults[index].scrollIntoView({behavior:"smooth",block:"center"});document.getElementById("searchCount").textContent=(index+1)+" / "+searchResults.length}
+function searchInCourse(query){
+ clearSearchMarks();query=query.trim();const label=document.getElementById("searchCount");if(!query){label.textContent="";return}
+ const walker=document.createTreeWalker(document.getElementById("content"),NodeFilter.SHOW_TEXT,{acceptNode(node){return node.nodeValue.toLowerCase().includes(query.toLowerCase())?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});
+ const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+ nodes.forEach(node=>{const value=node.nodeValue,lower=value.toLowerCase(),needle=query.toLowerCase();let cursor=0,found;const fragments=[];
+  while((found=lower.indexOf(needle,cursor))!==-1){if(found>cursor)fragments.push(document.createTextNode(value.slice(cursor,found)));const mark=document.createElement("mark");mark.textContent=value.slice(found,found+query.length);fragments.push(mark);searchResults.push(mark);cursor=found+query.length}
+  if(cursor<value.length)fragments.push(document.createTextNode(value.slice(cursor)));fragments.forEach(fragment=>node.parentNode.insertBefore(fragment,node));node.remove();
+ });
+ label.textContent=searchResults.length+" résultat"+(searchResults.length>1?"s":"");if(searchResults.length)goToSearchResult(0);
+}
+function saveReaderPosition(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(readerStateKey,JSON.stringify({scrollY:window.scrollY,updatedAt:Date.now()}))}catch(error){}},250)}
+function updateReaderProgress(){
+ const max=Math.max(1,document.documentElement.scrollHeight-window.innerHeight),percent=Math.min(100,Math.max(0,Math.round(window.scrollY/max*100)));
+ const bar=document.getElementById("progressFill");if(bar)bar.style.width=percent+"%";
+ const label=document.getElementById("progressLabel");if(label)label.textContent=percent+" % lu";
+ if(percent>1)saveReaderPosition();
+ const headings=Array.from(document.querySelectorAll("#content h2,#content h3"));let active=null;
+ headings.forEach(heading=>{if(heading.getBoundingClientRect().top<130)active=heading.id});
+ document.querySelectorAll(".toc a").forEach(link=>link.classList.toggle("active",Boolean(active)&&link.getAttribute("href")==="#"+active));
+}
+function setupReaderControls(markdown){
+ let fontSize=16,theme="sepia";try{fontSize=Number(localStorage.getItem("academique-reader-font"))||16;theme=localStorage.getItem("academique-reader-theme")||"sepia"}catch(error){}
+ const applyFont=()=>{fontSize=Math.max(14,Math.min(24,fontSize));document.documentElement.style.setProperty("--reader-size",fontSize+"px");try{localStorage.setItem("academique-reader-font",String(fontSize))}catch(error){}};
+ const applyTheme=()=>{document.body.classList.remove("reader-dark","reader-white");if(theme==="dark")document.body.classList.add("reader-dark");if(theme==="white")document.body.classList.add("reader-white");document.getElementById("themeButton").textContent="Thème : "+(theme==="dark"?"sombre":theme==="white"?"clair":"sépia");try{localStorage.setItem("academique-reader-theme",theme)}catch(error){}};
+ applyFont();applyTheme();
+ document.getElementById("smaller").addEventListener("click",()=>{fontSize--;applyFont()});
+ document.getElementById("bigger").addEventListener("click",()=>{fontSize++;applyFont()});
+ document.getElementById("themeButton").addEventListener("click",()=>{theme=["sepia","white","dark"][(["sepia","white","dark"].indexOf(theme)+1)%3];applyTheme()});
+ document.getElementById("focusButton").addEventListener("click",()=>{document.body.classList.toggle("reader-focus");document.getElementById("focusButton").textContent=document.body.classList.contains("reader-focus")?"Quitter la lecture calme":"Lecture calme"});
+ document.getElementById("printButton").addEventListener("click",()=>window.print());
+ document.getElementById("backButton").addEventListener("click",returnToApp);
+ document.getElementById("searchInput").addEventListener("input",event=>searchInCourse(event.target.value));
+ document.getElementById("prevMatch").addEventListener("click",()=>goToSearchResult(searchIndex-1));
+ document.getElementById("nextMatch").addEventListener("click",()=>goToSearchResult(searchIndex+1));
+ document.getElementById("searchInput").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();goToSearchResult(searchIndex+1)}});
+ document.querySelectorAll("#content .copy-code").forEach(button=>button.addEventListener("click",async()=>{
+  const code=button.parentElement.querySelector("code").textContent;
+  try{await navigator.clipboard.writeText(code);button.textContent="Copié";toastReader("Code copié.")}
+  catch(error){const area=document.createElement("textarea");area.value=code;document.body.appendChild(area);area.select();const copied=document.execCommand("copy");area.remove();button.textContent=copied?"Copié":"Échec";toastReader(copied?"Code copié.":"Copie non autorisée.")}
+  setTimeout(()=>button.textContent="Copier",1500);
+ }));
+ const wordCount=markdown.trim().split(/\s+/).length;
+ document.getElementById("readingTime").textContent="Lecture estimée : "+Math.max(1,Math.ceil(wordCount/150))+" min";
+ window.addEventListener("scroll",updateReaderProgress,{passive:true});
+ try{const saved=JSON.parse(localStorage.getItem(readerStateKey)||"null");if(saved&&Number.isFinite(saved.scrollY)&&saved.scrollY>0){document.getElementById("resumeLabel").textContent="Reprise de la dernière lecture";requestAnimationFrame(()=>window.scrollTo({top:saved.scrollY,behavior:"auto"}))}}catch(error){}
+ updateReaderProgress();
+}
+async function startReader(){
+ if(readerStarted)return;readerStarted=true;
+ try{
+  const markdown=await loadCompressedMarkdown();
+  const content=document.getElementById("content");content.innerHTML=renderMarkdown(markdown);content.hidden=false;document.getElementById("status").remove();
+  setupReaderControls(markdown);
+ }catch(error){
+  const status=document.getElementById("status");status.textContent=error.message+" Tu peux ouvrir le PDF avec le lecteur du navigateur : ";
+  const link=document.createElement("a");link.href=new URL(readerPdf,location.href).href;link.target="_blank";link.rel="noopener";link.textContent="Ouvrir le PDF";status.appendChild(link);
+ }
+}
+window.addEventListener("message",event=>{
+ if(event.origin!==location.origin||event.source!==window.parent||!event.data)return;
+ if(event.data.type==="ACADEMIQUE_READER_UNLOCK")startReader();
+});
+if(window.parent!==window){
+ window.parent.postMessage({type:"ACADEMIQUE_READER_READY"},location.origin);
+ window.setTimeout(()=>{if(!readerStarted)openPdfFallback()},7000);
+}else if(isStandalone()){
+ startReader();
+}else{
+ window.location.replace("./lecon-01-python-school.pdf");
+}
+</script>
+</body>
+</html>
