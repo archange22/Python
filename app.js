@@ -380,6 +380,24 @@ window.addEventListener("appinstalled", () => {
   if (location.hash === "#apropos") renderAbout();
 });
 
+window.addEventListener("message", (event) => {
+  if (event.origin !== location.origin || !isInstalledApp()) return;
+  const frame = $(".reader-frame");
+  if (!frame || event.source !== frame.contentWindow || !event.data) return;
+
+  if (event.data.type === "ACADEMIQUE_READER_READY") {
+    frame.contentWindow.postMessage({ type: "ACADEMIQUE_READER_UNLOCK" }, location.origin);
+    return;
+  }
+
+  if (event.data.type === "ACADEMIQUE_READER_BACK") {
+    const subjectId = subjects.some((subject) => subject.id === event.data.subject)
+      ? event.data.subject
+      : "python";
+    location.hash = "#matiere/" + subjectId;
+  }
+});
+
 window.addEventListener("hashchange", render);
 $("#appDialog").addEventListener("click", (event) => {
   if (event.target === $("#appDialog")) closeDialog();
