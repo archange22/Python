@@ -25,18 +25,44 @@
     <section class="chat-hero">
       <span class="eyebrow">ASSISTANT PÉDAGOGIQUE LOCAL</span>
       <h1>Une question ?<br><span>On la travaille ensemble.</span></h1>
-      <p>Un petit modèle d’intelligence artificielle s’exécute directement dans ton navigateur. Aucune clé API ni compte n’est nécessaire.</p>
+      <p>Choisis un modèle, télécharge-le une seule fois sur cet appareil, puis utilise-le localement. Aucune clé API ni compte n’est nécessaire.</p>
     </section>
 
-    <section class="model-card">
-      <div class="model-icon">✦</div>
-      <div class="model-copy">
-        <span class="eyebrow">MOTEUR LOCAL EXPÉRIMENTAL · 77 M DE PARAMÈTRES</span>
-        <strong id="modelStatus">Modèle non chargé</strong>
-        <p id="modelHint">Le premier chargement nécessite Internet et environ 125 Mo de fichiers de modèle. Une fois mis en cache, le chat peut fonctionner hors connexion.</p>
-        <div class="progress-track"><div id="modelProgress" class="progress-fill"></div></div>
+    <section class="model-card" aria-labelledby="modelPanelTitle">
+      <div class="model-top">
+        <div class="model-icon">✦</div>
+        <div class="model-copy">
+          <span class="eyebrow" id="modelPanelTitle">GESTION DES MODÈLES LOCAUX</span>
+          <strong id="modelStatus">Modèle non chargé</strong>
+          <p id="modelHint">Sélectionne un modèle pour voir sa taille indicative et ses caractéristiques avant le téléchargement.</p>
+        </div>
+        <div class="model-buttons">
+          <button id="loadModelButton" class="load-button" type="button">Télécharger le modèle</button>
+          <button id="cancelDownloadButton" class="cancel-button" type="button" hidden>Annuler</button>
+        </div>
       </div>
-      <button id="loadModelButton" class="load-button" type="button">Charger l’IA</button>
+
+      <div class="model-controls">
+        <label for="modelSelect">Modèle à utiliser</label>
+        <select id="modelSelect">
+          <option value="lamini-77">LaMini-Flan-T5-77M · léger</option>
+          <option value="lamini-248">LaMini-Flan-T5-248M · plus complet</option>
+          <option value="smollm2-135">SmolLM2-135M-Instruct · conversation</option>
+        </select>
+        <p id="modelDescription" class="model-description"></p>
+      </div>
+
+      <div class="progress-track" role="progressbar" aria-label="Progression du chargement du modèle" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="modelProgress" class="progress-fill"></div>
+      </div>
+      <div class="download-details">
+        <span id="downloadDetails">Aucun téléchargement en cours.</span>
+        <span id="downloadPercent">0 %</span>
+      </div>
+      <div class="model-footer">
+        <span id="downloadStats">Les statistiques restent sur cet appareil.</span>
+        <button id="clearModelCacheButton" class="cache-button" type="button">Réinitialiser le cache IA</button>
+      </div>
     </section>
 
     <section class="chat-shell">
@@ -50,7 +76,7 @@
           <span class="message-avatar">✦</span>
           <div class="message-bubble">
             <strong>Assistant local</strong>
-            <p>Bonjour. Je peux t’aider à revoir une notion de Python, comprendre un concept d’IA ou organiser tes idées de projet. Charge d’abord le modèle pour commencer.</p>
+            <p>Bonjour. Je peux t’aider à revoir une notion de Python, comprendre un concept d’IA ou organiser tes idées de projet. Charge d’abord un modèle pour commencer.</p>
           </div>
         </article>
       </div>
@@ -63,8 +89,8 @@
     </section>
 
     <section class="model-warning">
-      <strong>À connaître avant de l’utiliser</strong>
-      <p>Ce modèle compact est expérimental : ses réponses peuvent être courtes, lentes ou inexactes, notamment en français. Il est moins performant qu’un grand modèle cloud. Vérifie les informations importantes. Tes messages restent dans le stockage local de ce navigateur ; ils ne sont pas envoyés à un serveur de conversation.</p>
+      <strong>Téléchargement, stockage et qualité</strong>
+      <p>Le téléchargement initial nécessite Internet. Les fichiers terminés sont conservés dans le cache du navigateur ; en cas de coupure, le chargement peut être relancé et les fichiers déjà mis en cache sont réutilisés. Le fichier interrompu peut devoir être téléchargé à nouveau. Garde assez d’espace libre et évite de fermer l’application pendant le chargement. Les modèles sont expérimentaux : leurs réponses peuvent être inexactes. SmolLM2 est principalement documenté pour l’anglais et peut être moins fiable en français.</p>
     </section>
 
     <footer>Chat IA · Application séparée d’Académique</footer>
