@@ -58,7 +58,11 @@ Les applications complémentaires possèdent leurs propres pages, manifestes et 
 
 ### SUN : conversation, recherche documentaire et robustesse
 
-Le SUN utilise Transformers.js 4.3.2 et le registre de modèles pour lister les fichiers requis, leurs tailles et leur état de cache lorsque les métadonnées sont disponibles. Les erreurs réseau temporaires déclenchent des tentatives automatiques. Les réponses restent celles de modèles compacts : elles peuvent être inexactes ou moins fiables en français, notamment avec SmolLM2.
+SUN utilise Transformers.js 4.3.2 et trois modèles compacts disponibles au choix. Les échanges courts (salutations, « ça va ? », remerciements et présentation de SUN) sont traités localement sans téléchargement de modèle. Les questions de cours sont recherchées dans le catalogue `courses/catalog.json` et dans les quatre leçons Python historiques `pdf/lecon-01.md` à `pdf/lecon-04.md`.
+
+Les PDF des cours Académique étant générés depuis ces sources Markdown, SUN indexe leur contenu source : il transmet des extraits pertinents au modèle et ajoute la référence du parcours, le numéro de leçon et la section. Sans modèle chargé, SUN peut déjà afficher un extrait retrouvé avec sa référence. L’index est conservé localement ; le premier chargement des documents nécessite une connexion.
+
+Limites : les modèles locaux restent compacts et peuvent produire des réponses inexactes ou moins naturelles en français, notamment SmolLM2-135M. Cette version ne lit pas encore les PDF importés par l’utilisateur : elle recherche dans les sources des PDF et les leçons déjà présents dans le dépôt.
 
 
 ## Leçons quotidiennes et bibliothèque
