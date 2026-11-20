@@ -34,6 +34,7 @@ let responseLength = "normal";
 let stats = {};
 let downloadQueue = [];
 let downloadFiles = [];
+let downloadFilesModelKey = "lamini-77";
 let queueRunning = false;
 let queueCurrentKey = null;
 let queueOriginalModel = null;
@@ -77,7 +78,7 @@ function saveFilesSoon() {
   setTimeout(() => {
     fileSavePending = false;
     persist(FILES_KEY, {
-      modelKey: selectedModel,
+      modelKey: downloadFilesModelKey,
       savedAt: Date.now(),
       files: downloadFiles
     });
@@ -523,6 +524,9 @@ function handleLoadFailure(message) {
 }
 
 function updatePlan(data) {
+  downloadFilesModelKey = data.modelKey || selectedModel;
+  const heading = $(".file-list-heading strong");
+  if (heading) heading.textContent = "Fichiers · " + (MODELS[downloadFilesModelKey]?.name || "Modèle IA");
   downloadPlanTotalBytes = Number.isFinite(data.totalBytes) ? data.totalBytes : 0;
   downloadFiles = (data.files || []).map((file) => ({
     file: file.file,
@@ -576,6 +580,7 @@ function updateFileStatus(data) {
 }
 
 function updateFileProgress(data) {
+  if (!downloadFilesModelKey) downloadFilesModelKey = selectedModel;
   let file = downloadFiles.find((item) => item.file === data.file);
   if (!file) {
     file = {
@@ -1020,9 +1025,13 @@ function clearModelCache() {
       $("#modelHint").textContent = "Cache du modèle effacé. Les conversations et les autres modèles sont conservés.";
       $("#downloadDetails").textContent = data.filesDeleted + " fichier(s) supprimé(s) du cache.";
       $("#modelStatus").textContent = "Cache du modèle effacé";
-      downloadFiles = [];
-      downloadPlanTotalBytes = 0;
-      saveFilesSoon();
+      if (downloadFilesModelKey === selectedModel) {
+        downloadFiles = [];
+        downloadPlanTotalBytes = 0;
+        const heading = $(".file-list-heading strong");
+        if (heading) heading.textContent = "Fichiers · cache effacé";
+        saveFilesSoon();
+      }
       const queueEntry = downloadQueue.find((item) => item.modelKey === selectedModel);
       if (queueEntry && queueEntry.status === "done") {
         queueEntry.status = "queued";
@@ -1092,6 +1101,9 @@ function initializeApp() {
 
   const savedFiles = readJSON(FILES_KEY, null);
   if (savedFiles && Array.isArray(savedFiles.files)) {
+    downloadFilesModelKey = MODELS[savedFiles.modelKey] ? savedFiles.modelKey : selectedModel;
+    const heading = $(".file-list-heading strong");
+    if (heading) heading.textContent = "Fichiers · " + (MODELS[downloadFilesModelKey]?.name || "Modèle IA");
     downloadFiles = savedFiles.files.map((file) => ({
       ...file,
       status: ["downloading", "preparing"].includes(file.status) ? "interrupted" : file.status
