@@ -1,7 +1,7 @@
 {
-  "name": "Chat IA — Académique",
-  "short_name": "Chat IA",
-  "description": "Assistant pédagogique local expérimental.",
+  "name": "SUN — Académique",
+  "short_name": "SUN",
+  "description": "Assistant d’Académique avec discussion et recherche dans les cours.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
