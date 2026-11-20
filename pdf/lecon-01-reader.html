@@ -118,9 +118,83 @@ async function loadCompressedMarkdown(){
  const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
  return await new Response(stream).text();
 }
-loadCompressedMarkdown().then(md=>{
- const content=document.getElementById("content");content.innerHTML=renderMarkdown(md);content.hidden=false;document.getElementById("status").remove();
-}).catch(err=>{document.getElementById("status").textContent=err.message+" Vérifie ta connexion puis rouvre le cours."});
+let readerStarted=false,searchResults=[],searchIndex=-1,saveTimer=0;
+const readerStateKey="academique-reader-lecon01-v2";
+function isStandalone(){return window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true}
+function returnToApp(){if(window.parent!==window){window.parent.postMessage({type:"ACADEMIQUE_READER_BACK",subject:"python"},location.origin)}else{history.back()}}
+function toastReader(message){let node=document.getElementById("readerToast");if(!node){node=document.createElement("div");node.id="readerToast";node.className="reader-toast";document.body.appendChild(node)}node.textContent=message;node.classList.add("visible");clearTimeout(toastReader.timer);toastReader.timer=setTimeout(()=>node.classList.remove("visible"),1800)}
+function clearSearchMarks(){document.querySelectorAll("#content mark").forEach(mark=>mark.replaceWith(document.createTextNode(mark.textContent)));document.getElementById("content").normalize();searchResults=[];searchIndex=-1}
+function goToSearchResult(index){if(!searchResults.length)return;if(index<0)index=searchResults.length-1;if(index>=searchResults.length)index=0;if(searchResults[searchIndex])searchResults[searchIndex].classList.remove("active-match");searchIndex=index;searchResults[index].classList.add("active-match");searchResults[index].scrollIntoView({behavior:"smooth",block:"center"});document.getElementById("searchCount").textContent=(index+1)+" / "+searchResults.length}
+function searchInCourse(query){
+ clearSearchMarks();query=query.trim();const label=document.getElementById("searchCount");if(!query){label.textContent="";return}
+ const walker=document.createTreeWalker(document.getElementById("content"),NodeFilter.SHOW_TEXT,{acceptNode(node){return node.nodeValue.toLowerCase().includes(query.toLowerCase())?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});
+ const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+ nodes.forEach(node=>{const value=node.nodeValue,lower=value.toLowerCase(),needle=query.toLowerCase();let cursor=0,found;const fragments=[];
+  while((found=lower.indexOf(needle,cursor))!==-1){if(found>cursor)fragments.push(document.createTextNode(value.slice(cursor,found)));const mark=document.createElement("mark");mark.textContent=value.slice(found,found+query.length);fragments.push(mark);searchResults.push(mark);cursor=found+query.length}
+  if(cursor<value.length)fragments.push(document.createTextNode(value.slice(cursor)));fragments.forEach(fragment=>node.parentNode.insertBefore(fragment,node));node.remove();
+ });
+ label.textContent=searchResults.length+" résultat"+(searchResults.length>1?"s":"");if(searchResults.length)goToSearchResult(0);
+}
+function saveReaderPosition(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(readerStateKey,JSON.stringify({scrollY:window.scrollY,updatedAt:Date.now()}))}catch(error){}},250)}
+function updateReaderProgress(){
+ const max=Math.max(1,document.documentElement.scrollHeight-window.innerHeight),percent=Math.min(100,Math.max(0,Math.round(window.scrollY/max*100)));
+ const bar=document.getElementById("progressFill");if(bar)bar.style.width=percent+"%";
+ const label=document.getElementById("progressLabel");if(label)label.textContent=percent+" % lu";
+ if(percent>1)saveReaderPosition();
+ const headings=Array.from(document.querySelectorAll("#content h2,#content h3"));let active=null;
+ headings.forEach(heading=>{if(heading.getBoundingClientRect().top<130)active=heading.id});
+ document.querySelectorAll(".toc a").forEach(link=>link.classList.toggle("active",Boolean(active)&&link.getAttribute("href")==="#"+active));
+}
+function setupReaderControls(markdown){
+ let fontSize=16,theme="sepia";try{fontSize=Number(localStorage.getItem("academique-reader-font"))||16;theme=localStorage.getItem("academique-reader-theme")||"sepia"}catch(error){}
+ const applyFont=()=>{fontSize=Math.max(14,Math.min(24,fontSize));document.documentElement.style.setProperty("--reader-size",fontSize+"px");try{localStorage.setItem("academique-reader-font",String(fontSize))}catch(error){}};
+ const applyTheme=()=>{document.body.classList.remove("reader-dark","reader-white");if(theme==="dark")document.body.classList.add("reader-dark");if(theme==="white")document.body.classList.add("reader-white");document.getElementById("themeButton").textContent="Thème : "+(theme==="dark"?"sombre":theme==="white"?"clair":"sépia");try{localStorage.setItem("academique-reader-theme",theme)}catch(error){}};
+ applyFont();applyTheme();
+ document.getElementById("smaller").addEventListener("click",()=>{fontSize--;applyFont()});
+ document.getElementById("bigger").addEventListener("click",()=>{fontSize++;applyFont()});
+ document.getElementById("themeButton").addEventListener("click",()=>{theme=["sepia","white","dark"][(["sepia","white","dark"].indexOf(theme)+1)%3];applyTheme()});
+ document.getElementById("focusButton").addEventListener("click",()=>{document.body.classList.toggle("reader-focus");document.getElementById("focusButton").textContent=document.body.classList.contains("reader-focus")?"Quitter la lecture calme":"Lecture calme"});
+ document.getElementById("printButton").addEventListener("click",()=>window.print());
+ document.getElementById("backButton").addEventListener("click",returnToApp);
+ document.getElementById("searchInput").addEventListener("input",event=>searchInCourse(event.target.value));
+ document.getElementById("prevMatch").addEventListener("click",()=>goToSearchResult(searchIndex-1));
+ document.getElementById("nextMatch").addEventListener("click",()=>goToSearchResult(searchIndex+1));
+ document.getElementById("searchInput").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();goToSearchResult(searchIndex+1)}});
+ document.querySelectorAll("#content .copy-code").forEach(button=>button.addEventListener("click",async()=>{
+  const code=button.parentElement.querySelector("code").textContent;
+  try{await navigator.clipboard.writeText(code);button.textContent="Copié";toastReader("Code copié.")}
+  catch(error){const area=document.createElement("textarea");area.value=code;document.body.appendChild(area);area.select();const copied=document.execCommand("copy");area.remove();button.textContent=copied?"Copié":"Échec";toastReader(copied?"Code copié.":"Copie non autorisée.")}
+  setTimeout(()=>button.textContent="Copier",1500);
+ }));
+ const wordCount=markdown.trim().split(/\s+/).length;
+ document.getElementById("readingTime").textContent="Lecture estimée : "+Math.max(1,Math.ceil(wordCount/150))+" min";
+ window.addEventListener("scroll",updateReaderProgress,{passive:true});
+ try{const saved=JSON.parse(localStorage.getItem(readerStateKey)||"null");if(saved&&Number.isFinite(saved.scrollY)&&saved.scrollY>0){document.getElementById("resumeLabel").textContent="Reprise de la dernière lecture";requestAnimationFrame(()=>window.scrollTo({top:saved.scrollY,behavior:"auto"}))}}catch(error){}
+ updateReaderProgress();
+}
+async function startReader(){
+ if(readerStarted)return;readerStarted=true;
+ try{
+  const markdown=await loadCompressedMarkdown();
+  const content=document.getElementById("content");content.innerHTML=renderMarkdown(markdown);content.hidden=false;document.getElementById("status").remove();
+  setupReaderControls(markdown);
+ }catch(error){
+  const status=document.getElementById("status");status.textContent=error.message+" Tu peux ouvrir le PDF avec le lecteur du navigateur : ";
+  const link=document.createElement("a");link.href="./lecon-01-python-school.pdf";link.target="_blank";link.rel="noopener";link.textContent="Ouvrir le PDF";status.appendChild(link);
+ }
+}
+window.addEventListener("message",event=>{
+ if(event.origin!==location.origin||event.source!==window.parent||!event.data)return;
+ if(event.data.type==="ACADEMIQUE_READER_UNLOCK")startReader();
+});
+if(window.parent!==window){
+ window.parent.postMessage({type:"ACADEMIQUE_READER_READY"},location.origin);
+ window.setTimeout(()=>{if(!readerStarted)window.location.replace("./lecon-01-python-school.pdf")},7000);
+}else if(isStandalone()){
+ startReader();
+}else{
+ window.location.replace("./lecon-01-python-school.pdf");
+}
 </script>
 </body>
 </html>
