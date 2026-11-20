@@ -1,4 +1,4 @@
-const STATIC_CACHE = "academique-shell-v4";
+const STATIC_CACHE = "academique-shell-v5";
 const PDF_CACHE = "academique-pdf-v1";
 const APP_FILES = [
   "./",
@@ -8,7 +8,7 @@ const APP_FILES = [
   "./manifest.webmanifest",
   "./icon.svg",
   "./pdf/lecon-01-reader.html",
-  "./pdf/lecon-01.md"
+  "./pdf/lecon-01-content.md.gz.b64"
 ];
 
 self.addEventListener("install", (event) => {
