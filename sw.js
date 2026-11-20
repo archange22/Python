@@ -1,15 +1,17 @@
-const STATIC_CACHE = "academique-shell-v1";
+const STATIC_CACHE = "academique-shell-v2";
 const PDF_CACHE = "academique-pdf-v1";
 const APP_FILES = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(STATIC_CACHE).then((cache) => cache.addAll(APP_FILES)).then(() => self.skipWaiting()));
 });
+
 self.addEventListener("activate", (event) => {
   event.waitUntil(caches.keys().then((keys) => Promise.all(
-    keys.filter((key) => ![STATIC_CACHE, PDF_CACHE].includes(key)).map((key) => caches.delete(key))
+    keys.filter((key) => key.startsWith("academique-shell-") && key !== STATIC_CACHE).map((key) => caches.delete(key))
   )).then(() => self.clients.claim()));
 });
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   if (request.method !== "GET" || new URL(request.url).origin !== self.location.origin) return;

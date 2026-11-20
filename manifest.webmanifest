@@ -1,12 +1,12 @@
 {
-  "name": "Académique — Apprendre à coder",
+  "name": "Académique — Apprendre, créer, progresser",
   "short_name": "Académique",
-  "description": "Formations PDF pour apprendre Python, l'intelligence artificielle et le développement Discord.",
+  "description": "Formations pour apprendre Python, l'intelligence artificielle et le développement Discord.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#fff7ef",
-  "theme_color": "#fff7ef",
+  "background_color": "#fff8f1",
+  "theme_color": "#fff8f1",
   "icons": [
     {
       "src": "icon.svg",

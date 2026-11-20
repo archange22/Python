@@ -3,9 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#fff6ee">
-  <meta name="description" content="Académique : apprends à programmer avec des formations PDF sur Python, l'intelligence artificielle et Discord.">
-  <title>Académique — Apprendre à coder</title>
+  <meta name="theme-color" content="#fff8f1">
+  <meta name="description" content="Académique : des formations claires pour apprendre Python, l'intelligence artificielle et le développement Discord.">
+  <meta name="color-scheme" content="light">
+  <title>Académique — Apprendre, créer, progresser</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css">
@@ -14,22 +15,32 @@
 <body>
   <header class="app-header">
     <a class="brand" href="#accueil" aria-label="Académique, accueil">
-      <span class="brand-mark">A</span>
-      <span class="brand-name">Académique</span>
+      <span class="brand-mark" aria-hidden="true">A</span>
+      <span class="brand-copy">
+        <span class="brand-name">Académique</span>
+        <span class="brand-tagline">APPRENDRE · CRÉER · PROGRESSER</span>
+      </span>
     </a>
-    <span class="header-caption">APPRENDRE À CODER</span>
+    <span class="header-pill"><span class="status-dot" aria-hidden="true"></span> Ton espace d’apprentissage</span>
   </header>
-  <main id="appView" class="app-view" tabindex="-1">
-    <div class="loading-state">Chargement de ta bibliothèque…</div>
+
+  <main id="appView" class="app-view" tabindex="-1" aria-live="polite">
+    <div class="loading-state">Préparation de ton espace…</div>
   </main>
+
   <nav class="bottom-nav" aria-label="Navigation principale">
-    <a class="bottom-nav-link active" id="homeTab" href="#accueil" data-route="accueil" aria-current="page">Accueil</a>
-    <a class="bottom-nav-link" id="aboutTab" href="#apropos" data-route="apropos">À Propos</a>
+    <a class="bottom-nav-link active" id="homeTab" href="#accueil" data-route="accueil" aria-current="page">
+      <span class="nav-icon" aria-hidden="true">⌂</span><span>Accueil</span>
+    </a>
+    <a class="bottom-nav-link" id="aboutTab" href="#apropos" data-route="apropos">
+      <span class="nav-icon" aria-hidden="true">✳</span><span>À propos</span>
+    </a>
   </nav>
+
   <dialog class="app-dialog" id="appDialog" aria-labelledby="dialogTitle">
     <div class="dialog-header">
-      <h2 id="dialogTitle">Académique</h2>
-      <button class="dialog-close" type="button" data-action="close-dialog" aria-label="Fermer">×</button>
+      <div><span class="dialog-eyebrow">ACADÉMIQUE</span><h2 id="dialogTitle">Académique</h2></div>
+      <button class="dialog-close" type="button" data-action="close-dialog" aria-label="Fermer la fenêtre">×</button>
     </div>
     <div class="dialog-content" id="dialogContent"></div>
   </dialog>
