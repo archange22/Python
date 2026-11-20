@@ -229,6 +229,27 @@ async function prepareStorage() {
   return persistence;
 }
 
+function waitForServiceWorker(registration) {
+  if (registration.active && registration.active.state === "activated") {
+    return Promise.resolve();
+  }
+  const target = registration.installing || registration.waiting || registration.active;
+  if (!target) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const onStateChange = () => {
+      if (target.state === "activated") {
+        target.removeEventListener("statechange", onStateChange);
+        resolve();
+      } else if (target.state === "redundant") {
+        target.removeEventListener("statechange", onStateChange);
+        reject(new Error("Le cache hors connexion n’a pas pu être activé."));
+      }
+    };
+    target.addEventListener("statechange", onStateChange);
+    onStateChange();
+  });
+}
+
 async function ensureWorker() {
   if (loading || modelReady) return;
   loading = true;
@@ -243,8 +264,8 @@ async function ensureWorker() {
   try {
     const storageMessage = await prepareStorage();
     if ("serviceWorker" in navigator) {
-      await navigator.serviceWorker.register("./sw.js");
-      await navigator.serviceWorker.ready;
+      const registration = await navigator.serviceWorker.register("./sw.js");
+      await waitForServiceWorker(registration);
     }
 
     worker = new Worker("./chat.worker.js", { type: "module" });
