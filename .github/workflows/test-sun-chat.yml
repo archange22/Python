@@ -1,0 +1,36 @@
+name: SUN chat checks
+
+on:
+  pull_request:
+    paths:
+      - "apps/chat-ia/**"
+      - ".github/workflows/test-sun-chat.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/chat-ia/**"
+      - ".github/workflows/test-sun-chat.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        working-directory: apps/chat-ia
+        run: |
+          node --check app.js
+          node --check chat.worker.js
+          node --check knowledge.js
+          node --check conversation.js
+      - name: Run SUN behavior tests
+        working-directory: apps/chat-ia
+        run: npm test
