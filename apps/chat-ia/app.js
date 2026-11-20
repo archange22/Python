@@ -308,7 +308,7 @@ function renderQueue() {
 function addQueueItem() {
   const existing = downloadQueue.find((item) => item.modelKey === selectedModel);
   if (existing) {
-    if (existing.status === "done") {
+    if (["done", "failed", "interrupted"].includes(existing.status)) {
       existing.status = "queued";
       existing.lastError = "";
     } else {
@@ -870,7 +870,7 @@ function processQueue() {
   if (!queueRunning || loading) return;
 
   const next = downloadQueue.find((item) =>
-    ["queued", "interrupted", "failed"].includes(item.status)
+    ["queued", "interrupted"].includes(item.status)
   );
 
   if (!next) {
@@ -902,8 +902,14 @@ function processQueue() {
 
 function startQueue() {
   if (queueRunning || loading) return;
+  for (const item of downloadQueue) {
+    if (item.status === "failed") {
+      item.status = "queued";
+      item.lastError = "";
+    }
+  }
   const hasWork = downloadQueue.some((item) =>
-    ["queued", "interrupted", "failed"].includes(item.status)
+    ["queued", "interrupted"].includes(item.status)
   );
   if (!hasWork) return;
   queueOriginalModel = selectedModel;
