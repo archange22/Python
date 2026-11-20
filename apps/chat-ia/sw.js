@@ -1,5 +1,5 @@
 const APP_CACHE = "academique-chat-ia-shell-v1";
-const MODEL_RUNTIME_CACHE = "academique-chat-ia-runtime-v1";
+const LIBRARY_CACHE = "academique-chat-ia-library-v1";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -34,15 +34,10 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
 
-  const isModelRuntime = url.hostname === "cdn.jsdelivr.net" ||
-    url.hostname === "huggingface.co" ||
-    url.hostname.endsWith(".huggingface.co") ||
-    url.hostname === "xethub.hf.co" ||
-    url.hostname.endsWith(".xethub.hf.co");
-
-  if (isModelRuntime) {
+  // Cache the Transformers.js runtime code. Model weights are cached by Transformers.js itself.
+  if (url.hostname === "cdn.jsdelivr.net") {
     event.respondWith((async () => {
-      const cache = await caches.open(MODEL_RUNTIME_CACHE);
+      const cache = await caches.open(LIBRARY_CACHE);
       const cached = await cache.match(request);
       if (cached) return cached;
       try {
@@ -53,7 +48,7 @@ self.addEventListener("fetch", (event) => {
         return response;
       } catch (error) {
         return new Response(
-          "Ce fichier du moteur IA n’est pas encore en cache. Connecte-toi une première fois pour terminer le téléchargement du modèle.",
+          "La bibliothèque IA n’est pas encore en cache. Connecte-toi une première fois pour la télécharger.",
           { status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" } }
         );
       }
