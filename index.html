@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#fff8f1">
+  <meta name="theme-color" content="#0b1020">
   <meta name="description" content="Académique : apprends Python, l'intelligence artificielle et le développement Discord avec des cours progressifs.">
-  <meta name="color-scheme" content="light">
-  <title>Académique — Apprendre à coder</title>
+  <meta name="color-scheme" content="dark light">
+  <title>Académique — Apprendre, comprendre, construire</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css">
@@ -16,26 +16,44 @@
   <header class="app-header">
     <a class="brand" href="#accueil" aria-label="Académique, accueil">
       <span class="brand-mark" aria-hidden="true">A</span>
-      <span class="brand-name">Académique</span>
+      <span class="brand-copy">
+        <span class="brand-name">Académique</span>
+        <span class="brand-caption">APPRENDRE · COMPRENDRE · CRÉER</span>
+      </span>
     </a>
+
+    <nav class="desktop-nav" aria-label="Navigation principale">
+      <a href="#accueil" data-nav="accueil">Accueil</a>
+      <a href="#formations" data-nav="formations">Formations</a>
+      <a href="#bibliotheque" data-nav="bibliotheque">Bibliothèque</a>
+      <a href="#progression" data-nav="progression">Progression</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="icon-button" type="button" data-action="toggle-theme" aria-label="Changer de thème" title="Changer de thème">
+        <span id="themeIcon" aria-hidden="true">☼</span>
+      </button>
+      <a class="about-link" href="#apropos">À propos <span aria-hidden="true">↗</span></a>
+    </div>
   </header>
 
   <main id="appView" class="app-view" tabindex="-1">
-    <div class="loading-state">Chargement…</div>
+    <div class="loading-state"><span class="loading-dot"></span> Préparation de ton espace…</div>
   </main>
 
-  <nav class="bottom-nav" aria-label="Navigation principale">
-    <a class="bottom-nav-link active" id="homeTab" href="#accueil" data-route="accueil" aria-current="page">
-      <span class="nav-icon" aria-hidden="true">⌂</span><span>Accueil</span>
-    </a>
-    <a class="bottom-nav-link" id="aboutTab" href="#apropos" data-route="apropos">
-      <span class="nav-icon" aria-hidden="true">ⓘ</span><span>À propos</span>
-    </a>
+  <nav class="bottom-nav" aria-label="Navigation mobile">
+    <a href="#accueil" data-nav="accueil"><span class="nav-icon" aria-hidden="true">⌂</span><span>Accueil</span></a>
+    <a href="#formations" data-nav="formations"><span class="nav-icon" aria-hidden="true">▦</span><span>Formations</span></a>
+    <a href="#bibliotheque" data-nav="bibliotheque"><span class="nav-icon" aria-hidden="true">▤</span><span>Cours</span></a>
+    <a href="#progression" data-nav="progression"><span class="nav-icon" aria-hidden="true">◷</span><span>Suivi</span></a>
   </nav>
 
   <dialog class="app-dialog" id="appDialog" aria-labelledby="dialogTitle">
     <div class="dialog-header">
-      <h2 id="dialogTitle">Académique</h2>
+      <div>
+        <span class="eyebrow">ACADÉMIQUE</span>
+        <h2 id="dialogTitle">Académique</h2>
+      </div>
       <button class="dialog-close" type="button" data-action="close-dialog" aria-label="Fermer">×</button>
     </div>
     <div class="dialog-content" id="dialogContent"></div>
