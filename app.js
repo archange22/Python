@@ -551,7 +551,7 @@ function render() {
 
 async function loadPublishedCourseCatalog() {
   try {
-    const response = await fetch("./courses/catalog.json", { cache: "no-store" });
+    const response = await fetch("./courses/catalog.json");
     if (!response.ok) throw new Error("Le catalogue des cours n’a pas pu être chargé.");
     const catalog = await response.json();
     if (!catalog || !Array.isArray(catalog.subjects)) return;
