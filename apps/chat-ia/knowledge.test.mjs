@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildSearchIndex, searchKnowledge } from "./knowledge.js";
+import { buildSearchIndex, searchKnowledge, tokenize } from "./knowledge.js";
 import { appendSourceReferences, getSmallTalkReply } from "./conversation.js";
 
 const index = buildSearchIndex([
@@ -22,10 +22,25 @@ const index = buildSearchIndex([
   }
 ]);
 
-test("SUN comprend les salutations simples sans modèle", () => {
+test("SUN comprend les salutations et abréviations sans modèle", () => {
   assert.match(getSmallTalkReply("Bonjour") || "", /SUN/);
-  assert.match(getSmallTalkReply("slt cv ?") || "", /opérationnel/);
-  assert.match(getSmallTalkReply("ça va ?") || "", /opérationnel/);
+  assert.match(getSmallTalkReply("slt cv ?") || "", /fonctionne correctement/);
+  assert.match(getSmallTalkReply("ça va ?") || "", /fonctionne correctement/);
+  assert.match(getSmallTalkReply("wesh sava") || "", /SUN/);
+});
+
+test("SUN répond à une conversation courante sans modèle", () => {
+  assert.match(getSmallTalkReply("je vais bien et toi") || "", /Tant mieux/);
+  assert.match(getSmallTalkReply("tu fais quoi") || "", /discuter/);
+  assert.match(getSmallTalkReply("on peut discuter") || "", /Oui/);
+  assert.match(getSmallTalkReply("tu peux fonctionner sans modèle") || "", /Oui/);
+});
+
+test("un suivi bref tient compte du contexte précédent", () => {
+  assert.match(
+    getSmallTalkReply("oui", [{ role: "assistant", content: "Et toi, comment ça va ?" }]) || "",
+    /Pas de souci|Très bien/
+  );
 });
 
 test("une question de cours n'est pas traitée comme une simple salutation", () => {
@@ -38,10 +53,19 @@ test("la recherche retrouve la bonne leçon et sa section", () => {
   assert.match(results[0]?.section || "", /print/i);
 });
 
+test("la recherche tolère une petite faute de frappe", () => {
+  const results = searchKnowledge(index, "a quoi sert pritn pour afficher");
+  assert.equal(results[0]?.label, "Python Facile — Leçon 01");
+});
+
 test("une demande explicite de numéro de leçon filtre les résultats", () => {
-  const results = searchKnowledge(index, "leçon 02 variable");
+  const results = searchKnowledge(index, "leçon numéro 02 variable");
   assert.ok(results.length > 0);
   assert.ok(results.every((result) => result.lessonNumber === "02"));
+});
+
+test("les accents sont normalisés pour la recherche", () => {
+  assert.deepEqual(tokenize("Écrire des nombres et des chaînes"), ["ecrire", "nombres", "chaines"]);
 });
 
 test("la réponse ajoute une référence précise", () => {
