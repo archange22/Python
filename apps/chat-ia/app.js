@@ -141,11 +141,18 @@ async function sendMessage(event) {
   $("#sendButton").disabled = true;
   $("#messageInput").disabled = true;
   addTyping();
-  worker.postMessage({ type: "generate", message: text, history: history.slice(-7) });
+  worker.postMessage({ type: "generate", message: text, history: history.slice(-8, -1) });
 }
 
 function updateCounter() {
   $("#counter").textContent = $("#messageInput").value.length + " / 1200";
+}
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").catch((error) => {
+    setStatus("Mode hors connexion non initialisé", "error");
+    $("#modelHint").textContent = "Le chat fonctionne encore en ligne, mais le cache hors connexion n’a pas pu être préparé : " + (error.message || String(error));
+  });
 }
 
 $("#loadModelButton").addEventListener("click", ensureWorker);
