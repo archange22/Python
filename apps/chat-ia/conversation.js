@@ -43,7 +43,10 @@ export function getSmallTalkReply(message, history = []) {
   if (greetingWithFollowUp.test(value) || howAreYou.test(value)) {
     return "Je fonctionne correctement, merci ! Et toi, comment ça va ?";
   }
-  if (/^(je vais bien|ca va bien|tres bien|super|tranquille|nickel|bien merci|ca va merci)( et toi)?$/.test(value)) {
+  if (/^(et toi|et toi ca va|et toi comment ca va)$/.test(value)) {
+    return "Je fonctionne correctement et je suis prêt à t’aider. Tu veux parler de quoi ?";
+  }
+  if (/^(je vais bien|ca va bien|tres bien|super|tranquille|nickel|bien merci|ca va merci|rien de special|rien de nouveau|pas grand chose)( et toi)?$/.test(value)) {
     return "Tant mieux ! Qu’est-ce que tu aimerais faire ou découvrir aujourd’hui ?";
   }
   if (/^(pas trop|pas tres bien|ca va pas|je ne vais pas bien|bof|fatigue|fatiguee|fatigue)$/.test(value)) {
@@ -58,7 +61,7 @@ export function getSmallTalkReply(message, history = []) {
   if (/^(qui es tu|tu es qui|c est qui|ton nom|comment tu t appelles|tu t appelles comment)$/.test(value)) {
     return "Je suis SUN, l’assistant intégré à Académique. Je peux discuter sur des sujets courants, rechercher dans les leçons et utiliser un modèle local pour les réponses plus développées.";
   }
-  if (/^(tu fais quoi|que fais tu|tu fais quoi la|quoi de neuf)$/.test(value)) {
+  if (/^(tu fais quoi|que fais tu|tu fais quoi la|quoi de neuf|ca dit quoi|tu racontes quoi)$/.test(value)) {
     return "Je suis prêt à discuter, à chercher dans les cours d’Académique ou à t’aider à comprendre une notion.";
   }
   if (/^(tu peux m aider|tu peux aider|aide moi|on peut discuter|tu es la|t es la)$/.test(value)) {
