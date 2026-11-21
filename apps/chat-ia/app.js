@@ -11,10 +11,11 @@ const RESPONSE_LENGTH_KEY = "academique-chat-ia-response-length-v1";
 const PERFORMANCE_MODE_KEY = "academique-chat-ia-performance-mode-v1";
 
 const MODELS = {
-  "sun-neural": {
-    name: "SUN Neural 0.1",
-    description: "Réseau neuronal local propre à SUN (MLP 512 → 32 → 9). Il reconnaît neuf catégories de demandes en français, surtout sur les bases de Python. Ce prototype n'est pas un grand modèle génératif.",
-    family: "Réseau neuronal local"
+  "sun-core": {
+    name: "SUN",
+    description: "Assistant génératif local d’environ 0,6 milliard de paramètres. Il dialogue, conserve le contexte de la discussion et s’appuie sur les passages retrouvés dans les cours et documents importés. Premier chargement : environ 648 Mo avec WebGPU ou 754 Mo sur processeur, selon les capacités du téléphone.",
+    family: "Generative",
+    foundation: "Qwen3-0.6B-Instruct · ONNX · Apache-2.0"
   }
 };
 
@@ -172,13 +173,13 @@ let modelReady = false;
 let loading = false;
 let busy = false;
 let history = [];
-let selectedModel = "sun-neural";
+let selectedModel = "sun-core";
 let responseLength = "normal";
 let performanceMode = "fast";
 let stats = {};
 let downloadQueue = [];
 let downloadFiles = [];
-let downloadFilesModelKey = "sun-neural";
+let downloadFilesModelKey = "sun-core";
 let queueRunning = false;
 let queueCurrentKey = null;
 let queueOriginalModel = null;
@@ -321,14 +322,9 @@ function resetSpeed() {
 function setModelDescription() {
   const model = MODELS[selectedModel];
   $("#modelDescription").textContent = model.description;
-  const isBundled = model.family === "Neuronal";
-  $("#modelHint").textContent = isBundled
-    ? "Modèle intégré à Académique : aucun poids externe à télécharger."
-    : "La taille exacte et les fichiers nécessaires seront demandés au registre du modèle avant le chargement.";
-  $("#clearModelCacheButton").textContent = isBundled
-    ? "Modèle intégré · cache non applicable"
-    : "Effacer le cache de ce modèle";
-  $("#clearModelCacheButton").disabled = isBundled;
+  $("#modelHint").textContent = "Base technique : " + model.foundation + ". SUN est le seul modèle IA proposé dans l’application. Le poids exact dépend du moteur de calcul détecté.";
+  $("#clearModelCacheButton").textContent = "Effacer le cache de SUN";
+  $("#clearModelCacheButton").disabled = false;
   renderStats();
 }
 
@@ -1199,7 +1195,7 @@ function changeModel() {
   setProgress(0);
   resetSpeed();
   setStatus("Modèle non chargé");
-  $("#modelStatus").textContent = "SUN prêt · modèle neuronal unique";
+  $("#modelStatus").textContent = "SUN prêt · assistant génératif unique";
   $("#downloadDetails").textContent = "Aucun chargement en cours.";
   $("#loadModelButton").textContent = "Initialiser SUN";
   setModelDescription();
@@ -1219,8 +1215,8 @@ function changePerformanceMode() {
 }
 
 function clearModelCache() {
-  if (loading || queueRunning || MODELS[selectedModel]?.family === "Neuronal") return;
-  const confirmed = window.confirm("Réinitialiser l’état local de SUN ? Les poids intégrés au projet ne seront pas supprimés.");
+  if (loading || queueRunning) return;
+  const confirmed = window.confirm("Effacer les fichiers du modèle SUN conservés dans le cache de ce navigateur ? Le prochain chargement devra les retélécharger.");
   if (!confirmed) return;
 
   const cacheWorker = new Worker("./chat.worker.js", { type: "module" });
@@ -1233,8 +1229,8 @@ function clearModelCache() {
       $("#clearModelCacheButton").disabled = false;
       setProgress(0);
       resetSpeed();
-      $("#modelHint").textContent = "SUN est intégré au projet. Ses poids ne sont pas supprimables depuis ce bouton.";
-      $("#downloadDetails").textContent = "Modèle SUN conservé dans les fichiers de l’application.";
+      $("#modelHint").textContent = "Le cache du modèle SUN a été nettoyé. Les poids seront retéléchargés au prochain chargement.";
+      $("#downloadDetails").textContent = data.filesDeleted + " fichier(s) du modèle supprimé(s) du cache.";
       $("#modelStatus").textContent = "Cache du modèle effacé";
       if (downloadFilesModelKey === selectedModel) {
         downloadFiles = [];
@@ -1276,7 +1272,7 @@ async function sendMessage(event) {
   updateCounter();
   addMessage("user", text);
 
-  const smallTalk = getSmallTalkReply(text, history.slice(0, -1));
+  const smallTalk = (!worker || !modelReady) ? getSmallTalkReply(text, history.slice(0, -1)) : null;
   if (smallTalk) {
     currentSources = [];
     addMessage("assistant", smallTalk);
@@ -1347,15 +1343,14 @@ function updateCounter() {
 }
 
 function initializeApp() {
-  selectedModel = localStorage.getItem(SELECTED_MODEL_KEY) || "sun-neural";
-  if (!MODELS[selectedModel]) selectedModel = "sun-neural";
+  selectedModel = "sun-core";
   persist(SELECTED_MODEL_KEY, selectedModel);
 
   responseLength = localStorage.getItem(RESPONSE_LENGTH_KEY) || "normal";
   if (!["short", "normal", "detailed"].includes(responseLength)) responseLength = "normal";
 
-  performanceMode = localStorage.getItem(PERFORMANCE_MODE_KEY) || "fast";
-  if (!["fast", "balanced", "quality"].includes(performanceMode)) performanceMode = "fast";
+  performanceMode = localStorage.getItem(PERFORMANCE_MODE_KEY) || "balanced";
+  if (!["fast", "balanced", "quality"].includes(performanceMode)) performanceMode = "balanced";
 
   stats = readJSON(STATS_KEY, {});
   if (!stats || typeof stats !== "object" || Array.isArray(stats)) stats = {};
