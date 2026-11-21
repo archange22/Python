@@ -73,7 +73,7 @@ Le script :
 - évalue le split test à la fin ;
 - sauvegarde le résultat et les métriques.
 
-L'entraînement peut nécessiter un GPU avec suffisamment de mémoire. Il n'a pas été exécuté automatiquement par cette modification. N'utilise pas les trois petits modèles ONNX du navigateur comme base de ce pipeline PyTorch sans vérifier qu'ils sont compatibles : ce sont des artefacts d'inférence, pas nécessairement des checkpoints entraînables.
+Cette procédure SFT est un outil de recherche indépendant ; elle n'est pas reliée au sélecteur de modèles de l'application. L'application Académique utilise uniquement SUN Neural 0.1. Le script demande explicitement l'identifiant du modèle de base et peut nécessiter un GPU avec suffisamment de mémoire.
 
 ## 5. Mesurer la qualité réelle
 
@@ -118,7 +118,7 @@ Documentation officielle de TRL sur les formats conversationnels du SFT : https:
 
 SUN Neural 0.1 est un petit réseau neuronal multicouche (MLP) destiné à l'inférence locale dans le navigateur Android. Il utilise des caractéristiques de mots, de paires de mots et de trigrammes de caractères, puis classe le message parmi neuf intentions en français. Ses poids quantifiés int4 sont intégrés sous forme de fragments texte `apps/chat-ia/models/sun-neural-v1.part-01.txt` à `part-04.txt`, chargés localement par le worker.
 
-**Limite essentielle : ce n'est pas un grand modèle de langage (LLM).** Il ne rédige pas librement une réponse à partir de zéro. Il reconnaît des catégories ciblées et sélectionne une explication pédagogique préparée. La première version est principalement centrée sur les bases de Python ; elle ne remplace pas LaMini, SmolLM2 ni la recherche documentaire de SUN.
+**Limite essentielle : ce n'est pas un grand modèle de langage (LLM).** Il ne rédige pas librement une réponse à partir de zéro. Il reconnaît des catégories ciblées et sélectionne une explication pédagogique préparée. La première version est principalement centrée sur les bases de Python. C'est le seul modèle IA intégré à l'application ; la recherche documentaire de SUN reste un système complémentaire distinct.
 
 Le corpus de départ contient 260 demandes synthétiques originales en français, réparties sur neuf catégories. Le fichier `training/neural/intents.jsonl.gz.b64` contient ces exemples compressés. Ils ne sont pas des conversations privées d'utilisateurs.
 
