@@ -112,3 +112,23 @@ Puis exécuter :
 L'évaluateur calcule une couverture de concepts indicative et, si des notes humaines sont présentes, leur moyenne. Les mots-clés peuvent apparaître dans une réponse fausse : relire les réponses, vérifier les références et exécuter les tests Python avant de conclure qu'un modèle est meilleur.
 
 Documentation officielle de TRL sur les formats conversationnels du SFT : https://huggingface.co/docs/trl/en/sft_trainer
+
+
+## 8. Premier modèle neuronal propre à SUN
+
+SUN Neural 0.1 est un petit réseau neuronal multicouche (MLP) destiné à l'inférence locale dans le navigateur Android. Il utilise des caractéristiques de mots, de paires de mots et de trigrammes de caractères, puis classe le message parmi neuf intentions en français. Ses poids quantifiés sont stockés dans `apps/chat-ia/models/sun-neural-v1.json`.
+
+**Limite essentielle : ce n'est pas un grand modèle de langage (LLM).** Il ne rédige pas librement une réponse à partir de zéro. Il reconnaît des catégories ciblées et sélectionne une explication pédagogique préparée. La première version est principalement centrée sur les bases de Python ; elle ne remplace pas LaMini, SmolLM2 ni la recherche documentaire de SUN.
+
+Le corpus de départ contient 260 demandes synthétiques originales en français, réparties sur neuf catégories. Le fichier `training/neural/intents.jsonl.gz.b64` contient ces exemples compressés. Ils ne sont pas des conversations privées d'utilisateurs.
+
+Pour entraîner un nouveau jeu de poids :
+
+    pip install -r training/requirements.txt
+    python training/train_sun_neural.py
+
+Le script entraîne sur CPU avec PyTorch, conserve un jeu de test à part et exporte les poids int8 dans `apps/chat-ia/models/sun-neural-v1.json`. Aucun GPU n'est nécessaire pour ce petit réseau. Ce processus est distinct du fine-tuning LoRA du modèle génératif défini plus haut.
+
+Le fichier initial embarqué a été évalué sur un petit ensemble synthétique tenu à part : 28 réponses correctes sur 38 (73,7 % d'exactitude). Avec un seuil de confiance de 0,45, il répond sur 28 des 38 cas et 25 de ces 28 classifications sont correctes (89,3 % de précision sélective). Ces chiffres ne mesurent pas les performances sur de vrais messages d'élèves et ne garantissent pas la fiabilité. Il faut élargir le corpus, faire relire les exemples et construire un benchmark humain plus représentatif avant d'étendre ses domaines.
+
+Les tests JavaScript vérifient le chargement des poids, plusieurs intentions fréquentes et le refus de forcer une réponse Python à une question hors sujet.
