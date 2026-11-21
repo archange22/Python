@@ -153,7 +153,7 @@ export function predictSunIntent(text, model) {
 }
 
 const ANSWERS = {
-  greeting: "Bonjour ! Je suis SUN Neural, un petit modèle neuronal intégré à Académique. Je peux répondre à quelques questions ciblées sur les bases de Python. Pour les demandes plus larges, utilise un modèle conversationnel plus complet.",
+  greeting: "Bonjour ! Je suis SUN Neural, un petit modèle neuronal intégré à Académique. Je peux répondre à quelques questions ciblées sur les bases de Python. Pour les demandes plus larges, la version actuelle ne sait pas encore générer une réponse adaptée.",
   python_variable_equal: "En Python, une variable sert à garder une valeur sous un nom.\n\nExemple :\nnom = \"Awa\"\nage = 15\n\nAttention : le signe = affecte une valeur. Le signe == compare deux valeurs et donne True ou False.\n\nExemple :\nage == 15  # True",
   python_control_flow: "Les conditions permettent de choisir quoi faire. Les boucles permettent de répéter des instructions.\n\nCondition :\nage = 15\nif age >= 18:\n    print(\"Majeur\")\nelse:\n    print(\"Mineur\")\n\nBoucle :\nfor nombre in range(3):\n    print(nombre)\n\nLa boucle affiche 0, puis 1, puis 2.",
   python_function: "Une fonction regroupe des instructions que tu peux réutiliser. On la définit avec def.\n\nExemple :\ndef addition(a, b):\n    return a + b\n\nresultat = addition(3, 4)\nprint(resultat)  # 7\n\nLes paramètres a et b reçoivent les valeurs envoyées à la fonction. return renvoie le résultat.",
