@@ -129,6 +129,6 @@ Pour entraîner un nouveau jeu de poids :
 
 Le script entraîne sur CPU avec PyTorch, conserve un jeu de test à part et exporte les poids int8 dans `apps/chat-ia/models/sun-neural-v1.json`. Aucun GPU n'est nécessaire pour ce petit réseau. Ce processus est distinct du fine-tuning LoRA du modèle génératif défini plus haut.
 
-Le fichier initial embarqué a été évalué sur un petit ensemble synthétique tenu à part : 28 réponses correctes sur 38 (73,7 % d'exactitude). Avec un seuil de confiance de 0,45, il répond sur 28 des 38 cas et 25 de ces 28 classifications sont correctes (89,3 % de précision sélective). Ces chiffres ne mesurent pas les performances sur de vrais messages d'élèves et ne garantissent pas la fiabilité. Il faut élargir le corpus, faire relire les exemples et construire un benchmark humain plus représentatif avant d'étendre ses domaines.
+Le fichier embarqué actuel a été évalué sur un petit ensemble synthétique tenu à part : 23 réponses correctes sur 39 (59,0 % d'exactitude). Avec un seuil de confiance de 0,45, il répond sur 28 des 39 cas (71,8 % de couverture) et 22 de ces 28 classifications sont correctes (78,6 % de précision sélective). Ces chiffres ne mesurent pas les performances sur de vrais messages d'élèves et ne garantissent pas la fiabilité. Il faut élargir le corpus, faire relire les exemples et construire un benchmark humain plus représentatif avant d'étendre ses domaines.
 
 Les tests JavaScript vérifient le chargement des poids, plusieurs intentions fréquentes et le refus de forcer une réponse Python à une question hors sujet.
