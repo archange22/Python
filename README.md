@@ -62,7 +62,7 @@ SUN utilise Transformers.js 4.3.2 et trois modèles compacts disponibles au choi
 
 Les PDF des cours Académique étant générés depuis ces sources Markdown, SUN indexe leur contenu source avec une recherche BM25, des synonymes et une tolérance aux petites fautes de frappe. Il transmet des extraits adaptés à la taille du modèle et ajoute la référence du parcours, le numéro de leçon et la section. Sans modèle chargé, le champ de discussion reste actif : SUN peut tenir les échanges courants et afficher un extrait retrouvé avec sa référence. Le téléchargement par file ne bloque plus le chat ; charger le modèle reste une action optionnelle pour obtenir une génération libre. L’index est conservé localement ; le premier chargement des documents nécessite une connexion.
 
-Limites : les modèles locaux restent compacts et peuvent produire des réponses inexactes ou moins naturelles en français, notamment SmolLM2-135M. Cette version ne lit pas encore les PDF importés par l’utilisateur : elle recherche dans les sources des PDF et les leçons déjà présents dans le dépôt.
+Limites : les modèles locaux restent compacts et peuvent produire des réponses inexactes ou moins naturelles en français, notamment SmolLM2-135M. SUN permet maintenant d’importer des PDF personnels : PDF.js extrait le texte sélectionnable dans le navigateur, puis le texte seul est enregistré dans IndexedDB sur l’appareil et ajouté à l’index de recherche. Les fichiers originaux ne sont pas envoyés ni conservés par SUN. La limite actuelle est de 12 Mo et 120 pages par fichier, avec un plafond de 160 000 caractères extraits et 20 documents personnels. Les PDF scannés sans couche texte ne sont pas encore traités par OCR. Le support des PDF privés dépend du navigateur et de son stockage local.
 
 
 ## Leçons quotidiennes et bibliothèque
@@ -82,3 +82,29 @@ Le catalogue est actualisé depuis le dépôt au démarrage de l'application. Le
 - Le nombre de threads WASM est limité à un sur les navigateurs sans isolation cross-origin et ajusté à 4 au maximum lorsque le navigateur autorise le multithreading.
 - Les générations affichent leur durée mesurée. Ce chiffre dépend du téléphone, du navigateur, du modèle chargé et de la température de l'appareil.
 - Ces réglages optimisent l'exécution ; ils ne transforment pas les petits modèles en modèles de grande capacité et ne garantissent pas une qualité supérieure.
+
+
+### SUN : bibliothèque PDF locale et entraînement
+
+L'espace SUN propose l'import de fichiers PDF personnels. Le module \`apps/chat-ia/document-library.js\` charge PDF.js 6.5.438 à la demande, extrait le texte page par page et conserve uniquement le texte extrait dans IndexedDB. L'index documentaire l'ajoute à la recherche BM25 ; les résultats comportent le titre du fichier et la page d'origine. Les PDF scannés sans texte sélectionnable nécessitent encore un OCR qui n'est pas implémenté. Limites actuelles : 12 Mo, 120 pages, 160 000 caractères extraits par document, 20 documents et 2 millions de caractères dans la bibliothèque locale.
+
+Les PDF importés restent sur l'appareil. Ils ne sont pas copiés dans GitHub et ne sont pas envoyés par le module d'importation à un serveur. Seul le texte extrait est conservé, afin de permettre la recherche locale. La bibliothèque peut être gérée depuis l'interface SUN (ajout et suppression).
+
+Le dossier \`training/\` contient un pipeline séparé :
+- \`prepare_sft_dataset.py\` vérifie les droits, la revue de confidentialité, le statut qualité, les rôles et les doublons, puis sépare les conversations par groupe en train/validation/test.
+- \`evaluate_dataset.py\` vérifie les splits et les fuites de conversations.
+- \`evaluate_responses.py\` compare des réponses SUN à un benchmark Python et conversation indépendant, avec une couverture de concepts indicative et un score humain facultatif.
+- \`train_sft.py\` fournit un point d'entrée facultatif pour un fine-tuning SFT avec Hugging Face TRL et LoRA. Il nécessite un modèle causal conversationnel compatible et un environnement de calcul adapté.
+- \`training/data/seed.jsonl\` contient 20 exemples français originaux, créés pour le projet. Ils constituent un jeu de départ très petit, pas un corpus suffisant pour un assistant expert.
+
+Commandes depuis la racine du dépôt :
+
+\`\`\`bash
+python training/prepare_sft_dataset.py
+python training/evaluate_dataset.py
+python -m unittest discover -s training/tests -v
+\`\`\`
+
+Pour un entraînement, installer les dépendances de \`training/requirements.txt\` sur une machine avec un GPU adapté, vérifier la licence du modèle choisi et exécuter \`training/train_sft.py\`. Le fine-tuning n'est pas exécuté dans l'application Android ni dans un Cloudflare Worker. Le script a été ajouté, mais aucun modèle n'a été entraîné dans ce dépôt. La perte du jeu de test ne remplace pas une évaluation humaine et l'exécution réelle des tests de code.
+
+PDF.js est distribué par Mozilla sous licence MPL 2.0 : https://github.com/mozilla/pdf.js/
