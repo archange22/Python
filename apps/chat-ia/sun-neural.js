@@ -169,7 +169,7 @@ export async function generateSunNeuralReply(message, sources = []) {
   const prediction = predictSunIntent(message, model);
   let text = prediction.accepted ? ANSWERS[prediction.intent] : ANSWERS.unknown;
   const source = Array.isArray(sources) ? sources.find((item) => item && typeof item.text === "string") : null;
-  if (source && prediction.accepted) {
+  if (source) {
     const excerpt = source.text.replace(/\s+/g, " ").trim().slice(0, 420);
     if (excerpt) text += "\n\nPassage retrouvé dans la bibliothèque :\n" + excerpt;
   }
