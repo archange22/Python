@@ -1,4 +1,5 @@
 const STORAGE_KEY = "academique-python-console-v2";
+const LEGACY_STORAGE_KEY = "academique-python-console-v1";
 const FILE_NAME_KEY = "academique-python-console-filename-v1";
 const DEFAULT_CODE = "nom = input(\"Ton prénom ? \")\nprint(\"Bonjour\", nom)\nprint(\"Bienvenue dans Python 3 !\")\n\nfor nombre in range(1, 4):\n    print(\"Étape\", nombre)";
 const MAX_TERMINAL_LINES = 1500;
@@ -272,6 +273,7 @@ function resetRuntime() {
   setExecution("Moteur arrêté");
   setStatus("Moteur arrêté. Prépare Python pour recommencer.");
   addLine("La mémoire Python a été réinitialisée. Ton code est conservé dans l’éditeur.", "info");
+  createWorker();
 }
 
 function insertText(text, selectionStart, selectionEnd, cursorOffset = null) {
@@ -500,8 +502,10 @@ window.addEventListener("pagehide", saveEditor);
 
 try {
   const saved = localStorage.getItem(STORAGE_KEY);
+  const legacySaved = saved === null ? localStorage.getItem(LEGACY_STORAGE_KEY) : null;
   const savedName = localStorage.getItem(FILE_NAME_KEY);
   if (saved !== null) editor.value = saved;
+  else if (legacySaved !== null) editor.value = legacySaved;
   if (savedName) setFileName(savedName);
 } catch (error) {
   addLine("Le stockage local est indisponible. Le code ne sera pas conservé après fermeture.", "info");
