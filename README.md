@@ -79,8 +79,8 @@ Le catalogue est actualisé depuis le dépôt au démarrage de l'application. Le
 
 ### Chat IA : profils de performance
 
-- **Rapide** (profil par défaut) : contexte réduit et plafond de génération plus bas pour limiter le temps de calcul.
-- **Équilibré** : compromis entre contexte, longueur et vitesse.
+- **Équilibré** (profil par défaut) : compromis entre contexte, longueur et vitesse.
+- **Rapide** : contexte réduit et plafond de génération plus bas pour limiter le temps de calcul.
 - **Approfondi** : davantage de contexte et de tokens, au prix d'une génération généralement plus lente.
 - Le nombre de threads WASM est limité à un sur les navigateurs sans isolation cross-origin et ajusté à 4 au maximum lorsque le navigateur autorise le multithreading.
 - Les générations affichent leur durée mesurée. Ce chiffre dépend du téléphone, du navigateur, du modèle chargé et de la température de l'appareil.
@@ -98,7 +98,7 @@ Le dossier \`training/\` contient un pipeline séparé :
 - \`evaluate_dataset.py\` vérifie les splits et les fuites de conversations.
 - \`evaluate_responses.py\` compare des réponses SUN à un benchmark Python et conversation indépendant, avec une couverture de concepts indicative et un score humain facultatif.
 - \`train_sft.py\` fournit un point d'entrée facultatif pour un fine-tuning SFT avec Hugging Face TRL et LoRA. Il nécessite un modèle causal conversationnel compatible et un environnement de calcul adapté.
-- \`training/data/seed.jsonl\` contient 20 exemples français originaux, créés pour le projet. Ils constituent un jeu de départ très petit, pas un corpus suffisant pour un assistant expert.
+- \`training/data/seed.jsonl\` contient 126 exemples originaux en français et en anglais, créés pour le projet et répartis sur plusieurs domaines. C'est encore un corpus de démarrage, pas un jeu de données suffisant pour rendre SUN expert.
 
 Commandes depuis la racine du dépôt :
 
@@ -113,4 +113,4 @@ Pour un entraînement, installer les dépendances de \`training/requirements.txt
 PDF.js est distribué par Mozilla sous licence MPL 2.0 : https://github.com/mozilla/pdf.js/
 
 
-SUN Neural 0.1 est un petit MLP à inférence locale, avec des poids int4 intégrés et un pipeline de réentraînement sur un corpus synthétique français original. Il classe neuf intentions, surtout liées aux bases de Python, puis sélectionne une explication préparée. **Ce prototype n'est pas un LLM conversationnel et ne génère pas librement du texte.** Sur son petit jeu de test synthétique (39 messages), il obtient environ 59 % d'exactitude ; il reste expérimental. C'est le seul modèle IA proposé dans l'application. Voir `training/README.md` pour son architecture, ses limites et sa procédure d'entraînement.
+SUN est désormais le seul modèle IA proposé dans l'application. Il s'agit d'un Transformer génératif local basé sur Qwen3-0.6B-Instruct, avec une mémoire documentaire RAG. Un pipeline SFT/LoRA, un jeu initial de 126 exemples et un benchmark de 37 cas préparent sa spécialisation. **L'entraînement LoRA n'a pas été exécuté et le checkpoint ONNX de l'application reste le modèle de base non adapté.** Voir `training/README.md` pour les étapes et les limites.
