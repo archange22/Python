@@ -1,4 +1,4 @@
-const APP_CACHE = "academique-chat-ia-shell-v3";
+const APP_CACHE = "academique-sun-shell-v7";
 const LIBRARY_CACHE = "academique-chat-ia-library-v3";
 const APP_FILES = [
   "./",
@@ -6,6 +6,14 @@ const APP_FILES = [
   "./styles.css",
   "./app.js",
   "./chat.worker.js",
+  "./knowledge.js",
+  "./document-library.js",
+  "./conversation.js",
+  "./sun-neural.js",
+  "./models/sun-neural-v1.part-01.txt",
+  "./models/sun-neural-v1.part-02.txt",
+  "./models/sun-neural-v1.part-03.txt",
+  "./models/sun-neural-v1.part-04.txt",
   "./manifest.webmanifest",
   "./icon.svg"
 ];
@@ -50,7 +58,7 @@ self.addEventListener("activate", (event) => {
     caches.keys()
       .then((keys) => Promise.all(keys
         .filter((key) =>
-          (key.startsWith("academique-chat-ia-shell-") && key !== APP_CACHE) ||
+          ((key.startsWith("academique-sun-shell-") || key.startsWith("academique-chat-ia-shell-")) && key !== APP_CACHE) ||
           (key.startsWith("academique-chat-ia-library-") && key !== LIBRARY_CACHE)
         )
         .map((key) => caches.delete(key))
@@ -64,8 +72,8 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
 
-  // Cache only the Transformers.js runtime library here. Model weights are
-  // cached by Transformers.js in its own Cache Storage namespace.
+  // Cache browser-side AI and PDF parsing libraries from the pinned CDN URLs.
+  // Model weights are cached by Transformers.js in its own Cache Storage namespace.
   if (url.hostname === "cdn.jsdelivr.net") {
     event.respondWith((async () => {
       const cache = await caches.open(LIBRARY_CACHE);
@@ -88,6 +96,26 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (url.origin !== self.location.origin) return;
+
+  // Course source files are refreshed from the network first and kept for offline use.
+  if (/\/courses\/(?:catalog\.json|.+\.md)$/.test(url.pathname) ||
+      /\/pdf\/lecon-0[1-4]\.md$/.test(url.pathname)) {
+    event.respondWith((async () => {
+      const cache = await caches.open(APP_CACHE);
+      try {
+        const response = await fetch(request);
+        if (response.ok) await cache.put(request, response.clone());
+        return response;
+      } catch (error) {
+        const cached = await cache.match(request);
+        return cached || new Response("Cette leçon n’est pas encore disponible hors connexion.", {
+          status: 503,
+          headers: { "Content-Type": "text/plain; charset=utf-8" }
+        });
+      }
+    })());
+    return;
+  }
 
   if (request.mode === "navigate") {
     event.respondWith(

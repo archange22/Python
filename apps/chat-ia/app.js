@@ -1,11 +1,21 @@
+import { loadKnowledgeIndex, searchKnowledge } from "./knowledge.js";
+import { importPdfFile, listImportedDocuments, deleteImportedDocument } from "./document-library.js";
+import { getSmallTalkReply, appendSourceReferences } from "./conversation.js";
+
 const STORAGE_KEY = "academique-chat-ia-v1";
 const SELECTED_MODEL_KEY = "academique-chat-ia-selected-model-v1";
 const STATS_KEY = "academique-chat-ia-download-stats-v1";
 const QUEUE_KEY = "academique-chat-ia-download-queue-v2";
 const FILES_KEY = "academique-chat-ia-download-files-v2";
 const RESPONSE_LENGTH_KEY = "academique-chat-ia-response-length-v1";
+const PERFORMANCE_MODE_KEY = "academique-chat-ia-performance-mode-v1";
 
 const MODELS = {
+  "sun-neural-0.1": {
+    name: "SUN Neural 0.1",
+    description: "Petit réseau neuronal français intégré à Académique. Il classe des intentions et propose des explications ciblées sur les bases de Python ; ce n’est pas un modèle génératif libre.",
+    family: "Neuronal"
+  },
   "lamini-77": {
     name: "LaMini-Flan-T5-77M",
     description: "Le modèle le plus léger. Utile pour découvrir le chat local, mais ses réponses peuvent rester limitées.",
@@ -24,6 +34,154 @@ const MODELS = {
 };
 
 const $ = (selector) => document.querySelector(selector);
+
+function ensureKnowledgeIndex() {
+  if (!knowledgeIndexPromise) {
+    knowledgeIndexPromise = loadKnowledgeIndex().catch((error) => {
+      knowledgeIndexPromise = null;
+      throw error;
+    });
+  }
+  return knowledgeIndexPromise;
+}
+
+function warmKnowledgeIndex() {
+  $("#knowledgeStatus").textContent = "Préparation de la bibliothèque des cours…";
+  ensureKnowledgeIndex().then((index) => {
+    const count = Array.isArray(index.sources) ? index.sources.length : 0;
+    const documentCount = Array.isArray(index.sources)
+      ? index.sources.filter((source) => source.id.startsWith("local-pdf-")).length
+      : 0;
+    $("#knowledgeStatus").textContent = count
+      ? "Bibliothèque prête · " + count + " ressources consultables · " +
+        documentCount + " PDF personnel(s)"
+      : "Aucune ressource n’est encore indexée.";
+    renderImportedDocuments();
+  }).catch(() => {
+    $("#knowledgeStatus").textContent =
+      "Bibliothèque indisponible pour le moment · vérifie la connexion.";
+  });
+}
+
+async function renderImportedDocuments() {
+  const container = $("#importedPdfList");
+  container.textContent = "";
+  try {
+    const documents = await listImportedDocuments();
+    if (!documents.length) {
+      const empty = document.createElement("p");
+      empty.className = "empty-state";
+      empty.textContent = "Tes documents PDF apparaîtront ici après importation.";
+      container.appendChild(empty);
+      $("#pdfImportStatus").textContent = "Aucun PDF personnel importé.";
+      return;
+    }
+
+    $("#pdfImportStatus").textContent =
+      documents.length + " document(s) PDF conservé(s) localement sur cet appareil.";
+    for (const pdfDocument of documents) {
+      const item = document.createElement("article");
+      item.className = "imported-pdf-item";
+      const details = document.createElement("div");
+      details.className = "imported-pdf-details";
+      const title = document.createElement("strong");
+      title.textContent = pdfDocument.name;
+      const meta = document.createElement("span");
+      meta.textContent = pdfDocument.extractedPages + " / " + pdfDocument.totalPages +
+        " pages indexées · " + pdfDocument.characterCount.toLocaleString("fr-FR") + " caractères" +
+        (pdfDocument.truncated ? " · extraction partielle" : "");
+      details.append(title, meta);
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "document-remove-button";
+      remove.textContent = "Supprimer";
+      remove.setAttribute("aria-label", "Supprimer " + pdfDocument.name + " de la bibliothèque locale");
+      remove.addEventListener("click", async () => {
+        remove.disabled = true;
+        try {
+          await deleteImportedDocument(pdfDocument.id);
+          await refreshKnowledgeIndex();
+          await renderImportedDocuments();
+        } catch (error) {
+          remove.disabled = false;
+          $("#pdfImportStatus").textContent = explainError(error.message || error);
+        }
+      });
+      item.append(details, remove);
+      container.appendChild(item);
+    }
+  } catch (error) {
+    const message = error?.message || String(error);
+    $("#pdfImportStatus").textContent = "Stockage PDF indisponible : " + message;
+    $("#pdfImportButton").disabled = true;
+  }
+}
+
+async function refreshKnowledgeIndex() {
+  knowledgeIndexPromise = null;
+  const index = await loadKnowledgeIndex({ forceRefresh: true });
+  knowledgeIndexPromise = Promise.resolve(index);
+  const documentCount = Array.isArray(index.sources)
+    ? index.sources.filter((source) => source.id.startsWith("local-pdf-")).length
+    : 0;
+  const count = Array.isArray(index.sources) ? index.sources.length : 0;
+  $("#knowledgeStatus").textContent =
+    "Bibliothèque prête · " + count + " ressources consultables · " +
+    documentCount + " PDF personnel(s)";
+  return index;
+}
+
+async function handlePdfImport() {
+  const input = $("#pdfImportInput");
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+
+  const button = $("#pdfImportButton");
+  button.disabled = true;
+  const imported = [];
+  const failures = [];
+  try {
+    for (let index = 0; index < files.length; index += 1) {
+      const file = files[index];
+      $("#pdfImportStatus").textContent =
+        "Lecture de " + file.name + " (" + (index + 1) + " / " + files.length + ")…";
+      try {
+        const document = await importPdfFile(file);
+        imported.push(document);
+      } catch (error) {
+        failures.push(file.name + " : " + explainError(error.message || error));
+      }
+    }
+
+    if (imported.length) {
+      await refreshKnowledgeIndex();
+      await renderImportedDocuments();
+    }
+    const successText = imported.length
+      ? imported.length + " PDF ajouté(s) à la recherche locale."
+      : "Aucun PDF n'a été ajouté.";
+    const failureText = failures.length ? " Échecs : " + failures.join(" | ") : "";
+    $("#pdfImportStatus").textContent = successText + failureText;
+  } catch (error) {
+    $("#pdfImportStatus").textContent =
+      "Importation impossible : " + explainError(error.message || error);
+  } finally {
+    button.disabled = false;
+    input.value = "";
+  }
+}
+
+function cleanMarkdownForDisplay(value) {
+  return String(value || "")
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/\x60{1,3}/g, "")
+    .replace(/^\s*[-*]\s+/gm, "• ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
 let worker = null;
 let modelReady = false;
 let loading = false;
@@ -31,6 +189,7 @@ let busy = false;
 let history = [];
 let selectedModel = "lamini-77";
 let responseLength = "normal";
+let performanceMode = "fast";
 let stats = {};
 let downloadQueue = [];
 let downloadFiles = [];
@@ -44,6 +203,8 @@ let lastSpeedSample = null;
 let smoothedSpeed = 0;
 let fileSavePending = false;
 let downloadPlanTotalBytes = 0;
+let knowledgeIndexPromise = null;
+let currentSources = [];
 
 function readJSON(key, fallback) {
   try {
@@ -176,8 +337,14 @@ function resetSpeed() {
 function setModelDescription() {
   const model = MODELS[selectedModel];
   $("#modelDescription").textContent = model.description;
-  $("#modelHint").textContent = "La taille exacte et les fichiers nécessaires seront demandés au registre du modèle avant le chargement.";
-  $("#clearModelCacheButton").textContent = "Effacer le cache de ce modèle";
+  const isBundled = model.family === "Neuronal";
+  $("#modelHint").textContent = isBundled
+    ? "Modèle intégré à Académique : aucun poids externe à télécharger."
+    : "La taille exacte et les fichiers nécessaires seront demandés au registre du modèle avant le chargement.";
+  $("#clearModelCacheButton").textContent = isBundled
+    ? "Modèle intégré · cache non applicable"
+    : "Effacer le cache de ce modèle";
+  $("#clearModelCacheButton").disabled = isBundled;
   renderStats();
 }
 
@@ -441,8 +608,8 @@ function resetWorker() {
   $("#cancelDownloadButton").hidden = true;
   $("#modelSelect").disabled = false;
   $("#loadModelButton").disabled = false;
-  $("#messageInput").disabled = true;
-  $("#sendButton").disabled = true;
+  $("#messageInput").disabled = busy;
+  $("#sendButton").disabled = busy;
   removeTyping();
 }
 
@@ -461,10 +628,15 @@ function startModelLoad(purpose = "manual", modelKey = selectedModel) {
   $("#loadModelButton").disabled = true;
   $("#modelSelect").disabled = true;
   $("#cancelDownloadButton").hidden = false;
-  $("#modelHint").textContent = "Vérification du stockage, du registre et des fichiers du modèle…";
-  $("#downloadDetails").textContent = "Préparation du téléchargement…";
-  $("#messageInput").disabled = true;
-  $("#sendButton").disabled = true;
+  const isBundledSun = MODELS[modelKey]?.family === "Neuronal";
+  $("#modelHint").textContent = isBundledSun
+    ? "Chargement du petit réseau neuronal intégré…"
+    : "Vérification du stockage, du registre et des fichiers du modèle…";
+  $("#downloadDetails").textContent = isBundledSun
+    ? "Aucun téléchargement externe nécessaire."
+    : "Préparation du téléchargement…";
+  $("#messageInput").disabled = busy;
+  $("#sendButton").disabled = busy;
   $("#generationStatus").textContent = purpose === "queue"
     ? "Préparation d’un modèle programmé…"
     : "Chargement du modèle avant la discussion.";
@@ -472,8 +644,10 @@ function startModelLoad(purpose = "manual", modelKey = selectedModel) {
 
   (async () => {
     try {
-      const storageMessage = await prepareStorage();
-      if ("serviceWorker" in navigator) {
+      const storageMessage = isBundledSun
+        ? "Modèle neuronal intégré à l’application."
+        : await prepareStorage();
+      if (!isBundledSun && "serviceWorker" in navigator) {
         const registration = await navigator.serviceWorker.register("./sw.js");
         await waitForServiceWorker(registration);
       }
@@ -679,7 +853,7 @@ function addMessage(role, text, save = true) {
   const bubble = document.createElement("div");
   bubble.className = "message-bubble";
   const title = document.createElement("strong");
-  title.textContent = role === "user" ? "Toi" : (MODELS[selectedModel]?.name || "Assistant local");
+  title.textContent = role === "user" ? "Toi" : "SUN";
   const paragraph = document.createElement("p");
   paragraph.textContent = text;
   bubble.append(title, paragraph);
@@ -698,7 +872,7 @@ function addMessage(role, text, save = true) {
 function renderHistory() {
   $("#messages").textContent = "";
   if (!history.length) {
-    addMessage("assistant", "Bonjour. Je peux t’aider à apprendre Python, les mathématiques et les bases de l’intelligence artificielle. Charge un modèle local pour commencer.", false);
+    addMessage("assistant", "Bonjour ! Je suis SUN, l’assistant d’Académique. Tu peux me parler normalement ou me poser une question sur les leçons et les documents de cours.", false);
     return;
   }
   for (const item of history) addMessage(item.role, item.content, false);
@@ -748,8 +922,8 @@ function finishAssistantStream(finalText) {
 
 function updateGenerationControls(isBusy) {
   busy = isBusy;
-  $("#sendButton").disabled = isBusy || !modelReady;
-  $("#messageInput").disabled = isBusy || !modelReady;
+  $("#sendButton").disabled = isBusy;
+  $("#messageInput").disabled = isBusy;
 }
 
 function handleQueueReady() {
@@ -770,15 +944,22 @@ function handleQueueReady() {
   queueCurrentKey = null;
   $("#cancelDownloadButton").hidden = true;
   $("#loadModelButton").disabled = false;
+  $("#loadModelButton").textContent = "Charger pour réponses avancées";
   $("#modelSelect").disabled = false;
-  $("#messageInput").disabled = true;
-  $("#sendButton").disabled = true;
-  $("#generationStatus").textContent = "Téléchargement terminé. Charge le modèle choisi pour discuter.";
-  $("#downloadDetails").textContent = "Téléchargement terminé · " + downloadFiles.length + " fichier(s) suivis.";
+  updateGenerationControls(false);
+  const isBundledSun = MODELS[finishedKey]?.family === "Neuronal";
+  $("#generationStatus").textContent = isBundledSun
+    ? "SUN Neural vérifié · il sera initialisé au prochain chargement."
+    : "Modèle téléchargé, pas encore chargé en mémoire. Tu peux discuter sans lui ou le charger pour les réponses libres.";
+  $("#downloadDetails").textContent = isBundledSun
+    ? "Modèle intégré · aucun téléchargement externe."
+    : "Téléchargement terminé · " + downloadFiles.length + " fichier(s) suivis.";
   $("#downloadSpeed").textContent = "Vitesse : terminée";
   $("#downloadEta").textContent = "Temps restant : 0 s";
-  setStatus("Modèle téléchargé et mis en cache", "ready");
-  $("#modelStatus").textContent = MODELS[finishedKey]?.name + " · fichiers prêts";
+  setStatus(isBundledSun ? "SUN Neural prêt à charger" : "SUN prêt · modèle téléchargé", "ready");
+  $("#modelStatus").textContent = isBundledSun
+    ? "SUN Neural 0.1 · modèle intégré"
+    : MODELS[finishedKey]?.name + " · fichiers prêts";
   setTimeout(processQueue, 200);
 }
 
@@ -865,15 +1046,22 @@ function handleWorkerMessage(event) {
     }
     setStatus("Modèle local prêt", "ready");
     $("#modelStatus").textContent = MODELS[selectedModel].name + " est prêt";
-    $("#modelHint").textContent = "Le modèle est chargé et les fichiers requis ont été vérifiés par le moteur.";
-    $("#downloadDetails").textContent = "Initialisation terminée · " + downloadFiles.length + " fichiers suivis.";
+    const isBundledSun = MODELS[selectedModel]?.family === "Neuronal";
+    $("#modelHint").textContent = isBundledSun
+      ? "Le réseau neuronal SUN est chargé localement. Il reconnaît un nombre limité d’intentions en français, surtout sur les bases de Python."
+      : "Le modèle est chargé et les fichiers requis ont été vérifiés par le moteur.";
+    $("#downloadDetails").textContent = isBundledSun
+      ? "Modèle intégré chargé · aucun téléchargement nécessaire."
+      : "Initialisation terminée · " + downloadFiles.length + " fichiers suivis.";
     $("#loadModelButton").textContent = "Modèle prêt";
     $("#loadModelButton").disabled = true;
     $("#cancelDownloadButton").hidden = true;
     $("#modelSelect").disabled = false;
     $("#messageInput").disabled = false;
     $("#sendButton").disabled = false;
-    $("#generationStatus").textContent = "Prêt à répondre localement.";
+    $("#generationStatus").textContent = MODELS[selectedModel]?.family === "Neuronal"
+      ? "Prototype neuronal chargé · réponses ciblées, pas de génération libre."
+      : "Modèle local chargé · SUN peut répondre librement.";
     $("#downloadSpeed").textContent = "Vitesse : terminée";
     $("#downloadEta").textContent = "Temps restant : 0 s";
     $("#messageInput").focus();
@@ -892,15 +1080,25 @@ function handleWorkerMessage(event) {
 
   if (data.type === "reply") {
     removeTyping();
-    if (data.streamed) finishAssistantStream(data.text);
-    else addMessage("assistant", data.text || "Je n’ai pas réussi à formuler une réponse. Reformule ta question.");
+    const response = appendSourceReferences(
+      data.text || (streamingMessage?.text || "Je n’ai pas réussi à formuler une réponse. Reformule ta question."),
+      currentSources
+    );
+    currentSources = [];
+    if (data.streamed) finishAssistantStream(response);
+    else addMessage("assistant", response);
     updateGenerationControls(false);
-    $("#generationStatus").textContent = "Réponse terminée.";
+    const seconds = Number.isFinite(data.durationMs) ? (data.durationMs / 1000).toFixed(1) : null;
+    $("#generationStatus").textContent = seconds
+      ? "Réponse terminée en " + seconds + " s · mode " +
+        ({ fast: "rapide", balanced: "équilibré", quality: "approfondi" }[data.performanceMode] || "local")
+      : "Réponse terminée.";
     return;
   }
 
   if (data.type === "generation-error") {
     removeTyping();
+    currentSources = [];
     if (streamingMessage) finishAssistantStream(streamingMessage.text);
     addMessage("assistant", explainError(data.message || "Erreur pendant la génération."));
     updateGenerationControls(false);
@@ -953,7 +1151,7 @@ function processQueue() {
     }
     $("#modelSelect").disabled = false;
     $("#loadModelButton").disabled = false;
-    $("#loadModelButton").textContent = "Charger pour discuter";
+    $("#loadModelButton").textContent = "Charger pour réponses avancées";
     $("#generationStatus").textContent = "Tous les modèles programmés ont été traités.";
     setStatus("File de téléchargement terminée", "ready");
     renderQueue();
@@ -1017,9 +1215,9 @@ function changeModel() {
   setProgress(0);
   resetSpeed();
   setStatus("Modèle non chargé");
-  $("#modelStatus").textContent = "Modèle non chargé";
+  $("#modelStatus").textContent = "SUN prêt · modèle optionnel";
   $("#downloadDetails").textContent = "Aucun chargement en cours.";
-  $("#loadModelButton").textContent = "Charger pour discuter";
+  $("#loadModelButton").textContent = "Charger pour réponses avancées";
   setModelDescription();
   renderHistory();
 }
@@ -1029,8 +1227,15 @@ function changeResponseLength() {
   persist(RESPONSE_LENGTH_KEY, responseLength);
 }
 
+function changePerformanceMode() {
+  performanceMode = $("#performanceModeSelect").value;
+  persist(PERFORMANCE_MODE_KEY, performanceMode);
+  const labels = { fast: "Rapide", balanced: "Équilibré", quality: "Approfondi" };
+  $("#generationStatus").textContent = "Mode " + labels[performanceMode] + " sélectionné.";
+}
+
 function clearModelCache() {
-  if (loading || queueRunning) return;
+  if (loading || queueRunning || MODELS[selectedModel]?.family === "Neuronal") return;
   const confirmed = window.confirm("Effacer les fichiers en cache de " + MODELS[selectedModel].name + " ? Les prochains chargements devront retélécharger les fichiers.");
   if (!confirmed) return;
 
@@ -1081,21 +1286,75 @@ function clearModelCache() {
 async function sendMessage(event) {
   event.preventDefault();
   const text = $("#messageInput").value.trim();
-  if (!text || !worker || !modelReady || busy) return;
+  if (!text || busy) return;
 
   $("#messageInput").value = "";
   updateCounter();
   addMessage("user", text);
+
+  const smallTalk = getSmallTalkReply(text, history.slice(0, -1));
+  if (smallTalk) {
+    currentSources = [];
+    addMessage("assistant", smallTalk);
+    $("#generationStatus").textContent = "Échange simple · aucune génération nécessaire.";
+    return;
+  }
+
   updateGenerationControls(true);
-  $("#generationStatus").textContent = "Le modèle prépare sa réponse…";
+  $("#generationStatus").textContent = "Recherche dans les leçons et les PDF de cours…";
   addTyping();
+
+  let sources = [];
+  try {
+    const index = await ensureKnowledgeIndex();
+    sources = searchKnowledge(index, text, 3);
+    const count = Array.isArray(index.sources) ? index.sources.length : 0;
+    $("#knowledgeStatus").textContent =
+      "Bibliothèque prête · " + count + " ressources consultables";
+  } catch (error) {
+    $("#knowledgeStatus").textContent =
+      "Recherche documentaire indisponible · réponse générale possible.";
+  }
+  currentSources = sources;
+
+  if (!worker || !modelReady) {
+    removeTyping();
+    if (sources.length) {
+      const excerpt = cleanMarkdownForDisplay(sources[0].text).slice(0, 720);
+      const reply = appendSourceReferences(
+        "J’ai retrouvé ce passage dans le cours :\n\n" + excerpt,
+        sources
+      );
+      addMessage("assistant", reply);
+      $("#generationStatus").textContent = "Extrait retrouvé sans charger le modèle.";
+    } else {
+      addMessage(
+        "assistant",
+        "Pour répondre à cette question avec une explication complète, charge un modèle local. Les salutations et les recherches dans les leçons restent disponibles sans lui."
+      );
+      $("#generationStatus").textContent = "Modèle local nécessaire pour cette réponse.";
+    }
+    currentSources = [];
+    updateGenerationControls(false);
+    return;
+  }
+
+  $("#generationStatus").textContent = sources.length
+    ? "Le modèle prépare une réponse avec " + sources.length + " référence(s)…"
+    : "Le modèle prépare sa réponse…";
 
   worker.postMessage({
     type: "generate",
     modelKey: selectedModel,
     message: text,
     history: history.slice(0, -1).slice(-8),
-    responseLength
+    responseLength,
+    performanceMode,
+    sources: sources.map((source) => ({
+      label: source.label,
+      section: source.section,
+      text: source.text
+    }))
   });
 }
 
@@ -1104,11 +1363,14 @@ function updateCounter() {
 }
 
 function initializeApp() {
-  selectedModel = localStorage.getItem(SELECTED_MODEL_KEY) || "lamini-77";
-  if (!MODELS[selectedModel]) selectedModel = "lamini-77";
+  selectedModel = localStorage.getItem(SELECTED_MODEL_KEY) || "sun-neural-0.1";
+  if (!MODELS[selectedModel]) selectedModel = "sun-neural-0.1";
 
   responseLength = localStorage.getItem(RESPONSE_LENGTH_KEY) || "normal";
   if (!["short", "normal", "detailed"].includes(responseLength)) responseLength = "normal";
+
+  performanceMode = localStorage.getItem(PERFORMANCE_MODE_KEY) || "fast";
+  if (!["fast", "balanced", "quality"].includes(performanceMode)) performanceMode = "fast";
 
   stats = readJSON(STATS_KEY, {});
   if (!stats || typeof stats !== "object" || Array.isArray(stats)) stats = {};
@@ -1141,11 +1403,14 @@ function initializeApp() {
 
   $("#modelSelect").value = selectedModel;
   $("#responseLengthSelect").value = responseLength;
+  $("#performanceModeSelect").value = performanceMode;
   setModelDescription();
   renderQueue();
   renderFileList();
   renderHistory();
   updateCounter();
+  warmKnowledgeIndex();
+  updateGenerationControls(false);
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js").catch((error) => {
@@ -1159,12 +1424,15 @@ $("#loadModelButton").addEventListener("click", ensureWorker);
 $("#cancelDownloadButton").addEventListener("click", cancelDownload);
 $("#modelSelect").addEventListener("change", changeModel);
 $("#responseLengthSelect").addEventListener("change", changeResponseLength);
+$("#performanceModeSelect").addEventListener("change", changePerformanceMode);
 $("#clearModelCacheButton").addEventListener("click", clearModelCache);
 $("#queueModelButton").addEventListener("click", addQueueItem);
 $("#startQueueButton").addEventListener("click", startQueue);
 $("#pauseQueueButton").addEventListener("click", pauseQueue);
 $("#clearQueueButton").addEventListener("click", clearQueue);
 $("#chatForm").addEventListener("submit", sendMessage);
+$("#pdfImportButton").addEventListener("click", () => $("#pdfImportInput").click());
+$("#pdfImportInput").addEventListener("change", handlePdfImport);
 $("#messageInput").addEventListener("input", updateCounter);
 $("#messageInput").addEventListener("keydown", (event) => {
   if (event.key === "Enter" && !event.shiftKey) {
@@ -1174,6 +1442,7 @@ $("#messageInput").addEventListener("keydown", (event) => {
 });
 $("#clearButton").addEventListener("click", () => {
   history = [];
+  currentSources = [];
   saveHistory();
   renderHistory();
 });

@@ -138,10 +138,10 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .file-progress-track{height:4px;margin:7px 0 5px;overflow:hidden;border-radius:999px;background:var(--surface2)}
 .file-progress-fill{height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--accent),var(--teal));transition:width .2s ease}
 .download-file-detail{color:var(--muted);font-size:7px;font-variant-numeric:tabular-nums}
-.chat-settings{display:flex;align-items:center;gap:10px;padding:10px 15px;border-bottom:1px solid var(--line);background:rgba(5,10,19,.15)}
+.chat-settings{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 15px;border-bottom:1px solid var(--line);background:rgba(5,10,19,.15)}
 .chat-settings label{flex:0 0 auto}
-.chat-settings select{width:auto;min-width:110px;min-height:30px;font-size:8px}
-.chat-settings span{margin-left:auto;color:var(--muted);font-size:8px;text-align:right}
+.chat-settings select{width:auto;min-width:110px;min-height:30px;flex:1 1 135px;font-size:8px}
+.chat-settings span{flex:1 1 100%;margin-left:0;color:var(--muted);font-size:8px;text-align:right}
 .message.streaming .message-bubble p::after{content:"▋";display:inline-block;margin-left:2px;color:var(--accent);animation:stream-cursor .8s steps(2,end) infinite}
 @keyframes stream-cursor{50%{opacity:0}}
 [hidden]{display:none!important}
@@ -172,3 +172,30 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .queue-item-actions{display:flex;align-items:center;gap:4px;flex:0 0 auto}
 .queue-order{display:grid;place-items:center;width:27px;height:27px;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--surface2);color:var(--muted);font-size:13px;font-weight:900}
 .queue-order:disabled{opacity:.25;cursor:not-allowed}
+
+
+/* SUN documentary search status */
+.knowledge-status{padding:9px 15px;border-bottom:1px solid var(--line);background:rgba(84,217,197,.045);color:var(--muted);font-size:8px;line-height:1.6}
+
+
+/* Private local PDF library */
+.document-library{padding:12px 15px;border-bottom:1px solid var(--line);background:rgba(84,217,197,.025)}
+.document-library-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.document-library-heading>div{min-width:0}
+.document-library-heading strong{display:block;color:var(--ink);font-size:10px}
+.document-library-heading p{margin:4px 0 0;color:var(--muted);font-size:8px;line-height:1.6}
+.document-library-heading .secondary-button{min-height:34px;flex:0 0 auto;font-size:8px}
+.document-library-note{margin:8px 0;color:var(--muted);font-size:7px;line-height:1.65}
+.document-import-status{margin:7px 0;color:var(--teal);font-size:8px;line-height:1.6;overflow-wrap:anywhere}
+.imported-pdf-list{display:grid;gap:6px}
+.imported-pdf-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 9px;border:1px solid var(--line);border-radius:9px;background:var(--surface)}
+.imported-pdf-details{display:grid;gap:3px;min-width:0}
+.imported-pdf-details strong{overflow-wrap:anywhere;color:var(--ink);font-size:8px}
+.imported-pdf-details span{color:var(--muted);font-size:7px;line-height:1.5}
+.document-remove-button{min-height:28px;padding:0 9px;border:1px solid rgba(255,141,156,.28);border-radius:8px;background:rgba(255,141,156,.07);color:var(--danger);font-size:7px;font-weight:850;flex:0 0 auto}
+.document-remove-button:disabled{opacity:.4}
+@media(max-width:600px){
+  .document-library-heading{align-items:flex-start;flex-direction:column}
+  .document-library-heading .secondary-button{width:100%;min-height:39px}
+  .imported-pdf-item{align-items:flex-start}
+}

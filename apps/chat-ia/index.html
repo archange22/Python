@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b1020">
-  <meta name="description" content="Chat IA — assistant pédagogique local d’Académique.">
+  <meta name="description" content="SUN — assistant d’Académique avec discussion et recherche dans les leçons.">
   <meta name="color-scheme" content="dark light">
-  <title>Chat IA — Académique</title>
+  <title>SUN — Académique</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css">
@@ -16,7 +16,7 @@
   <header class="topbar">
     <a class="brand" href="../../index.html#applications">
       <span class="brand-icon">✦</span>
-      <span><strong>Chat IA</strong><small>APPLICATION INDÉPENDANTE</small></span>
+      <span><strong>SUN</strong><small>ASSISTANT D’ACADÉMIQUE</small></span>
     </a>
     <a class="back-link" href="../../index.html#applications">← Académique</a>
   </header>
@@ -25,19 +25,19 @@
     <section class="chat-hero">
       <span class="eyebrow">ASSISTANT PÉDAGOGIQUE LOCAL</span>
       <h1>Une question ?<br><span>On la travaille ensemble.</span></h1>
-      <p>Les modèles fonctionnent directement sur cet appareil. Télécharge les modèles dont tu as besoin, suis chaque fichier et garde les ressources en cache pour les prochaines sessions.</p>
+      <p>SUN reste utilisable sans télécharger de modèle : échanges courants et recherche dans les leçons. Charge un modèle local uniquement pour obtenir des réponses générées plus libres et détaillées.</p>
     </section>
 
     <section class="model-card" aria-labelledby="modelPanelTitle">
       <div class="model-top">
         <div class="model-icon">✦</div>
         <div class="model-copy">
-          <span class="eyebrow" id="modelPanelTitle">MODÈLES IA LOCAUX</span>
-          <strong id="modelStatus">Modèle non chargé</strong>
+          <span class="eyebrow" id="modelPanelTitle">MODÈLES IA LOCAUX DE SUN</span>
+          <strong id="modelStatus">SUN prêt · modèle optionnel</strong>
           <p id="modelHint">Sélectionne un modèle pour examiner les fichiers et l’espace nécessaires.</p>
         </div>
         <div class="model-buttons">
-          <button id="loadModelButton" class="load-button" type="button">Charger pour discuter</button>
+          <button id="loadModelButton" class="load-button" type="button">Charger pour réponses avancées</button>
           <button id="cancelDownloadButton" class="cancel-button" type="button" hidden>Arrêter</button>
         </div>
       </div>
@@ -45,6 +45,7 @@
       <div class="model-controls">
         <label for="modelSelect">Modèle sélectionné</label>
         <select id="modelSelect">
+          <option value="sun-neural-0.1">SUN Neural 0.1 · prototype neuronal local</option>
           <option value="lamini-77">LaMini-Flan-T5-77M · léger</option>
           <option value="lamini-248">LaMini-Flan-T5-248M · plus complet</option>
           <option value="smollm2-135">SmolLM2-135M-Instruct · conversation</option>
@@ -99,43 +100,67 @@
 
     <section class="chat-shell">
       <div class="chat-toolbar">
-        <div><span class="online-indicator" id="statusDot"></span><span id="statusLabel">En attente du moteur</span></div>
+        <div><span class="online-indicator" id="statusDot"></span><span id="statusLabel">SUN prêt pour les échanges simples</span></div>
         <button class="clear-button" id="clearButton" type="button">Nouvelle discussion</button>
       </div>
 
+      <div class="knowledge-status" id="knowledgeStatus" aria-live="polite">Préparation de la bibliothèque des cours…</div>
+
+      <section class="document-library" aria-labelledby="documentLibraryTitle">
+        <div class="document-library-heading">
+          <div>
+            <strong id="documentLibraryTitle">Bibliothèque personnelle de SUN</strong>
+            <p>Ajoute des PDF pour que SUN puisse rechercher leur texte. L’extraction et le stockage restent sur cet appareil.</p>
+          </div>
+          <button id="pdfImportButton" class="secondary-button" type="button">Importer des PDF</button>
+          <input id="pdfImportInput" type="file" accept=".pdf,application/pdf" multiple hidden>
+        </div>
+        <p class="document-library-note">Limite : 12 Mo et 120 pages par PDF. Les PDF scannés sans texte sélectionnable ne sont pas encore reconnus. Les fichiers originaux ne sont pas conservés : seul le texte extrait est stocké localement.</p>
+        <p id="pdfImportStatus" class="document-import-status" aria-live="polite">Aucun PDF personnel importé.</p>
+        <div id="importedPdfList" class="imported-pdf-list">
+          <p class="empty-state">Tes documents PDF apparaîtront ici après importation.</p>
+        </div>
+      </section>
+
       <div class="chat-settings">
+        <label for="performanceModeSelect">Vitesse / qualité</label>
+        <select id="performanceModeSelect">
+          <option value="fast">Rapide · réponses plus courtes</option>
+          <option value="balanced">Équilibré</option>
+          <option value="quality">Approfondi · plus lent</option>
+        </select>
         <label for="responseLengthSelect">Longueur des réponses</label>
         <select id="responseLengthSelect">
           <option value="short">Courte</option>
           <option value="normal" selected>Normale</option>
           <option value="detailed">Détaillée</option>
         </select>
-        <span id="generationStatus">Le modèle local n’est pas encore chargé.</span>
+        <span id="generationStatus">SUN est prêt sans modèle pour les échanges courants et les recherches de cours.</span>
       </div>
 
       <div class="messages" id="messages" role="log" aria-live="polite">
         <article class="message assistant">
           <span class="message-avatar">✦</span>
           <div class="message-bubble">
-            <strong>Assistant local</strong>
-            <p>Bonjour. Je peux t’aider à revoir une notion de Python, comprendre un concept d’IA ou organiser tes idées de projet. Charge d’abord un modèle pour commencer.</p>
+            <strong>SUN · Mode sans modèle</strong>
+            <p>Bonjour ! Je suis SUN, l’assistant d’Académique. Tu peux me parler normalement ou me poser une question sur les leçons et les documents de cours.</p>
           </div>
         </article>
       </div>
 
       <form class="composer" id="chatForm">
-        <textarea id="messageInput" rows="1" maxlength="1600" placeholder="Écris ta question…" aria-label="Ton message" disabled></textarea>
-        <button id="sendButton" type="submit" disabled aria-label="Envoyer">↑</button>
+        <textarea id="messageInput" rows="1" maxlength="1600" placeholder="Parle avec SUN ou pose une question sur un cours…" aria-label="Ton message"></textarea>
+        <button id="sendButton" type="submit" aria-label="Envoyer">↑</button>
       </form>
       <div class="composer-foot"><span>Entrée pour envoyer · Maj + Entrée pour une nouvelle ligne</span><span id="counter">0 / 1600</span></div>
     </section>
 
     <section class="model-warning">
       <strong>Limites à connaître</strong>
-      <p>Ces modèles sont compacts et expérimentaux. Ils peuvent se tromper, oublier certains éléments du contexte ou répondre lentement. SmolLM2 est surtout documenté pour l’anglais. Le streaming des réponses est activé pour ce modèle ; les modèles T5 affichent leur réponse lorsqu’elle est terminée. Les fichiers terminés peuvent être réutilisés depuis le cache, mais un fichier interrompu n’est pas forcément repris au dernier octet.</p>
+      <p>Les échanges simples sont gérés localement. SUN Neural 0.1 est un petit classificateur neuronal : il reconnaît quelques intentions en français et renvoie des explications préparées sur les bases de Python. Ce n’est pas un modèle génératif libre. Les autres modèles sont compacts et expérimentaux : ils peuvent se tromper, oublier certains éléments du contexte ou répondre lentement. SmolLM2 est surtout documenté pour l’anglais. Le mode Rapide limite le contexte et le nombre de tokens pour réduire le temps de calcul. Le mode Approfondi autorise des réponses plus longues. SmolLM2 affiche les tokens progressivement ; les modèles T5 affichent leur réponse à la fin. Les fichiers terminés peuvent être réutilisés depuis le cache, mais un fichier interrompu n’est pas forcément repris au dernier octet.</p>
     </section>
 
-    <footer>Chat IA · Application séparée d’Académique</footer>
+    <footer>SUN · Assistant d’Académique</footer>
   </main>
 </body>
 </html>
