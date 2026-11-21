@@ -84,7 +84,7 @@ function setBusy(value) {
   isRunning = value;
   runButton.disabled = !runtimeReady || value;
   stopButton.disabled = !value;
-  prepareButton.disabled = runtimeReady || value || Boolean(bootPromise);
+  prepareButton.disabled = runtimeReady || value || Boolean(worker) || Boolean(bootPromise);
 }
 
 function destroyWorker() {
@@ -134,9 +134,12 @@ async function createWorker() {
     addLine(error && error.message ? error.message : String(error), "error");
   }).finally(() => {
     bootPromise = null;
-    if (!runtimeReady && !isRunning) {
+    if (!runtimeReady && !worker && !isRunning) {
       prepareButton.disabled = false;
       prepareButton.textContent = "Réessayer";
+    } else if (worker && !runtimeReady) {
+      prepareButton.disabled = true;
+      prepareButton.textContent = "Téléchargement…";
     }
   });
 
@@ -306,7 +309,6 @@ function indentSelection(outdent = false) {
     return;
   }
 
-  const endLineStart = value.lastIndexOf("\n", Math.max(start, end - 1)) + 1;
   const finalLineEndIndex = value.indexOf("\n", Math.max(start, end - 1));
   const finalLineEnd = finalLineEndIndex === -1 ? value.length : finalLineEndIndex;
   const block = value.slice(firstLineStart, finalLineEnd);
@@ -378,25 +380,36 @@ function handleEditorKeydown(event) {
     return;
   }
 
-  const pairs = { "(": ")", "[": "]", "{": "}", "\"": "\"", "'": "'" };
-  if (pairs[event.key] && !event.ctrlKey && !event.metaKey && !event.altKey) {
+  const pairs = { "(": ")", "[": "]", "{": "}", "\"": "\" ", "'": "'" };
+  const isModifierPressed = event.ctrlKey || event.metaKey || event.altKey;
+
+  if ([")", "]", "}"].includes(event.key) && !isModifierPressed) {
     const start = editor.selectionStart;
-    const end = editor.selectionEnd;
-    const value = editor.value;
-    if (start === end && value[start] === event.key && event.key !== "(" && event.key !== "[" && event.key !== "{") {
+    if (start === editor.selectionEnd && editor.value[start] === event.key) {
       event.preventDefault();
       editor.setSelectionRange(start + 1, start + 1);
       return;
     }
-    if (start !== end || event.key === "(" || event.key === "[" || event.key === "{") {
+  }
+
+  if (Object.prototype.hasOwnProperty.call(pairs, event.key) && !isModifierPressed) {
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    const value = editor.value;
+
+    if ((event.key === "\"" || event.key === "'") && start === end && value[start] === event.key) {
       event.preventDefault();
-      const selected = value.slice(start, end);
-      editor.setRangeText(event.key + selected + pairs[event.key], start, end, "end");
-      const cursor = start + 1 + selected.length;
-      editor.setSelectionRange(cursor, cursor);
-      updateEditorMeta();
-      scheduleSave();
+      editor.setSelectionRange(start + 1, start + 1);
+      return;
     }
+
+    event.preventDefault();
+    const selected = value.slice(start, end);
+    editor.setRangeText(event.key + selected + pairs[event.key], start, end, "end");
+    const cursor = start + 1 + selected.length;
+    editor.setSelectionRange(cursor, cursor);
+    updateEditorMeta();
+    scheduleSave();
   }
 }
 
