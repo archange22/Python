@@ -1,12 +1,37 @@
-{"id":"chat-greeting","category":"conversation","question":"Salut SUN, cv ?","expected_concepts":[["salut","bonjour"],["fonctionne","prêt","discuter"]]}
-{"id":"chat-correction","category":"conversation","question":"Tu as exécuté le code ?","expected_concepts":[["exécuté","execute"],["non","pas"],["test","interpréteur","interpreter"]]}
-{"id":"py-assignment","category":"python","question":"Quelle est la différence entre = et == en Python ?","expected_concepts":[["affect","attribu","assigne"],["compar","égalité","egalite"],["true","false","bool"]]}
-{"id":"py-loop","category":"python","question":"Explique range(4) dans une boucle for.","expected_concepts":[["0","zéro","zero"],["3","trois"],["4 exclu","jusqu'à 3","jusqu a 3"]]}
-{"id":"py-return","category":"python","question":"Quelle est la différence entre print et return ?","expected_concepts":[["affiche","console"],["renvoie","retourne"],["fonction","résultat","resultat"]]}
+{"id":"chat-greeting","category":"conversation","question":"Salut SUN, cv ? ","expected_concepts":[["salut","bonjour"],["fonctionne","prêt","discuter"]]}
+{"id":"chat-clarify","category":"conversation","question":"Je ne comprends pas, explique plus simplement.","expected_concepts":[["reprendre","reformuler","simple"],["exemple","étape","etape"]]}
+{"id":"chat-truth","category":"conversation","question":"Tu as réellement exécuté ce code ?","expected_concepts":[["non","pas"],["exécuté","execute"],["test","interpréteur","interpreter"]]}
+{"id":"chat-uncertain","category":"conversation","question":"Que dois-tu faire si tu ne connais pas la réponse ?","expected_concepts":[["incertitude","incertain"],["inventer","deviner"],["vérifier","verifier","précision","precision"]]}
+{"id":"math-equals","category":"mathematics","question":"Résous 3x + 5 = 20 et vérifie le résultat.","expected_concepts":[["x = 5","x=5"],["3 × 5 + 5","3*5+5"],["20"]]}
+{"id":"math-fraction","category":"mathematics","question":"Comment additionner 1/3 et 1/6 ?","expected_concepts":[["2/6"],["3/6"],["1/2"]]}
+{"id":"math-percent","category":"mathematics","question":"Calcule 15 % de 200.","expected_concepts":[["30"],["15","pour cent","%"]]}
+{"id":"math-average","category":"mathematics","question":"Quelle est la moyenne de 12, 14 et 16 ?","expected_concepts":[["14"],["42"],["3"]]}
+{"id":"math-pythagorean","category":"mathematics","question":"Rappelle le théorème de Pythagore.","expected_concepts":[["rectangle","triangle rectangle"],["c² = a² + b²","c2"],["hypoténuse","hypotenuse"]]}
+{"id":"math-unit","category":"mathematics","question":"Convertis 3,5 km en mètres.","expected_concepts":[["3500"],["mètres","metres"]]}
+{"id":"physics-speed","category":"physics","question":"Un véhicule parcourt 120 km en 2 heures. Quelle est sa vitesse moyenne ?","expected_concepts":[["60 km/h","60"],["distance","120"],["temps","2 h","2 heures"]]}
+{"id":"physics-force","category":"physics","question":"Énonce la deuxième loi de Newton.","expected_concepts":[["somme","résultante"],["force","f"],["masse","m"],["accélération","acceleration"]]}
+{"id":"physics-units","category":"physics","question":"Quelle est l'unité SI de la force ?","expected_concepts":[["newton"],["n"],["kg","m/s²","m/s2"]]}
+{"id":"physics-ohm","category":"physics","question":"Quelle relation donne la loi d'Ohm ?","expected_concepts":[["u = r × i","u=ri","u = r * i"],["tension","résistance","resistance"],["intensité","intensite"]]}
+{"id":"physics-energy","category":"physics","question":"Explique la conservation de l'énergie.","expected_concepts":[["système isolé","systeme isole"],["énergie totale","energie totale"],["constante","conserve"]]}
+{"id":"chem-atom","category":"chemistry","question":"Quelles particules trouve-t-on dans un atome ?","expected_concepts":[["protons"],["neutrons"],["électrons","electrons"]]}
+{"id":"chem-periodic","category":"chemistry","question":"À quoi sert le tableau périodique ?","expected_concepts":[["numéro atomique","numero atomique"],["éléments","elements"],["propriétés","proprietes"]]}
+{"id":"chem-equation","category":"chemistry","question":"Équilibre H2 + O2 → H2O.","expected_concepts":[["2 h2","2h2"],["o2"],["2 h2o","2h2o"]]}
+{"id":"chem-ph","category":"chemistry","question":"Que signifie le pH ?","expected_concepts":[["acide"],["basique"],["7","neutre"]]}
+{"id":"chem-mole","category":"chemistry","question":"Combien d'entités contient une mole ?","expected_concepts":[["6,022","6.022"],["10²³","10^23","e23"]]}
+{"id":"py-return","category":"python","question":"Quelle différence entre print et return ?","expected_concepts":[["affiche","console"],["renvoie","retourne"],["fonction","résultat","resultat"]]}
 {"id":"py-list-tuple","category":"python","question":"Quelle différence entre une liste et un tuple ?","expected_concepts":[["liste","list"],["tuple"],["modifiable","modifi","non modifiable"]]}
-{"id":"py-dict","category":"python","question":"Comment compter le nombre d'apparitions de chaque mot avec un dictionnaire ?","expected_concepts":[["dictionnaire","dict"],["compteur","count","compte"],["get","valeur"]]}
-{"id":"py-valueerror","category":"python","question":"Comment gérer une conversion int qui peut échouer ?","expected_concepts":[["try"],["except"],["valueerror"],["message","erreur"]]}
+{"id":"py-exception","category":"python","question":"Comment gérer une conversion int qui peut échouer ?","expected_concepts":[["try"],["except"],["valueerror"],["message","erreur"]]}
 {"id":"py-file","category":"python","question":"Comment ouvrir proprement un fichier texte UTF-8 ?","expected_concepts":[["with"],["open"],["utf-8","utf8"],["ferme","fermer","automatiquement"]]}
+{"id":"py-dict","category":"python","question":"Comment compter les apparitions de chaque mot avec un dictionnaire ?","expected_concepts":[["dictionnaire","dict"],["compteur","count"],["get","valeur"]]}
 {"id":"py-is-equals","category":"python","question":"Est-ce que is et == sont équivalents ?","expected_concepts":[["==","égalité","egalite"],["identité","identite","même objet","meme objet"],["none"]]}
-{"id":"py-empty-list","category":"python","question":"Comment calculer une moyenne sans provoquer une division par zéro quand la liste est vide ?","expected_concepts":[["liste vide","aucune valeur","empty"],["valueerror","erreur"],["len","longueur"],["sum","somme"]]}
-{"id":"py-async","category":"python","question":"asyncio accélère-t-il tous les calculs Python ?","expected_concepts":[["non"],["entrée-sortie","entree-sortie","attente","réseau","reseau"],["cpu","processeur","calcul intensif"]]}
+{"id":"py-async","category":"python","question":"asyncio accélère-t-il tous les calculs Python ?","expected_concepts":[["non"],["attente","entrée-sortie","entree-sortie","réseau","reseau"],["cpu","processeur","calcul intensif"]]}
+{"id":"js-strict","category":"javascript","question":"Quelle différence entre == et === en JavaScript ?","expected_concepts":[["coercition","conversion"],["=== ","=== "],["strict","sans conversion"]]}
+{"id":"js-promise","category":"javascript","question":"À quoi sert une Promise en JavaScript ?","expected_concepts":[["asynchrone"],["résultat futur","resultat futur"],["then","catch","await"]]}
+{"id":"java-main","category":"java","question":"Quelle est la méthode principale qui lance un programme Java ?","expected_concepts":[["public static void main"],["string[] args","string"],["jvm","démarrer","demarrer"]]}
+{"id":"java-class","category":"java","question":"Comment déclarer une classe en Java ?","expected_concepts":[["class"],["nom"],["fichier","java"]]}
+{"id":"c-pointer","category":"c","question":"À quoi sert un pointeur en C ?","expected_concepts":[["adresse mémoire","adresse memoire"],["variable","objet"],["*","&","déréférencer","dereferencer"]]}
+{"id":"c-init","category":"c","question":"Pourquoi initialiser les variables locales en C ?","expected_concepts":[["indéterminée","indeterminee"],["initialiser","valeur"],["comportement indéfini","comportement indefini"]]}
+{"id":"html-css","category":"html-css","question":"Quelle différence entre HTML et CSS ?","expected_concepts":[["structure","contenu"],["présentation","presentation"],["style","mise en page"]]}
+{"id":"sql-where","category":"sql","question":"Quelle différence entre WHERE et HAVING en SQL ?","expected_concepts":[["where","lignes"],["having","groupes"],["group by","agrégat","agregat"]]}
+{"id":"english","category":"multilingual","question":"Answer in simple English: how do you convert 2.5 hours into minutes?","expected_concepts":[["150"],["60"],["minutes"]]}
+{"id":"french-english","category":"multilingual","question":"Answer in English: what is the difference between mass and weight?","expected_concepts":[["mass"],["weight"],["kilogram","newton"]]}
