@@ -1,4 +1,10 @@
 const MODEL_CONFIG = {
+  "sun-neural-0.1": {
+    id: "SUN/Neural-0.1",
+    task: "local-intent-classifier",
+    label: "SUN Neural 0.1",
+    family: "sun-neural"
+  },
   "lamini-77": {
     id: "Xenova/LaMini-Flan-T5-77M",
     task: "text2text-generation",
@@ -195,6 +201,17 @@ async function loadModel(modelKey) {
   }
 
   loadingPromise = (async () => {
+    if (config.family === "sun-neural") {
+      send("status", { message: "Initialisation du réseau neuronal SUN intégré…" });
+      const { loadSunNeural } = await import("./sun-neural.js");
+      await loadSunNeural();
+      generator = null;
+      TextStreamerClass = null;
+      currentModelKey = modelKey;
+      send("ready", { model: config.label, modelKey, family: config.family });
+      return { generator: null, TextStreamer: null };
+    }
+
     send("status", { message: "Initialisation de la bibliothèque IA…" });
 
     const { pipeline, env, ModelRegistry, TextStreamer, LogLevel } = await import(TRANSFORMERS_URL);
@@ -367,6 +384,25 @@ async function generateReply(data) {
 
   if (!config) throw new Error("Modèle de réponse inconnu.");
 
+  if (config.family === "sun-neural") {
+    const { generateSunNeuralReply } = await import("./sun-neural.js");
+    send("generation-start", {
+      model: config.label,
+      profile: "Réseau neuronal local",
+      startedAt
+    });
+    const neuralReply = await generateSunNeuralReply(String(data.message || ""), data.sources || []);
+    send("reply", {
+      text: neuralReply.text,
+      streamed: false,
+      durationMs: Date.now() - startedAt,
+      performanceMode: "local",
+      intent: neuralReply.intent,
+      confidence: neuralReply.confidence
+    });
+    return;
+  }
+
   const model = await loadModel(modelKey);
   const TextStreamer = TextStreamerClass;
 
@@ -451,6 +487,11 @@ async function generateReply(data) {
 async function clearModelCache(modelKey) {
   const config = MODEL_CONFIG[modelKey];
   if (!config) throw new Error("Modèle inconnu.");
+
+  if (config.family === "sun-neural") {
+    send("cache-cleared", { model: config.label, filesDeleted: 0, filesCached: 0 });
+    return;
+  }
 
   const { ModelRegistry } = await import(TRANSFORMERS_URL);
   const result = await ModelRegistry.clear_pipeline_cache(
