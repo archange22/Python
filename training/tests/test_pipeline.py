@@ -7,6 +7,7 @@ from pathlib import Path
 
 from training.prepare_sft_dataset import prepare_dataset, validate_record
 from training.evaluate_dataset import evaluate_dataset
+from training.evaluate_responses import score_responses
 
 
 def record(identifier: str, answer: str = "Réponse utile", group_id: str | None = None):
@@ -65,6 +66,27 @@ class DatasetPipelineTests(unittest.TestCase):
             audit = evaluate_dataset(output_dir)
             self.assertFalse(audit["cross_split_group_leakage"])
             self.assertFalse(audit["duplicate_conversations_across_splits"])
+
+    def test_response_benchmark_reports_concept_coverage_and_human_scores(self):
+        benchmark = [
+            {
+                "id": "python-equals",
+                "category": "python",
+                "expected_concepts": [["affectation", "attribue"], ["comparaison", "compare"]],
+            }
+        ]
+        responses = [
+            {"id": "python-equals", "response": "Le signe = sert à l'affectation, == compare deux valeurs.", "human_score": 4}
+        ]
+        report = score_responses(benchmark, responses)
+        self.assertEqual(report["overall_concept_coverage"], 1.0)
+        self.assertEqual(report["human_score_average"], 4.0)
+
+    def test_response_benchmark_detects_missing_answers(self):
+        benchmark = [{"id": "missing", "category": "python", "expected_concepts": [["fonction"]]}]
+        report = score_responses(benchmark, [])
+        self.assertEqual(report["answered_cases"], 0)
+        self.assertEqual(report["overall_concept_coverage"], 0.0)
 
     def test_repeated_group_stays_in_one_split(self):
         with tempfile.TemporaryDirectory() as temporary:
