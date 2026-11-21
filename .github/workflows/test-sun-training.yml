@@ -1,0 +1,32 @@
+name: SUN training data checks
+
+on:
+  pull_request:
+    paths:
+      - "training/**"
+      - ".github/workflows/test-sun-training.yml"
+  push:
+    branches: [main]
+    paths:
+      - "training/**"
+      - ".github/workflows/test-sun-training.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test preparation and evaluation pipeline
+        run: python -m unittest discover -s training/tests -v
+      - name: Prepare the original sample dataset
+        run: python training/prepare_sft_dataset.py --input training/data/seed.jsonl --output-dir /tmp/sun-prepared
+      - name: Audit the prepared dataset
+        run: python training/evaluate_dataset.py --data-dir /tmp/sun-prepared
