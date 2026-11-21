@@ -116,6 +116,7 @@ async function createWorker() {
     if ("serviceWorker" in navigator) {
       try {
         await navigator.serviceWorker.register("./sw.js");
+        await navigator.serviceWorker.ready;
       } catch (error) {
         addLine("Le cache hors connexion n’a pas pu être activé dans ce navigateur.", "info");
       }
