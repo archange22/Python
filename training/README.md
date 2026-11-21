@@ -1,134 +1,94 @@
-# SUN — Préparation et entraînement de données
+# SUN — moteur conversationnel, mémoire documentaire et entraînement
 
-Ce dossier sépare volontairement la bibliothèque RAG de l'entraînement neuronal.
+## Architecture
 
-- Le contenu de courses/ et les PDF importés sont des connaissances consultées par recherche.
-- Les fichiers JSONL préparés ici servent à l'entraînement SFT d'un modèle ouvert.
-- L'entraînement n'est pas lancé dans l'application Android et n'est pas exécuté sur Cloudflare Workers.
+L'application Académique expose un seul modèle : **SUN**.
 
-## 1. Préparer un jeu d'exemples
+- Moteur génératif : Qwen3-0.6B-Instruct, modèle de base publié sous licence Apache 2.0.
+- Variante navigateur : ONNX, chargée avec Transformers.js dans un Web Worker.
+- Utilisation graphique : quantification q4f16 sur WebGPU.
+- Repli processeur : quantification int8 sur WASM lorsque WebGPU n'est pas disponible.
+- Mémoire documentaire : index BM25 local des cours et des documents importés.
+- Personnalisation future : SFT avec adaptateurs LoRA sur des exemples vérifiés.
 
-Le schéma d'entrée est montré dans data/seed.jsonl. Chaque ligne JSON contient :
-- id : identifiant unique ;
-- group_id : identifiant commun à toutes les variantes d'une même conversation ; il permet de ne pas répartir un même fil entre plusieurs splits ;
-- source et license ;
-- license_verified : doit être true ;
-- rights_status : project_original, explicit_permission ou open_license_verified ;
-- privacy_reviewed : doit être true ;
-- quality_status : doit être approved ;
-- language : code de langue ;
-- messages : liste de messages system/user/assistant.
+La PWA montre uniquement le nom SUN. La fiche `training/sun-model.json` garde la provenance du modèle de base et les paramètres techniques.
 
-Les données synthétiques originales fournies comme seed sont des exemples pédagogiques créés pour le projet. Elles ne proviennent pas de conversations privées d'élèves.
+## Deux sens différents du mot « apprendre »
 
-Exécuter :
+**1. Apprendre un document (mémoire RAG).** Lorsqu'un document est importé, SUN en extrait le texte, le découpe en passages, les indexe localement, puis retrouve les extraits pertinents à chaque question. Le modèle reçoit ces passages dans son contexte et les utilise pour rédiger une réponse. Les poids du réseau ne changent pas. C'est immédiat et réversible : supprimer un document le retire de la bibliothèque.
 
-    python training/prepare_sft_dataset.py
+**2. Modifier les poids du modèle (entraînement SFT/LoRA).** Cette opération nécessite un corpus d'exemples de questions et de bonnes réponses, vérifié pour ses droits, sa confidentialité et sa qualité. On prépare les données, on entraîne un adaptateur LoRA, puis on évalue le résultat. L'adaptateur entraîné n'est pas automatiquement chargé dans la PWA : il faut encore le fusionner avec le modèle de base, l'exporter en ONNX, le quantifier et tester la nouvelle version.
 
-Le script :
-1. vérifie la structure des conversations et les métadonnées de droits ;
-2. rejette les exemples non approuvés, les rôles inconnus et les messages invalides ;
-3. filtre quelques motifs évidents d'adresses e-mail et de secrets, sans prétendre détecter toutes les données personnelles ;
-4. déduplique les conversations ;
-5. crée train.jsonl, validation.jsonl et test.jsonl à partir de groupes complets ;
-6. conserve un rapport de rejets sans recopier le texte potentiellement sensible.
+L'import d'un PDF ne doit donc pas déclencher un entraînement automatique. Un document peut contenir des erreurs, des instructions malveillantes ou des données personnelles. SUN le traite comme une source à consulter, pas comme une consigne.
 
-Une validation automatique n'est pas une validation juridique. Une personne doit toujours examiner les sources, les licences, les données personnelles et la qualité des réponses avant toute utilisation.
+## Préparer le corpus SFT
 
-## 2. Auditer les jeux de données
+Le schéma d'entrée est montré dans `training/data/seed.jsonl`. Chaque ligne JSON contient un identifiant, un groupe de conversation, la provenance, la licence, l'état des droits, une revue de confidentialité, un statut qualité, une langue et une liste de messages.
 
-Exécuter :
+Exécuter depuis la racine du dépôt :
 
-    python training/evaluate_dataset.py
+```bash
+python training/prepare_sft_dataset.py
+python training/evaluate_dataset.py
+python -m unittest discover -s training/tests -v
+```
 
-L'audit vérifie que :
-- les trois splits existent ;
-- chaque conversation est cohérente ;
-- aucun groupe de conversation ne se retrouve dans plusieurs splits ;
-- aucun doublon exact n'est partagé entre train, validation et test.
+Le pipeline :
+1. rejette les sources sans droits de réutilisation confirmés ;
+2. exige une revue de confidentialité et une approbation qualité ;
+3. vérifie les rôles et la structure des dialogues ;
+4. filtre quelques motifs courants de secrets et d'adresses e-mail ;
+5. déduplique les exemples et sépare les groupes complets en train/validation/test ;
+6. produit un rapport de rejet sans recopier le texte potentiellement privé.
 
-Le rapport est écrit dans training/prepared/evaluation-report.json. Cette vérification structurelle ne juge pas la vérité des explications ou la qualité du code.
+Le filtre automatique ne détecte pas toutes les données personnelles et ne constitue pas une validation juridique. Le corpus seed actuel est très petit ; il sert à vérifier le pipeline, pas à rendre SUN expert.
 
-## 3. Installer l'environnement de fine-tuning
+## Entraîner SUN
 
-Utiliser de préférence un environnement séparé sur une machine ou un service GPU, pas sur un téléphone Android à stockage limité.
+L'entraînement se fait sur une machine ou un service disposant de ressources suffisantes. Ce n'est pas un traitement à lancer sur un téléphone Android avec peu de mémoire.
 
-    python -m venv .venv
-    source .venv/bin/activate
-    pip install -r training/requirements.txt
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r training/requirements.txt
+python training/train_sft.py
+```
 
-Sous Windows, activer l'environnement avec .venv\Scripts\activate.
+Le script utilise par défaut `minpeter/Qwen3-0.6B-Instruct` et LoRA. Pour entraîner tous les poids au lieu de LoRA, utiliser explicitement `--full-finetune`. Les hyperparamètres peuvent être changés avec `--epochs`, `--batch-size`, `--gradient-accumulation`, `--learning-rate` et `--max-length`.
 
-Vérifier les licences du modèle de base et sa capacité mémoire avant de le télécharger. Ne pas supposer que tout modèle hébergé est librement réutilisable.
+Le résultat est enregistré dans `training/output/sun-sft/`. **Ce script n'a pas été exécuté dans cette modification.** Le dépôt ne contient donc pas encore un adaptateur SUN entraîné sur le corpus Académique.
 
-## 4. Lancer un SFT optionnel
+## Évaluation
 
-    python training/train_sft.py --model IDENTIFIANT_DU_MODELE --lora
+La loss sur le jeu de test ne suffit pas. Avant d'adopter un adaptateur :
+- contrôler des réponses en français ;
+- vérifier Python avec des tests exécutés réellement dans un environnement isolé ;
+- vérifier les calculs et unités en mathématiques et sciences ;
+- évaluer les questions qui nécessitent plusieurs tours de conversation ;
+- vérifier que SUN cite les bons documents et reconnaît les questions sans réponse dans la bibliothèque ;
+- comparer l'ancien checkpoint et le nouveau sur exactement les mêmes cas.
 
-Le modèle doit être un modèle causal conversationnel dont le tokenizer possède un chat_template compatible. Le paramètre --assistant-only-loss ne doit être utilisé que si le chat template gère correctement le masquage des générations assistant. Les formats conversationnels et les exigences de SFT sont documentés par Hugging Face TRL.
+Le benchmark de référence se trouve dans `training/evaluation/benchmark.jsonl`. `training/evaluate_responses.py` donne une indication de couverture de concepts et peut intégrer des notes humaines ; il ne prouve pas la vérité d'une réponse.
 
-Le script :
-- charge train et validation ;
-- entraîne le modèle ou des adaptateurs LoRA ;
-- évalue le split test à la fin ;
-- sauvegarde le résultat et les métriques.
+## Limites actuelles
 
-Cette procédure SFT est un outil de recherche indépendant ; elle n'est pas reliée au sélecteur de modèles de l'application. L'application Académique utilise uniquement SUN Neural 0.1. Le script demande explicitement l'identifiant du modèle de base et peut nécessiter un GPU avec suffisamment de mémoire.
+- SUN est basé sur un modèle compact de 0,6 milliard de paramètres. Il peut mal comprendre une question complexe, inventer un détail ou produire du code incorrect.
+- Le premier poids ONNX représente environ 648 Mo sur le chemin WebGPU q4f16 ; le repli WASM int8 représente environ 754 Mo. Les fichiers auxiliaires du tokenizer s'ajoutent à cela. Le modèle peut être trop lourd pour certains téléphones.
+- Le mode WebGPU est préféré quand le navigateur le propose. Le mode WASM est un repli, pas une garantie de vitesse.
+- Le modèle téléchargé est conservé dans le cache du navigateur ; la première récupération nécessite Internet.
+- Le fine-tuning, la fusion d'adaptateur et la conversion ONNX personnalisée ne sont pas encore intégrés à un déploiement automatique.
 
-## 5. Mesurer la qualité réelle
+## Sécurité et confidentialité
 
-La loss de validation/test mesure une capacité de prédiction des tokens, pas toute la qualité d'un assistant. Avant de remplacer le modèle utilisé par SUN, ajouter un benchmark indépendant :
-- conversations quotidiennes et abréviations ;
-- questions de suivi qui utilisent l'historique ;
-- Python débutant, intermédiaire et avancé ;
-- exécution réelle de tests de code dans un environnement isolé ;
-- compréhension de documents avec références exactes ;
-- questions non présentes dans la base et capacité à reconnaître l'incertitude ;
-- français, anglais et autres langues réellement visées.
+- Ne pas entraîner SUN sur des conversations privées sans consentement et revue adaptés.
+- Vérifier les droits des PDF, articles, dialogues et fichiers ajoutés au corpus.
+- Ne pas envoyer les documents importés vers un service externe par défaut.
+- Les extraits documentaires sont des données non fiables : ils ne doivent jamais remplacer les consignes de sécurité de SUN.
+- Conserver un jeu de test séparé et ne pas l'utiliser comme données d'entraînement.
 
-Comparer les mêmes cas sur le modèle d'origine et sur le modèle adapté. Garder la version d'origine en repli si le nouveau modèle régresse.
+## Références techniques
 
-## 6. Sécurité et confidentialité
-
-- Ne jamais verser automatiquement les conversations privées des élèves dans ce jeu.
-- Utiliser uniquement des données dont la provenance, la licence et les droits sont documentés.
-- Retirer les données personnelles et secrets avant entraînement.
-- Ne pas entraîner sur les données de test.
-- Garder des traces des versions de corpus, scripts, modèle et paramètres.
-- Ne jamais considérer les réponses synthétiques comme exactes sans contrôle.
-
-
-## 7. Évaluer les réponses d'une version de SUN
-
-Le benchmark séparé contient 12 questions Python et conversationnelles dans \`training/evaluation/benchmark.jsonl\`. Pour ajouter les sorties d'un modèle, préparer un fichier JSONL dans lequel chaque ligne contient :
-- \`id\` : l'identifiant exact d'un cas du benchmark ;
-- \`response\` : le texte produit par SUN ;
-- \`human_score\` : note facultative de 1 à 5 après lecture humaine.
-
-Puis exécuter :
-
-    python training/evaluate_responses.py --responses training/evaluation/my-responses.jsonl
-
-L'évaluateur calcule une couverture de concepts indicative et, si des notes humaines sont présentes, leur moyenne. Les mots-clés peuvent apparaître dans une réponse fausse : relire les réponses, vérifier les références et exécuter les tests Python avant de conclure qu'un modèle est meilleur.
-
-Documentation officielle de TRL sur les formats conversationnels du SFT : https://huggingface.co/docs/trl/en/sft_trainer
-
-
-## 8. Premier modèle neuronal propre à SUN
-
-SUN Neural 0.1 est un petit réseau neuronal multicouche (MLP) destiné à l'inférence locale dans le navigateur Android. Il utilise des caractéristiques de mots, de paires de mots et de trigrammes de caractères, puis classe le message parmi neuf intentions en français. Ses poids quantifiés int4 sont intégrés sous forme de fragments texte `apps/chat-ia/models/sun-neural-v1.part-01.txt` à `part-04.txt`, chargés localement par le worker.
-
-**Limite essentielle : ce n'est pas un grand modèle de langage (LLM).** Il ne rédige pas librement une réponse à partir de zéro. Il reconnaît des catégories ciblées et sélectionne une explication pédagogique préparée. La première version est principalement centrée sur les bases de Python. C'est le seul modèle IA intégré à l'application ; la recherche documentaire de SUN reste un système complémentaire distinct.
-
-Le corpus de départ contient 260 demandes synthétiques originales en français, réparties sur neuf catégories. Le fichier `training/neural/intents.jsonl.gz.b64` contient ces exemples compressés. Ils ne sont pas des conversations privées d'utilisateurs.
-
-Pour entraîner un nouveau jeu de poids (sur un environnement Python avec PyTorch et NumPy) :
-
-    pip install -r training/requirements.txt
-    python training/train_sun_neural.py
-
-Le script entraîne sur CPU avec PyTorch, conserve un jeu de test à part et exporte un fichier maître JSON `sun-neural-v1.json` et quatre fragments texte utilisés par le chargement local du navigateur. Les poids des couches sont quantifiés en int4. Aucun GPU n'est nécessaire pour ce petit réseau. Ce processus est distinct du fine-tuning LoRA du modèle génératif défini plus haut.
-
-Le fichier embarqué actuel a été évalué sur un petit ensemble synthétique tenu à part : 23 réponses correctes sur 39 (59,0 % d'exactitude). Avec un seuil de confiance de 0,45, il répond sur 28 des 39 cas (71,8 % de couverture) et 22 de ces 28 classifications sont correctes (78,6 % de précision sélective). Ces chiffres ne mesurent pas les performances sur de vrais messages d'élèves et ne garantissent pas la fiabilité. Il faut élargir le corpus, faire relire les exemples et construire un benchmark humain plus représentatif avant d'étendre ses domaines.
-
-Les tests JavaScript vérifient le chargement des poids, plusieurs intentions fréquentes et le refus de forcer une réponse Python à une question hors sujet.
+- Modèle navigateur : https://huggingface.co/onnx-community/Qwen3-0.6B-Instruct-ONNX
+- Modèle de base pour entraînement : https://huggingface.co/minpeter/Qwen3-0.6B-Instruct
+- Transformers.js : https://huggingface.co/docs/transformers.js
+- Formats SFT : https://huggingface.co/docs/trl/en/sft_trainer
