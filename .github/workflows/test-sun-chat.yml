@@ -29,6 +29,7 @@ jobs:
         run: |
           node --check app.js
           node --check chat.worker.js
+          node --check sun-neural.js
           node --check knowledge.js
           node --check conversation.js
       - name: Run SUN behavior tests
