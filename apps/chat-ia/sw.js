@@ -14,14 +14,32 @@ const APP_FILES = [
   "./knowledge.js",
   "./document-library.js",
   "./conversation.js",
-  "./sun-neural.js",
-  "./models/sun-neural-v1.part-01.txt",
-  "./models/sun-neural-v1.part-02.txt",
-  "./models/sun-neural-v1.part-03.txt",
-  "./models/sun-neural-v1.part-04.txt",
   "./manifest.webmanifest",
   "./icon.svg"
 ];
+
+const LEGACY_MODEL_REPOS = [
+  "Xenova/LaMini-Flan-T5-77M/",
+  "Xenova/LaMini-Flan-T5-248M/",
+  "onnx-community/SmolLM2-135M-Instruct-ONNX-GQA/"
+];
+
+async function removeRetiredModelFiles() {
+  const cacheName = "transformers-cache";
+  try {
+    if (!(await caches.keys()).includes(cacheName)) return 0;
+    const cache = await caches.open(cacheName);
+    const requests = await cache.keys();
+    const retired = requests.filter((request) =>
+      LEGACY_MODEL_REPOS.some((repository) => request.url.includes(repository))
+    );
+    const deleted = await Promise.all(retired.map((request) => cache.delete(request)));
+    return deleted.filter(Boolean).length;
+  } catch (error) {
+    // A cache migration failure must not prevent the application from opening.
+    return 0;
+  }
+}
 
 const MAX_CDN_ATTEMPTS = 3;
 
@@ -59,17 +77,16 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(keys
-        .filter((key) =>
-          ((key.startsWith("academique-sun-shell-") || key.startsWith("academique-chat-ia-shell-")) && key !== APP_CACHE) ||
-          (key.startsWith("academique-chat-ia-library-") && key !== LIBRARY_CACHE)
-        )
-        .map((key) => caches.delete(key))
-      ))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    const obsoleteAppCaches = keys.filter((key) =>
+      ((key.startsWith("academique-sun-shell-") || key.startsWith("academique-chat-ia-shell-")) && key !== APP_CACHE) ||
+      (key.startsWith("academique-chat-ia-library-") && key !== LIBRARY_CACHE)
+    );
+    await Promise.all(obsoleteAppCaches.map((key) => caches.delete(key)));
+    await removeRetiredModelFiles();
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener("fetch", (event) => {
