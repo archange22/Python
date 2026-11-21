@@ -66,6 +66,7 @@ export function getSunGenerationOptions(performanceMode = "balanced", responseLe
   const length = ["short", "normal", "detailed"].includes(responseLength) ? responseLength : "normal";
   return {
     max_new_tokens: limits[mode][length],
+    add_special_tokens: false,
     do_sample: false,
     repetition_penalty: 1.08,
     use_cache: true
