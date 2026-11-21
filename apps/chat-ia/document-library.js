@@ -54,7 +54,7 @@ export function getDocumentLibraryVersion() {
 
 function bumpDocumentLibraryVersion() {
   try {
-    localStorage.setItem(LIBRARY_VERSION_KEY, String(Date.now()));
+    localStorage.setItem(LIBRARY_VERSION_KEY, Date.now() + "-" + Math.random().toString(36).slice(2, 8));
   } catch (error) {
     // IndexedDB remains the source of truth if localStorage is unavailable.
   }
@@ -98,10 +98,20 @@ function extractPageText(items) {
     .trim();
 }
 
-function makeDocumentId(file, content) {
-  const fallback = Date.now().toString(36) + "-" +
-    Math.random().toString(36).slice(2, 10);
-  return "pdf-" + fallback;
+async function makeDocumentId(file, bytes) {
+  try {
+    if (globalThis.crypto?.subtle) {
+      const digest = await globalThis.crypto.subtle.digest("SHA-256", bytes);
+      const hash = Array.from(new Uint8Array(digest), (value) =>
+        value.toString(16).padStart(2, "0")
+      ).join("");
+      return "pdf-" + hash;
+    }
+  } catch (error) {
+    // Some browser contexts do not expose SubtleCrypto; use a local fallback ID.
+  }
+  return "pdf-" + Number(file.size).toString(36) + "-" +
+    Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
 }
 
 export async function extractPdfDocument(file, options = {}) {
@@ -157,7 +167,7 @@ export async function extractPdfDocument(file, options = {}) {
     ].join("\n").trim();
 
     return {
-      id: makeDocumentId(file, markdown),
+      id: await makeDocumentId(file, bytes),
       name: String(file.name).slice(0, 180),
       mimeType: "application/pdf",
       size: file.size,
