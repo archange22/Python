@@ -11,10 +11,16 @@ import json
 import sys
 from pathlib import Path
 
+DEFAULT_SUN_BASE_MODEL = "minpeter/Qwen3-0.6B-Instruct"
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model", required=True, help="Identifiant ou chemin local du modèle de base")
+    parser.add_argument(
+        "--model",
+        default=DEFAULT_SUN_BASE_MODEL,
+        help="Modèle de base de SUN (défaut : " + DEFAULT_SUN_BASE_MODEL + ")",
+    )
     parser.add_argument("--data-dir", type=Path, default=Path("training/prepared"))
     parser.add_argument("--output-dir", type=Path, default=Path("training/output/sun-sft"))
     parser.add_argument("--epochs", type=float, default=2.0)
@@ -22,7 +28,19 @@ def main() -> int:
     parser.add_argument("--gradient-accumulation", type=int, default=8)
     parser.add_argument("--learning-rate", type=float, default=2e-4)
     parser.add_argument("--max-length", type=int, default=1024)
-    parser.add_argument("--lora", action="store_true", help="Entraîner des adaptateurs LoRA au lieu de tous les poids")
+    parser.add_argument(
+        "--lora",
+        dest="lora",
+        action="store_true",
+        default=True,
+        help="Utiliser LoRA (activé par défaut)",
+    )
+    parser.add_argument(
+        "--full-finetune",
+        dest="lora",
+        action="store_false",
+        help="Désactiver LoRA et entraîner tous les poids (plus exigeant en mémoire)",
+    )
     parser.add_argument("--assistant-only-loss", action="store_true", help="N'entraîner que sur les réponses assistant si le template du modèle le prend en charge")
     args = parser.parse_args()
 
@@ -79,6 +97,10 @@ def main() -> int:
                 lora_dropout=0.05,
                 bias="none",
                 task_type="CAUSAL_LM",
+                target_modules=[
+                    "q_proj", "k_proj", "v_proj", "o_proj",
+                    "gate_proj", "up_proj", "down_proj"
+                ],
             )
 
         config = SFTConfig(
@@ -105,11 +127,16 @@ def main() -> int:
         )
         trainer.train()
         test_metrics = trainer.evaluate(eval_dataset=dataset["test"], metric_key_prefix="test")
+        args.output_dir.mkdir(parents=True, exist_ok=True)
         trainer.save_model(str(args.output_dir))
         tokenizer.save_pretrained(str(args.output_dir))
         summary = {
+            "sun_model_name": "SUN",
             "base_model": args.model,
+            "base_model_license": "Apache-2.0 (vérifier la fiche de modèle au moment de l'utilisation)",
             "lora": args.lora,
+            "artifact_type": "peft_adapter" if args.lora else "full_model_checkpoint",
+            "browser_deployment": "Non automatique : fusionner l'adaptateur, exporter et quantifier en ONNX avant intégration dans la PWA.",
             "assistant_only_loss": args.assistant_only_loss,
             "epochs": args.epochs,
             "max_length": args.max_length,
