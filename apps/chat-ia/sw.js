@@ -6,7 +6,7 @@ const APP_FILES = [
   "./styles.css",
   "./app.js",
   "./chat.worker.js",
-  "./sun-neural.js",
+  "./sun-core.js",
   "./models/sun-neural-v1.part-01.txt",
   "./models/sun-neural-v1.part-02.txt",
   "./models/sun-neural-v1.part-03.txt",
