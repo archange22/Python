@@ -30,3 +30,16 @@ jobs:
         run: python training/prepare_sft_dataset.py --input training/data/seed.jsonl --output-dir /tmp/sun-prepared
       - name: Audit the prepared dataset
         run: python training/evaluate_dataset.py --data-dir /tmp/sun-prepared
+      - name: Validate SUN Neural trainer and synthetic corpus
+        run: |
+          python -m py_compile training/train_sun_neural.py
+          python - <<'PY'
+          import base64, gzip, json
+          from pathlib import Path
+          path = Path("training/neural/intents.jsonl.gz.b64")
+          rows = [json.loads(line) for line in gzip.decompress(base64.b64decode(path.read_text().strip())).decode().splitlines() if line.strip()]
+          labels = {"greeting", "python_variable_equal", "python_control_flow", "python_function", "python_collections", "python_input_files", "python_error", "python_beginner", "unknown"}
+          assert len(rows) == 260, f"Expected 260 corpus rows, got {len(rows)}"
+          assert all(isinstance(row, list) and len(row) == 2 and row[0] in labels and isinstance(row[1], str) and row[1].strip() for row in rows)
+          print(f"Validated {len(rows)} original synthetic SUN Neural examples.")
+          PY
