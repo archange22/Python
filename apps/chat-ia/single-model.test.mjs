@@ -26,6 +26,9 @@ test("le worker ne peut charger que le moteur génératif SUN", () => {
   assert.match(worker, /SUN_FOUNDATION_MODEL/);
   assert.match(worker, /Qwen3-0\.6B-Instruct-ONNX/);
   assert.match(worker, /buildSunMessages/);
+  assert.match(worker, /apply_chat_template\(messages/);
+  assert.match(worker, /enable_thinking: false/);
+  assert.match(worker, /generator\(prompt/);
   assert.doesNotMatch(worker, /LaMini|SmolLM|Xenova\/LaMini|SmolLM2/i);
   assert.match(core, /Tu es SUN/);
   assert.match(core, /history/);
