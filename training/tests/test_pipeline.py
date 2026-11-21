@@ -109,5 +109,28 @@ class DatasetPipelineTests(unittest.TestCase):
             self.assertEqual(audit["groups"]["train"] + audit["groups"]["validation"] + audit["groups"]["test"], 10)
 
 
+    def test_validation_keeps_topic_and_difficulty_metadata(self):
+        item = record("tagged")
+        item["topic"] = "physics"
+        item["difficulty"] = "intermediate"
+        cleaned, reason = validate_record(item)
+        self.assertIsNone(reason)
+        self.assertEqual(cleaned["metadata"]["topic"], "physics")
+        self.assertEqual(cleaned["metadata"]["difficulty"], "intermediate")
+
+    def test_full_sun_seed_corpus_covers_requested_subjects(self):
+        seed_path = Path(__file__).resolve().parents[1] / "data" / "seed.jsonl"
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "prepared"
+            report = prepare_dataset(seed_path, output)
+            self.assertGreaterEqual(report["accepted"], 120)
+            for topic in ("mathematics", "physics", "chemistry", "python", "javascript", "java", "c", "sql"):
+                self.assertGreater(report["topics"].get(topic, 0), 0)
+            for split_name in ("train", "validation", "test"):
+                self.assertGreater(report["splits"][split_name], 0)
+                self.assertIn("physics", report["split_topics"][split_name])
+                self.assertIn("chemistry", report["split_topics"][split_name])
+
+
 if __name__ == "__main__":
     unittest.main()
