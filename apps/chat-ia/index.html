@@ -23,9 +23,9 @@
 
   <main class="chat-page">
     <section class="chat-hero">
-      <span class="eyebrow">MODÈLE NEURONAL LOCAL · SUN</span>
+      <span class="eyebrow">ASSISTANT GÉNÉRATIF LOCAL · SUN</span>
       <h1>Une question ?<br><span>On la travaille ensemble.</span></h1>
-      <p>SUN est le seul modèle IA proposé dans Académique. Son petit réseau neuronal fonctionne localement et utilise aussi la bibliothèque des cours et les PDF importés.</p>
+      <p>SUN est le seul modèle IA d’Académique. Il dialogue localement, suit le contexte de la discussion et utilise les extraits des cours et documents importés pour préparer ses réponses.</p>
     </section>
 
     <section class="model-card" aria-labelledby="modelPanelTitle">
@@ -33,11 +33,11 @@
         <div class="model-icon">SUN</div>
         <div class="model-copy">
           <span class="eyebrow" id="modelPanelTitle">MODÈLE IA UNIQUE DE SUN</span>
-          <strong id="modelStatus">SUN prêt · modèle neuronal unique</strong>
-          <p id="modelHint">Initialise SUN Neural 0.1 pour utiliser le réseau neuronal intégré.</p>
+          <strong id="modelStatus">SUN prêt · modèle génératif unique</strong>
+          <p id="modelHint">Le premier chargement récupère les poids quantifiés du modèle SUN. Prévois environ 650 à 750 Mo selon les capacités du navigateur.</p>
         </div>
         <div class="model-buttons">
-          <button id="loadModelButton" class="load-button" type="button">Initialiser SUN</button>
+          <button id="loadModelButton" class="load-button" type="button">Charger SUN</button>
           <button id="cancelDownloadButton" class="cancel-button" type="button" hidden>Arrêter</button>
         </div>
       </div>
@@ -45,7 +45,7 @@
       <div class="model-controls">
         <label for="modelSelect">Modèle unique</label>
         <select id="modelSelect">
-          <option value="sun-neural">SUN Neural 0.1 · réseau neuronal local</option>
+          <option value="sun-core">SUN · modèle génératif local 0,6B</option>
         </select>
         <p id="modelDescription" class="model-description"></p>
       </div>
@@ -62,8 +62,8 @@
         <span id="downloadEta">Temps restant : —</span>
       </div>
       <div class="model-footer">
-        <span id="downloadStats">SUN Neural 0.1 · modèle unique intégré à l’application.</span>
-        <button id="clearModelCacheButton" class="cache-button" type="button">Nettoyer le cache IA</button>
+        <span id="downloadStats">SUN · un seul modèle conversationnel local.</span>
+        <button id="clearModelCacheButton" class="cache-button" type="button">Effacer le cache de SUN</button>
       </div>
     </section>
 
@@ -154,7 +154,7 @@
 
     <section class="model-warning">
       <strong>Limites à connaître</strong>
-      <p>SUN Neural 0.1 est un petit réseau neuronal de classification (512 entrées, 32 neurones cachés, 9 catégories). Il reconnaît certaines demandes en français et choisit une explication pédagogique préparée ; ce n’est pas encore un grand modèle génératif comme ChatGPT. Son premier test synthétique a obtenu 59 % d’exactitude sur 39 exemples, résultat trop faible pour le considérer comme expert. La recherche dans les cours et les PDF reste disponible séparément. Les PDF scannés sans texte sélectionnable ne sont pas encore reconnus.</p>
+      <p>SUN utilise un modèle génératif compact basé sur Qwen3-0.6B-Instruct, au format ONNX et sous licence Apache 2.0. Le nom affiché reste SUN ; la base technique est mentionnée pour respecter son origine. Le modèle peut dialoguer, tenir compte de l’historique court et utiliser les extraits retrouvés dans les cours et documents. Il reste petit : ses réponses peuvent être inexactes, ses connaissances générales sont limitées et il ne remplace pas une vérification. Le premier téléchargement représente environ 650 à 750 Mo ; le chargement peut échouer sur un téléphone avec peu de mémoire ou sans accélération compatible. Les PDF scannés sans texte sélectionnable ne sont pas encore reconnus.</p>
     </section>
 
     <footer>SUN · Assistant d’Académique</footer>
