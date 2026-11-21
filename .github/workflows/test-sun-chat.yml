@@ -32,7 +32,6 @@ jobs:
           node --check sun-core.js
           node --check knowledge.js
           node --check conversation.js
-          node --check sun-core.js
       - name: Run SUN behavior tests
         working-directory: apps/chat-ia
         run: npm test
