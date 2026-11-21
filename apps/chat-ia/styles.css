@@ -199,3 +199,11 @@ button:disabled{opacity:.45;cursor:not-allowed}
   .document-library-heading .secondary-button{width:100%;min-height:39px}
   .imported-pdf-item{align-items:flex-start}
 }
+
+
+/* The app now ships one built-in neural model; legacy download-manager controls are hidden. */
+.download-manager,
+.download-metrics,
+#clearModelCacheButton {
+  display: none !important;
+}
