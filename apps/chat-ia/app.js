@@ -44,7 +44,7 @@ function warmKnowledgeIndex() {
   ensureKnowledgeIndex().then((index) => {
     const count = Array.isArray(index.sources) ? index.sources.length : 0;
     $("#knowledgeStatus").textContent = count
-      ? "Bibliothèque prête · " + count + " leçons consultables"
+      ? "Bibliothèque prête · " + count + " ressources consultables"
       : "Aucune leçon n’est encore indexée.";
   }).catch(() => {
     $("#knowledgeStatus").textContent =
