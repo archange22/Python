@@ -380,7 +380,7 @@ function handleEditorKeydown(event) {
     return;
   }
 
-  const pairs = { "(": ")", "[": "]", "{": "}", "\"": "\" ", "'": "'" };
+  const pairs = { "(": ")", "[": "]", "{": "}", "\"": "\"", "'": "'" };
   const isModifierPressed = event.ctrlKey || event.metaKey || event.altKey;
 
   if ([")", "]", "}"].includes(event.key) && !isModifierPressed) {
