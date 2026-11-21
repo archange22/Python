@@ -218,7 +218,7 @@ function makeCatalogSources(catalog) {
 function readCachedIndex() {
   try {
     const saved = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
-    if (saved?.version === 2 && Array.isArray(saved.chunks)) return saved;
+    if (saved?.version === 3 && Array.isArray(saved.chunks)) return saved;
   } catch (error) {}
   return null;
 }
