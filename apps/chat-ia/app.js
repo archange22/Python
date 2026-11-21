@@ -74,28 +74,28 @@ async function renderImportedDocuments() {
 
     $("#pdfImportStatus").textContent =
       documents.length + " document(s) PDF conservé(s) localement sur cet appareil.";
-    for (const document of documents) {
+    for (const pdfDocument of documents) {
       const item = document.createElement("article");
       item.className = "imported-pdf-item";
       const details = document.createElement("div");
       details.className = "imported-pdf-details";
       const title = document.createElement("strong");
-      title.textContent = document.name;
+      title.textContent = pdfDocument.name;
       const meta = document.createElement("span");
-      meta.textContent = document.extractedPages + " / " + document.totalPages +
-        " pages indexées · " + document.characterCount.toLocaleString("fr-FR") + " caractères" +
-        (document.truncated ? " · extraction partielle" : "");
+      meta.textContent = pdfDocument.extractedPages + " / " + pdfDocument.totalPages +
+        " pages indexées · " + pdfDocument.characterCount.toLocaleString("fr-FR") + " caractères" +
+        (pdfDocument.truncated ? " · extraction partielle" : "");
       details.append(title, meta);
 
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = "document-remove-button";
       remove.textContent = "Supprimer";
-      remove.setAttribute("aria-label", "Supprimer " + document.name + " de la bibliothèque locale");
+      remove.setAttribute("aria-label", "Supprimer " + pdfDocument.name + " de la bibliothèque locale");
       remove.addEventListener("click", async () => {
         remove.disabled = true;
         try {
-          await deleteImportedDocument(document.id);
+          await deleteImportedDocument(pdfDocument.id);
           await refreshKnowledgeIndex();
           await renderImportedDocuments();
         } catch (error) {
