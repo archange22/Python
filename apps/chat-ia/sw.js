@@ -1,4 +1,4 @@
-const APP_CACHE = "academique-sun-shell-v4";
+const APP_CACHE = "academique-sun-shell-v5";
 const LIBRARY_CACHE = "academique-chat-ia-library-v3";
 const APP_FILES = [
   "./",
@@ -7,6 +7,7 @@ const APP_FILES = [
   "./app.js",
   "./chat.worker.js",
   "./knowledge.js",
+  "./document-library.js",
   "./conversation.js",
   "./manifest.webmanifest",
   "./icon.svg"
@@ -66,8 +67,8 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   const url = new URL(request.url);
 
-  // Cache only the Transformers.js runtime library here. Model weights are
-  // cached by Transformers.js in its own Cache Storage namespace.
+  // Cache browser-side AI and PDF parsing libraries from the pinned CDN URLs.
+  // Model weights are cached by Transformers.js in its own Cache Storage namespace.
   if (url.hostname === "cdn.jsdelivr.net") {
     event.respondWith((async () => {
       const cache = await caches.open(LIBRARY_CACHE);
