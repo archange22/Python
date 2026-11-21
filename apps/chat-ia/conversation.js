@@ -74,7 +74,7 @@ export function getSmallTalkReply(message, history = []) {
     return "Écris ta question comme tu la formulerais à une personne. Pour retrouver une leçon, donne le sujet ou le mot-clé ; je peux indiquer le parcours, le numéro de leçon et la section.";
   }
   if (/^(tu peux lire les pdf|tu lis les pdf|tu peux lire un pdf)$/.test(value)) {
-    return "Je peux rechercher dans les leçons d’Académique déjà indexées. Pour l’instant, les PDF de cours sont lus à partir de leurs sources Markdown ; les PDF importés manuellement ne sont pas encore pris en charge.";
+    return "Oui. Tu peux importer un PDF dans la bibliothèque de SUN : son texte sélectionnable est extrait page par page et conservé localement sur cet appareil pour la recherche. La limite est de 12 Mo et 120 pages par fichier. Les PDF scannés qui ne contiennent que des images ne sont pas encore reconnus par OCR.";
   }
   if (/^(tu peux fonctionner sans modele|tu marches sans modele|sans telecharger|sans modele)$/.test(value)) {
     return "Oui pour les échanges courants et la recherche dans les leçons déjà chargées. Pour rédiger librement des réponses complexes, il faut un modèle local ou un service IA en ligne.";
