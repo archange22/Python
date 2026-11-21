@@ -1,4 +1,4 @@
-const APP_CACHE = "academique-python-console-shell-v1";
+const APP_CACHE = "academique-python-console-shell-v2";
 const PYODIDE_CACHE = "academique-python-runtime-314-0-8";
 const PYODIDE_ORIGIN = "https://cdn.jsdelivr.net";
 const PYODIDE_PREFIX = "/pyodide/v314.0.8/full/";
