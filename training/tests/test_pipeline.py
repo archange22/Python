@@ -118,6 +118,21 @@ class DatasetPipelineTests(unittest.TestCase):
         self.assertEqual(cleaned["metadata"]["topic"], "physics")
         self.assertEqual(cleaned["metadata"]["difficulty"], "intermediate")
 
+    def test_sun_generation_benchmark_covers_subjects_and_languages(self):
+        benchmark_path = Path(__file__).resolve().parents[1] / "evaluation" / "benchmark.jsonl"
+        cases = [
+            json.loads(line)
+            for line in benchmark_path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        self.assertEqual(len(cases), 37)
+        categories = {item["category"] for item in cases}
+        for category in (
+            "mathematics", "physics", "chemistry", "python", "javascript",
+            "java", "c", "html-css", "sql", "conversation", "multilingual"
+        ):
+            self.assertIn(category, categories)
+
     def test_full_sun_seed_corpus_covers_requested_subjects(self):
         seed_path = Path(__file__).resolve().parents[1] / "data" / "seed.jsonl"
         with tempfile.TemporaryDirectory() as temporary:
