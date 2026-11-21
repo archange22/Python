@@ -62,9 +62,9 @@ function bumpDocumentLibraryVersion() {
 
 async function loadPdfJs() {
   const moduleUrl = "https://cdn.jsdelivr.net/npm/pdfjs-dist@" +
-    PDFJS_VERSION + "/build/pdf.min.mjs";
+    PDFJS_VERSION + "/build/pdf.mjs";
   const workerUrl = "https://cdn.jsdelivr.net/npm/pdfjs-dist@" +
-    PDFJS_VERSION + "/build/pdf.worker.min.mjs";
+    PDFJS_VERSION + "/build/pdf.worker.mjs";
   const pdfjs = await import(moduleUrl);
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
   return pdfjs;
