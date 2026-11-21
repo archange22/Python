@@ -66,11 +66,11 @@ function setFileName(name) {
   }
 }
 
-function saveEditor() {
+function saveEditor(showStatus = false) {
   try {
     localStorage.setItem(STORAGE_KEY, editor.value);
     localStorage.setItem(FILE_NAME_KEY, currentFileName);
-    setExecution("Code enregistré sur cet appareil");
+    if (showStatus) setExecution("Code enregistré sur cet appareil");
   } catch (error) {
     addLine("Impossible d’enregistrer le code : le stockage local est peut-être plein.", "error");
   }
@@ -357,7 +357,7 @@ function handleEditorKeydown(event) {
   }
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
     event.preventDefault();
-    saveEditor();
+    saveEditor(true);
     return;
   }
   if ((event.ctrlKey || event.metaKey) && event.key === "/") {
