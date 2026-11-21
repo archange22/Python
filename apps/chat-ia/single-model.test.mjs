@@ -36,3 +36,11 @@ test("the offline cache includes SUN Neural and all its weight fragments", () =>
     assert.ok(serviceWorker.includes(asset), "Missing offline asset: " + asset);
   }
 });
+
+test("the service-worker migration removes only retired third-party model files", () => {
+  assert.ok(serviceWorker.includes('"transformers-cache"'));
+  assert.ok(serviceWorker.includes("removeRetiredModelFiles"));
+  assert.ok(serviceWorker.includes("Xenova/LaMini-Flan-T5-77M/"));
+  assert.ok(serviceWorker.includes("Xenova/LaMini-Flan-T5-248M/"));
+  assert.ok(serviceWorker.includes("onnx-community/SmolLM2-135M-Instruct-ONNX-GQA/"));
+});
