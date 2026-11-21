@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#09111f">
-  <meta name="description" content="Console Python 3 — exécute du vrai code Python dans ton navigateur, puis continue hors connexion.">
+  <meta name="description" content="Console Python 3 — écris, importe et exécute du code Python directement sur ton appareil.">
   <meta name="color-scheme" content="dark light">
   <title>Console Python 3 — Académique</title>
   <link rel="manifest" href="./manifest.webmanifest">
@@ -25,37 +25,47 @@
     <section class="intro">
       <span class="eyebrow">ENVIRONNEMENT PYTHON</span>
       <h1>Ton code.<br><span>Ton terminal.</span></h1>
-      <p>Écris du Python, lance ton programme et consulte le résultat ici. Le moteur s’exécute sur ton appareil, sans serveur Python distant.</p>
+      <p>Écris du Python, lance ton programme et consulte le résultat. Le moteur s’exécute sur ton appareil avec Pyodide, sans serveur Python distant.</p>
       <div class="status-line"><span class="status-dot" id="statusDot"></span><span id="runtimeStatus">Préparation de la console…</span></div>
     </section>
 
     <section class="workspace" aria-label="Éditeur et terminal Python">
       <div class="panel editor-panel">
         <div class="panel-head">
-          <div><span class="panel-kicker">ÉDITEUR</span><h2>main.py</h2></div>
+          <div><span class="panel-kicker">ÉDITEUR DE CODE</span><h2 id="fileName">main.py</h2></div>
           <div class="editor-actions">
             <button class="small-button" id="sampleButton" type="button">Exemple</button>
-            <button class="small-button" id="resetButton" type="button">Réinitialiser</button>
+            <button class="small-button" id="openFileButton" type="button">Ouvrir .py</button>
+            <button class="small-button" id="downloadButton" type="button">Télécharger</button>
+            <button class="small-button" id="resetButton" type="button">Redémarrer Python</button>
           </div>
         </div>
-        <textarea id="codeEditor" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Code Python" wrap="off">nom = input("Comment tu t'appelles ? ")
+        <input id="fileInput" class="visually-hidden" type="file" accept=".py,text/x-python,text/plain">
+        <div class="editor-shell">
+          <div class="line-numbers" id="lineNumbers" aria-hidden="true">1</div>
+          <textarea id="codeEditor" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Code Python" wrap="off" autocorrect="off">nom = input("Comment tu t'appelles ? ")
 print("Bonjour", nom)
 print("Bienvenue dans Python 3 !")
 
 for nombre in range(1, 4):
     print("Étape", nombre)</textarea>
-        <div class="editor-foot"><span>Python 3 · Bibliothèque standard</span><span id="codeLength">0 caractères</span></div>
+        </div>
+        <div class="editor-foot"><span>Python 3 · Bibliothèque standard</span><span id="codeLength">0 caractère</span></div>
         <div class="run-actions">
           <button class="run-button" id="runButton" type="button" disabled><span>▶</span> Exécuter</button>
           <button class="stop-button" id="stopButton" type="button" disabled>■ Arrêter</button>
           <button class="small-button" id="prepareButton" type="button">Préparer hors ligne</button>
         </div>
+        <p class="keyboard-hint">Raccourcis : <kbd>Ctrl</kbd> + <kbd>Entrée</kbd> exécuter · <kbd>Tab</kbd> indenter · <kbd>Ctrl</kbd> + <kbd>S</kbd> enregistrer</p>
       </div>
 
       <div class="panel terminal-panel">
         <div class="panel-head">
           <div><span class="panel-kicker">SORTIE DU PROGRAMME</span><h2>Terminal</h2></div>
-          <button class="small-button" id="clearButton" type="button">Effacer</button>
+          <div class="terminal-actions">
+            <button class="small-button" id="copyOutputButton" type="button">Copier</button>
+            <button class="small-button" id="clearButton" type="button">Effacer</button>
+          </div>
         </div>
         <div class="terminal-screen" id="terminalOutput" role="log" aria-live="polite">
           <div class="terminal-welcome">Académique Python Console<br>Le moteur Python se prépare…</div>
@@ -73,7 +83,7 @@ for nombre in range(1, 4):
 
     <section class="offline-note">
       <span class="offline-icon">⌁</span>
-      <div><strong>Mode hors connexion</strong><p>Connecte-toi une première fois et attends le statut « Python prêt ». Le moteur WebAssembly sera alors mis en cache. Ensuite, les scripts utilisant la bibliothèque standard pourront être exécutés sans Internet. Les bibliothèques supplémentaires doivent être téléchargées séparément. Dans cette version, utilise input() dans le script principal (pas encore à l’intérieur de fonctions synchrones).</p></div>
+      <div><strong>Mode hors connexion</strong><p>Connecte-toi une première fois et attends le statut « Python prêt ». Le moteur WebAssembly sera mis en cache. Ensuite, les scripts utilisant la bibliothèque standard pourront être exécutés sans Internet. Les bibliothèques supplémentaires doivent être téléchargées séparément.</p></div>
     </section>
     <footer>Console Python 3 · Une application séparée d’Académique</footer>
   </main>
