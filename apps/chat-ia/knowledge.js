@@ -242,9 +242,13 @@ export async function loadKnowledgeIndex(options = {}) {
   }
 
   try {
-    const catalogResponse = await fetch(CATALOG_URL.href);
-    if (!catalogResponse.ok) throw new Error("Catalogue des cours indisponible.");
-    const catalog = await catalogResponse.json();
+    let catalog = { subjects: [] };
+    try {
+      const catalogResponse = await fetch(CATALOG_URL.href);
+      if (catalogResponse.ok) catalog = await catalogResponse.json();
+    } catch (error) {
+      // Imported local PDFs and any previously cached course sources remain searchable offline.
+    }
     const definitions = [
       ...makeCatalogSources(catalog),
       ...LEGACY_PYTHON_LESSONS
