@@ -25,7 +25,7 @@
 {"id":"py-dict","category":"python","question":"Comment compter les apparitions de chaque mot avec un dictionnaire ?","expected_concepts":[["dictionnaire","dict"],["compteur","count"],["get","valeur"]]}
 {"id":"py-is-equals","category":"python","question":"Est-ce que is et == sont équivalents ?","expected_concepts":[["==","égalité","egalite"],["identité","identite","même objet","meme objet"],["none"]]}
 {"id":"py-async","category":"python","question":"asyncio accélère-t-il tous les calculs Python ?","expected_concepts":[["non"],["attente","entrée-sortie","entree-sortie","réseau","reseau"],["cpu","processeur","calcul intensif"]]}
-{"id":"js-strict","category":"javascript","question":"Quelle différence entre == et === en JavaScript ?","expected_concepts":[["coercition","conversion"],["=== ","=== "],["strict","sans conversion"]]}
+{"id":"js-strict","category":"javascript","question":"Quelle différence entre == et === en JavaScript ?","expected_concepts":[["coercition","conversion"],["==="],["strict","sans conversion"]]}
 {"id":"js-promise","category":"javascript","question":"À quoi sert une Promise en JavaScript ?","expected_concepts":[["asynchrone"],["résultat futur","resultat futur"],["then","catch","await"]]}
 {"id":"java-main","category":"java","question":"Quelle est la méthode principale qui lance un programme Java ?","expected_concepts":[["public static void main"],["string[] args","string"],["jvm","démarrer","demarrer"]]}
 {"id":"java-class","category":"java","question":"Comment déclarer une classe en Java ?","expected_concepts":[["class"],["nom"],["fichier","java"]]}
