@@ -89,6 +89,8 @@ def validate_record(record: Any) -> tuple[dict[str, Any] | None, str | None]:
             "license": record["license"].strip(),
             "rights_status": record["rights_status"],
             "language": record["language"].strip().lower(),
+            "topic": str(record.get("topic") or "general").strip().lower(),
+            "difficulty": str(record.get("difficulty") or "unspecified").strip().lower(),
         },
     }
     return output, None
@@ -109,37 +111,68 @@ def read_jsonl(path: Path) -> tuple[list[Any], list[dict[str, str]]]:
 
 
 def split_groups(records: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    """Split whole conversation groups, stratified by topic.
+
+    Small topics are kept intact in train or split train/test; larger topics
+    receive train/validation/test examples. No conversation group can leak.
+    """
     groups: dict[str, list[dict[str, Any]]] = {}
+    topic_by_group: dict[str, str] = {}
     for record in records:
-        groups.setdefault(record["metadata"]["group_id"], []).append(record)
+        group_id = record["metadata"]["group_id"]
+        topic = record["metadata"].get("topic", "general")
+        previous_topic = topic_by_group.setdefault(group_id, topic)
+        if previous_topic != topic:
+            raise ValueError(
+                f"Le groupe {group_id!r} contient plusieurs domaines. "
+                "Utilise un group_id distinct par conversation."
+            )
+        groups.setdefault(group_id, []).append(record)
 
-    group_ids = sorted(
-        groups,
-        key=lambda group_id: hashlib.sha256(group_id.encode("utf-8")).hexdigest(),
-    )
-    count = len(group_ids)
-    if count < 3:
-        raise ValueError("Il faut au moins 3 groupes de conversations pour créer train, validation et test sans fuite.")
-
-    train_count = max(1, int(round(count * 0.80)))
-    validation_count = max(1, int(round(count * 0.10)))
-    if train_count + validation_count >= count:
-        train_count = count - 2
-        validation_count = 1
+    strata: dict[str, list[str]] = {}
+    for group_id, items in groups.items():
+        topic = items[0]["metadata"].get("topic", "general")
+        strata.setdefault(topic, []).append(group_id)
 
     assignments: dict[str, str] = {}
-    for index, group_id in enumerate(group_ids):
-        if index < train_count:
-            split = "train"
-        elif index < train_count + validation_count:
-            split = "validation"
-        else:
-            split = "test"
-        assignments[group_id] = split
+    for topic, topic_groups in sorted(strata.items()):
+        ordered = sorted(
+            topic_groups,
+            key=lambda group_id: hashlib.sha256(
+                (topic + ":" + group_id).encode("utf-8")
+            ).hexdigest(),
+        )
+        count = len(ordered)
+        if count == 1:
+            assignments[ordered[0]] = "train"
+            continue
+        if count == 2:
+            assignments[ordered[0]] = "train"
+            assignments[ordered[1]] = "test"
+            continue
+
+        test_count = max(1, int(round(count * 0.10)))
+        validation_count = max(1, int(round(count * 0.10)))
+        train_count = count - validation_count - test_count
+        if train_count < 1:
+            train_count, validation_count, test_count = count - 2, 1, 1
+
+        for index, group_id in enumerate(ordered):
+            if index < train_count:
+                split_name = "train"
+            elif index < train_count + validation_count:
+                split_name = "validation"
+            else:
+                split_name = "test"
+            assignments[group_id] = split_name
 
     result = {"train": [], "validation": [], "test": []}
     for record in records:
         result[assignments[record["metadata"]["group_id"]]].append(record)
+    if any(not result[name] for name in result):
+        raise ValueError(
+            "Le corpus doit contenir assez de groupes pour train, validation et test."
+        )
     return result
 
 
@@ -184,14 +217,23 @@ def prepare_dataset(input_path: Path, output_dir: Path) -> dict[str, Any]:
 
     languages = Counter(item["metadata"]["language"] for item in accepted)
     sources = Counter(item["metadata"]["source"] for item in accepted)
+    topics = Counter(item["metadata"]["topic"] for item in accepted)
+    split_topics = {
+        split_name: dict(Counter(
+            item["metadata"]["topic"] for item in split_records
+        ))
+        for split_name, split_records in splits.items()
+    }
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "input": str(input_path),
         "accepted": len(accepted),
         "rejected": len(rejected),
         "splits": {name: len(items) for name, items in splits.items()},
         "groups": len({item["metadata"]["group_id"] for item in accepted}),
         "languages": dict(languages),
+        "topics": dict(topics),
+        "split_topics": split_topics,
         "sources": dict(sources),
         "policy": "Only rights-verified, privacy-reviewed, quality-approved records were admitted.",
     }
