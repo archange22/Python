@@ -144,3 +144,10 @@ test("la bibliothèque permet de retrouver des notions Python avancées et des m
   assert.equal(pythonResults[0]?.id, "python05");
   assert.equal(aiResults[0]?.id, "ia02");
 });
+
+test("SUN décrit correctement la lecture des PDF importés et la limite OCR", () => {
+  const reply = getSmallTalkReply("tu peux lire les pdf");
+  assert.match(reply || "", /importer un PDF/);
+  assert.match(reply || "", /120 pages/);
+  assert.match(reply || "", /OCR/);
+});
