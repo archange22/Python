@@ -1,32 +1,99 @@
 {
   "model_name": "SUN",
-  "version": "0.2.0-alpha",
+  "version": "0.3.0-alpha",
+  "application_model_key": "sun-core",
+  "architecture": "autoregressive Transformer language model",
+  "parameter_scale": "approximately 0.6 billion",
   "foundation_model": "minpeter/Qwen3-0.6B-Instruct",
   "browser_onnx_model": "onnx-community/Qwen3-0.6B-Instruct-ONNX",
   "license": "Apache-2.0",
-  "app_model_key": "sun-core",
   "task": "text-generation",
+  "runtime": "Transformers.js 4.3.2 + ONNX Runtime Web in a Web Worker",
+  "single_model_only": true,
   "quantization": {
     "webgpu": {
       "dtype": "q4f16",
-      "approximate_model_file_bytes": 679477248
+      "approximate_weight_bytes": 679477248,
+      "display": "approximately 648 MiB"
     },
     "wasm": {
       "dtype": "int8",
-      "approximate_model_file_bytes": 790626304
+      "approximate_weight_bytes": 790626304,
+      "display": "approximately 754 MiB"
     }
   },
-  "training_method": "SFT + LoRA",
-  "training_dataset": "training/data/seed.jsonl",
-  "runtime": "Transformers.js 4.3.2 + ONNX Runtime Web",
-  "learning_modes": {
-    "document_memory": "RAG: extracted document text is indexed locally and retrieved at answer time; model weights do not change.",
-    "weight_adaptation": "SFT/LoRA: approved, rights-cleared examples are used in a deliberate training run; resulting adapters are not loaded by the PWA until merged, exported and quantized to ONNX."
+  "conversation": {
+    "recent_history_messages": 8,
+    "document_sources": 3,
+    "generation_profiles": {
+      "fast": {
+        "short": 64,
+        "normal": 96,
+        "detailed": 128
+      },
+      "balanced": {
+        "short": 96,
+        "normal": 160,
+        "detailed": 224
+      },
+      "quality": {
+        "short": 128,
+        "normal": 224,
+        "detailed": 320
+      }
+    },
+    "streaming": true
   },
-  "warnings": [
-    "SUN is a customised application identity built on an Apache-2.0 foundation checkpoint, not a from-scratch LLM.",
-    "The 0.6B parameter model is compact and may produce factual or coding errors.",
-    "Initial model download is hundreds of megabytes and may exceed low-end phone storage or memory.",
-    "The LoRA training pipeline has not been executed in this repository."
+  "retrieval": {
+    "method": "BM25",
+    "sources": [
+      "Académique lessons",
+      "locally imported documents"
+    ],
+    "source_text_added_to_prompt": true,
+    "documents_change_weights": false
+  },
+  "training": {
+    "method": "supervised fine-tuning with LoRA",
+    "base_checkpoint": "minpeter/Qwen3-0.6B-Instruct",
+    "default_adapter_rank": 16,
+    "assistant_only_loss": true,
+    "dataset": "training/data/seed.jsonl",
+    "initial_original_examples": 126,
+    "languages": [
+      "fr",
+      "en"
+    ],
+    "domains": [
+      "mathematics",
+      "physics",
+      "chemistry",
+      "python",
+      "javascript",
+      "java",
+      "c",
+      "html-css",
+      "sql",
+      "learning",
+      "conversation"
+    ],
+    "benchmark_cases": 37,
+    "status": "configured_not_run",
+    "output_pipeline": [
+      "prepare and audit data",
+      "train LoRA adapter",
+      "merge adapter into base checkpoint",
+      "generate held-out benchmark answers",
+      "human and code-test review",
+      "export merged checkpoint to ONNX and quantize",
+      "device validation before replacing browser model"
+    ]
+  },
+  "important_limitations": [
+    "SUN is built on an open-weight foundation model and is not trained from random initial weights.",
+    "The starter corpus is too small to make SUN an expert.",
+    "The LoRA run has not been performed; the browser is still using the public ONNX foundation checkpoint.",
+    "A merged Transformer checkpoint is not yet a browser ONNX artifact.",
+    "The model may not fit in memory on low-end Android devices."
   ]
 }
