@@ -1,4 +1,9 @@
-const MODEL_URL = new URL("./models/sun-neural-v1.json", import.meta.url);
+const MODEL_PARTS = [
+  "sun-neural-v1.part-01.txt",
+  "sun-neural-v1.part-02.txt",
+  "sun-neural-v1.part-03.txt",
+  "sun-neural-v1.part-04.txt"
+].map((file) => new URL("./models/" + file, import.meta.url));
 const CONFIDENCE_THRESHOLD = 0.45;
 let modelPromise = null;
 
@@ -92,10 +97,11 @@ export function unpackSunModel(raw) {
 
 export async function loadSunNeural() {
   if (!modelPromise) {
-    modelPromise = fetch(MODEL_URL, { cache: "force-cache" }).then(async (response) => {
-      if (!response.ok) throw new Error("Impossible de lire le modèle SUN Neural intégré (HTTP " + response.status + ").");
-      return unpackSunModel(await response.json());
-    }).catch((error) => {
+    modelPromise = Promise.all(MODEL_PARTS.map(async (url) => {
+      const response = await fetch(url, { cache: "force-cache" });
+      if (!response.ok) throw new Error("Impossible de lire une partie du modèle SUN Neural intégré (HTTP " + response.status + ").");
+      return response.text();
+    })).then((parts) => unpackSunModel(JSON.parse(parts.join("")))).catch((error) => {
       modelPromise = null;
       throw error;
     });
