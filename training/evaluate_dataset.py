@@ -25,10 +25,13 @@ def read_split(path: Path) -> list[dict[str, Any]]:
                 raise ValueError(f"{path}:{line_number}: JSON invalide ({error})") from error
             if not isinstance(record, dict) or not isinstance(record.get("messages"), list):
                 raise ValueError(f"{path}:{line_number}: format conversation invalide")
-            roles = [message.get("role") for message in record["messages"] if isinstance(message, dict)]
-            if "user" not in roles or "assistant" not in roles:
-                raise ValueError(f"{path}:{line_number}: user/assistant manquant")
-            if roles[0] != "user" or roles[-1] != "assistant":
+            if any(not isinstance(message, dict) for message in record["messages"]):
+                raise ValueError(f"{path}:{line_number}: message mal formé")
+            roles = [message.get("role") for message in record["messages"]]
+            if any(role not in {"system", "user", "assistant"} for role in roles):
+                raise ValueError(f"{path}:{line_number}: rôle inconnu")
+            conversational_roles = [role for role in roles if role != "system"]
+            if not conversational_roles or conversational_roles[0] != "user" or conversational_roles[-1] != "assistant":
                 raise ValueError(f"{path}:{line_number}: la conversation doit commencer par user et finir par assistant")
             if any(not isinstance(message.get("content"), str) or not message["content"].strip()
                    for message in record["messages"]):
