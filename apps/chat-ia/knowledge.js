@@ -1,4 +1,6 @@
-const CACHE_KEY = "sun-course-index-v3";
+import { getDocumentLibraryVersion, listImportedDocuments } from "./document-library.js";
+
+const CACHE_KEY = "sun-course-index-v4";
 const CACHE_MAX_AGE = 6 * 60 * 60 * 1000;
 const CATALOG_URL = new URL("../../courses/catalog.json", import.meta.url);
 
@@ -183,7 +185,7 @@ export function buildSearchIndex(sources) {
   }
 
   return {
-    version: 2,
+    version: 3,
     savedAt: Date.now(),
     sources: validSources,
     chunks,
@@ -232,7 +234,10 @@ function saveCachedIndex(index) {
 export async function loadKnowledgeIndex(options = {}) {
   const cached = readCachedIndex();
   const forceRefresh = options.forceRefresh === true;
-  if (!forceRefresh && cached && Date.now() - Number(cached.savedAt || 0) < CACHE_MAX_AGE) {
+  const libraryVersion = getDocumentLibraryVersion();
+  if (!forceRefresh && cached?.version === 3 &&
+      cached.documentLibraryVersion === libraryVersion &&
+      Date.now() - Number(cached.savedAt || 0) < CACHE_MAX_AGE) {
     return cached;
   }
 
@@ -264,9 +269,29 @@ export async function loadKnowledgeIndex(options = {}) {
     const sources = results
       .filter((result) => result.status === "fulfilled")
       .map((result) => result.value);
-    if (!sources.length) throw new Error("Aucune leçon n’a pu être chargée.");
 
+    let importedDocuments = [];
+    try {
+      importedDocuments = await listImportedDocuments();
+    } catch (error) {
+      // Course search must remain available when local document storage is unsupported.
+    }
+    for (const document of importedDocuments) {
+      if (!document || typeof document.content !== "string" || !document.content.trim()) continue;
+      sources.push({
+        id: "local-pdf-" + document.id,
+        subject: "Documents PDF importés",
+        title: document.name || "Document PDF",
+        lessonNumber: "PDF",
+        label: "PDF importé — " + String(document.name || "Document sans titre"),
+        url: "local://documents/" + encodeURIComponent(document.id),
+        content: document.content
+      });
+    }
+
+    if (!sources.length) throw new Error("Aucun document n’a pu être chargé.");
     const index = buildSearchIndex(sources);
+    index.documentLibraryVersion = getDocumentLibraryVersion();
     saveCachedIndex(index);
     return index;
   } catch (error) {
