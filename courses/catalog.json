@@ -15,6 +15,24 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/ia/lesson-01.md",
           "pdf": "./pdf/courses/ia-01.pdf"
+        },
+        {
+          "id": "ia02",
+          "title": "IA — Méthodes pour faire évoluer SUN",
+          "description": "RAG, embeddings, SFT, LoRA, préférences, distillation, évaluation et optimisation de l'inférence.",
+          "level": "Intermédiaire",
+          "duration": "Leçon 02",
+          "available": true,
+          "content": "./ia/methodes-apprentissage.md"
+        },
+        {
+          "id": "ia03",
+          "title": "IA — Bibliothèque de ressources et articles",
+          "description": "Corpus de dialogues, documentation Python, exercices, articles et PDF de recherche avec licences et liens vérifiés.",
+          "level": "Référence",
+          "duration": "Leçon 03",
+          "available": true,
+          "content": "./ia/bibliotheque-ressources.md"
         }
       ]
     },
@@ -47,6 +65,43 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/web/lesson-01.md",
           "pdf": "./pdf/courses/web-01.pdf"
+        }
+      ]
+    },
+    {
+      "id": "python",
+      "courses": [
+        {
+          "id": "python05",
+          "title": "Python — Référence approfondie et parcours expert",
+          "description": "Référence structurée : types, collections, fonctions, fichiers, modules, programmation objet, typage, concurrence, tests, performance et sécurité.",
+          "level": "Tous niveaux",
+          "duration": "Leçon 05",
+          "available": true,
+          "content": "./python/guide-expert.md"
+        },
+        {
+          "id": "python06",
+          "title": "Python — Banque d'exercices et vérification",
+          "description": "Exercices progressifs et cas de test pour améliorer l'analyse, la correction et la génération de code Python.",
+          "level": "Débutant à avancé",
+          "duration": "Leçon 06",
+          "available": true,
+          "content": "./python/atelier-exercices.md"
+        }
+      ]
+    },
+    {
+      "id": "conversation",
+      "courses": [
+        {
+          "id": "conversation01",
+          "title": "Conversation — Dialogues de référence pour SUN",
+          "description": "Dialogues originaux pour le langage naturel, les abréviations, le contexte, les corrections et les réponses honnêtes.",
+          "level": "Référence",
+          "duration": "Leçon 01",
+          "available": true,
+          "content": "./conversation/dialogues-reference.md"
         }
       ]
     }
