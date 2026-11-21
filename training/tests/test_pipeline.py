@@ -47,7 +47,9 @@ class DatasetPipelineTests(unittest.TestCase):
             input_path = root / "input.jsonl"
             output_dir = root / "prepared"
             rows = [record(f"sample-{index}") for index in range(20)]
-            rows.append(record("duplicate", "Réponse utile", group_id="sample-0"))
+            duplicate = record("sample-0")
+            duplicate["id"] = "duplicate"
+            rows.append(duplicate)
             input_path.write_text(
                 "".join(json.dumps(item, ensure_ascii=False) + "\n" for item in rows),
                 encoding="utf-8",
