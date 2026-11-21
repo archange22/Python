@@ -116,18 +116,18 @@ Documentation officielle de TRL sur les formats conversationnels du SFT : https:
 
 ## 8. Premier modèle neuronal propre à SUN
 
-SUN Neural 0.1 est un petit réseau neuronal multicouche (MLP) destiné à l'inférence locale dans le navigateur Android. Il utilise des caractéristiques de mots, de paires de mots et de trigrammes de caractères, puis classe le message parmi neuf intentions en français. Ses poids quantifiés sont stockés dans `apps/chat-ia/models/sun-neural-v1.json`.
+SUN Neural 0.1 est un petit réseau neuronal multicouche (MLP) destiné à l'inférence locale dans le navigateur Android. Il utilise des caractéristiques de mots, de paires de mots et de trigrammes de caractères, puis classe le message parmi neuf intentions en français. Ses poids quantifiés int4 sont intégrés sous forme de fragments texte `apps/chat-ia/models/sun-neural-v1.part-01.txt` à `part-04.txt`, chargés localement par le worker.
 
 **Limite essentielle : ce n'est pas un grand modèle de langage (LLM).** Il ne rédige pas librement une réponse à partir de zéro. Il reconnaît des catégories ciblées et sélectionne une explication pédagogique préparée. La première version est principalement centrée sur les bases de Python ; elle ne remplace pas LaMini, SmolLM2 ni la recherche documentaire de SUN.
 
 Le corpus de départ contient 260 demandes synthétiques originales en français, réparties sur neuf catégories. Le fichier `training/neural/intents.jsonl.gz.b64` contient ces exemples compressés. Ils ne sont pas des conversations privées d'utilisateurs.
 
-Pour entraîner un nouveau jeu de poids :
+Pour entraîner un nouveau jeu de poids (sur un environnement Python avec PyTorch et NumPy) :
 
     pip install -r training/requirements.txt
     python training/train_sun_neural.py
 
-Le script entraîne sur CPU avec PyTorch, conserve un jeu de test à part et exporte les poids int8 dans `apps/chat-ia/models/sun-neural-v1.json`. Aucun GPU n'est nécessaire pour ce petit réseau. Ce processus est distinct du fine-tuning LoRA du modèle génératif défini plus haut.
+Le script entraîne sur CPU avec PyTorch, conserve un jeu de test à part et exporte un fichier maître JSON `sun-neural-v1.json` et quatre fragments texte utilisés par le chargement local du navigateur. Les poids des couches sont quantifiés en int4. Aucun GPU n'est nécessaire pour ce petit réseau. Ce processus est distinct du fine-tuning LoRA du modèle génératif défini plus haut.
 
 Le fichier embarqué actuel a été évalué sur un petit ensemble synthétique tenu à part : 23 réponses correctes sur 39 (59,0 % d'exactitude). Avec un seuil de confiance de 0,45, il répond sur 28 des 39 cas (71,8 % de couverture) et 22 de ces 28 classifications sont correctes (78,6 % de précision sélective). Ces chiffres ne mesurent pas les performances sur de vrais messages d'élèves et ne garantissent pas la fiabilité. Il faut élargir le corpus, faire relire les exemples et construire un benchmark humain plus représentatif avant d'étendre ses domaines.
 
