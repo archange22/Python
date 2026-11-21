@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-20",
+  "updatedAt": "2026-11-21",
   "subjects": [
     {
       "id": "ia",
@@ -15,6 +15,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/ia/lesson-01.md",
           "pdf": "./pdf/courses/ia-01.pdf"
+        },
+        {
+          "id": "ia02",
+          "title": "Données et préparation d’un jeu de données",
+          "description": "Comprendre observations, caractéristiques, étiquettes, qualité des données, séparation entraînement/test, fuite et biais.",
+          "level": "Débutant",
+          "duration": "Leçon 02",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/ia/lesson-02.md",
+          "pdf": "./pdf/courses/ia-02.pdf"
         }
       ]
     },
@@ -31,6 +42,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/discord/lesson-01.md",
           "pdf": "./pdf/courses/discord-01.pdf"
+        },
+        {
+          "id": "discord02",
+          "title": "Créer une application Discord et configurer son bot en sécurité",
+          "description": "Préparer une application, comprendre tokens, intents, scopes OAuth2 et permissions minimales avant de programmer.",
+          "level": "Débutant",
+          "duration": "Leçon 02",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/discord/lesson-02.md",
+          "pdf": "./pdf/courses/discord-02.pdf"
         }
       ]
     },
@@ -47,6 +69,33 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/web/lesson-01.md",
           "pdf": "./pdf/courses/web-01.pdf"
+        },
+        {
+          "id": "web02",
+          "title": "HTML : structurer une page clairement",
+          "description": "Approfondir les éléments HTML, les titres, listes, liens, images, tableaux, sémantique et accessibilité.",
+          "level": "Débutant",
+          "duration": "Leçon 02",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/web/lesson-02.md",
+          "pdf": "./pdf/courses/web-02.pdf"
+        }
+      ]
+    },
+    {
+      "id": "python",
+      "courses": [
+        {
+          "id": "python05",
+          "title": "Conditions et opérateurs logiques",
+          "description": "Utiliser if, elif, else, les comparaisons et and/or/not pour construire des choix fiables dans un programme Python.",
+          "level": "Débutant",
+          "duration": "Leçon 05",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/python/lesson-05.md",
+          "pdf": "./pdf/courses/python-05.pdf"
         }
       ]
     }
