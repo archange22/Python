@@ -1,0 +1,12 @@
+{"id":"chat-greeting","category":"conversation","question":"Salut SUN, cv ?","expected_concepts":[["salut","bonjour"],["fonctionne","prêt","discuter"]]}
+{"id":"chat-correction","category":"conversation","question":"Tu as exécuté le code ?","expected_concepts":[["exécuté","execute"],["non","pas"],["test","interpréteur","interpreter"]]}
+{"id":"py-assignment","category":"python","question":"Quelle est la différence entre = et == en Python ?","expected_concepts":[["affect","attribu","assigne"],["compar","égalité","egalite"],["true","false","bool"]]}
+{"id":"py-loop","category":"python","question":"Explique range(4) dans une boucle for.","expected_concepts":[["0","zéro","zero"],["3","trois"],["4 exclu","jusqu'à 3","jusqu a 3"]]}
+{"id":"py-return","category":"python","question":"Quelle est la différence entre print et return ?","expected_concepts":[["affiche","console"],["renvoie","retourne"],["fonction","résultat","resultat"]]}
+{"id":"py-list-tuple","category":"python","question":"Quelle différence entre une liste et un tuple ?","expected_concepts":[["liste","list"],["tuple"],["modifiable","modifi","non modifiable"]]}
+{"id":"py-dict","category":"python","question":"Comment compter le nombre d'apparitions de chaque mot avec un dictionnaire ?","expected_concepts":[["dictionnaire","dict"],["compteur","count","compte"],["get","valeur"]]}
+{"id":"py-valueerror","category":"python","question":"Comment gérer une conversion int qui peut échouer ?","expected_concepts":[["try"],["except"],["valueerror"],["message","erreur"]]}
+{"id":"py-file","category":"python","question":"Comment ouvrir proprement un fichier texte UTF-8 ?","expected_concepts":[["with"],["open"],["utf-8","utf8"],["ferme","fermer","automatiquement"]]}
+{"id":"py-is-equals","category":"python","question":"Est-ce que is et == sont équivalents ?","expected_concepts":[["==","égalité","egalite"],["identité","identite","même objet","meme objet"],["none"]]}
+{"id":"py-empty-list","category":"python","question":"Comment calculer une moyenne sans provoquer une division par zéro quand la liste est vide ?","expected_concepts":[["liste vide","aucune valeur","empty"],["valueerror","erreur"],["len","longueur"],["sum","somme"]]}
+{"id":"py-async","category":"python","question":"asyncio accélère-t-il tous les calculs Python ?","expected_concepts":[["non"],["entrée-sortie","entree-sortie","attente","réseau","reseau"],["cpu","processeur","calcul intensif"]]}
