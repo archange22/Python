@@ -43,7 +43,9 @@ test("SUN retire les balises de réflexion du texte affiché", () => {
 
 test("SUN fixe des limites de génération par mode de performance", () => {
   assert.equal(getSunGenerationOptions("fast", "short").max_new_tokens, 64);
-  assert.equal(getSunGenerationOptions("quality", "detailed").max_new_tokens, 320);
+  const options = getSunGenerationOptions("quality", "detailed");
+  assert.equal(options.max_new_tokens, 320);
+  assert.equal(options.add_special_tokens, false);
 });
 
 test("SUN utilise un seul modèle avec un runtime adapté aux capacités disponibles", () => {
