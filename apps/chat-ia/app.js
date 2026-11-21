@@ -1,4 +1,5 @@
 import { loadKnowledgeIndex, searchKnowledge } from "./knowledge.js";
+import { importPdfFile, listImportedDocuments, deleteImportedDocument } from "./document-library.js";
 import { getSmallTalkReply, appendSourceReferences } from "./conversation.js";
 
 const STORAGE_KEY = "academique-chat-ia-v1";
@@ -43,13 +44,127 @@ function warmKnowledgeIndex() {
   $("#knowledgeStatus").textContent = "Préparation de la bibliothèque des cours…";
   ensureKnowledgeIndex().then((index) => {
     const count = Array.isArray(index.sources) ? index.sources.length : 0;
+    const documentCount = Array.isArray(index.sources)
+      ? index.sources.filter((source) => source.id.startsWith("local-pdf-")).length
+      : 0;
     $("#knowledgeStatus").textContent = count
-      ? "Bibliothèque prête · " + count + " ressources consultables"
-      : "Aucune leçon n’est encore indexée.";
+      ? "Bibliothèque prête · " + count + " ressources consultables · " +
+        documentCount + " PDF personnel(s)"
+      : "Aucune ressource n’est encore indexée.";
+    renderImportedDocuments();
   }).catch(() => {
     $("#knowledgeStatus").textContent =
       "Bibliothèque indisponible pour le moment · vérifie la connexion.";
   });
+}
+
+async function renderImportedDocuments() {
+  const container = $("#importedPdfList");
+  container.textContent = "";
+  try {
+    const documents = await listImportedDocuments();
+    if (!documents.length) {
+      const empty = document.createElement("p");
+      empty.className = "empty-state";
+      empty.textContent = "Tes documents PDF apparaîtront ici après importation.";
+      container.appendChild(empty);
+      $("#pdfImportStatus").textContent = "Aucun PDF personnel importé.";
+      return;
+    }
+
+    $("#pdfImportStatus").textContent =
+      documents.length + " document(s) PDF conservé(s) localement sur cet appareil.";
+    for (const document of documents) {
+      const item = document.createElement("article");
+      item.className = "imported-pdf-item";
+      const details = document.createElement("div");
+      details.className = "imported-pdf-details";
+      const title = document.createElement("strong");
+      title.textContent = document.name;
+      const meta = document.createElement("span");
+      meta.textContent = document.extractedPages + " / " + document.totalPages +
+        " pages indexées · " + document.characterCount.toLocaleString("fr-FR") + " caractères" +
+        (document.truncated ? " · extraction partielle" : "");
+      details.append(title, meta);
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "document-remove-button";
+      remove.textContent = "Supprimer";
+      remove.setAttribute("aria-label", "Supprimer " + document.name + " de la bibliothèque locale");
+      remove.addEventListener("click", async () => {
+        remove.disabled = true;
+        try {
+          await deleteImportedDocument(document.id);
+          await refreshKnowledgeIndex();
+          await renderImportedDocuments();
+        } catch (error) {
+          remove.disabled = false;
+          $("#pdfImportStatus").textContent = explainError(error.message || error);
+        }
+      });
+      item.append(details, remove);
+      container.appendChild(item);
+    }
+  } catch (error) {
+    const message = error?.message || String(error);
+    $("#pdfImportStatus").textContent = "Stockage PDF indisponible : " + message;
+    $("#pdfImportButton").disabled = true;
+  }
+}
+
+async function refreshKnowledgeIndex() {
+  knowledgeIndexPromise = null;
+  const index = await loadKnowledgeIndex({ forceRefresh: true });
+  knowledgeIndexPromise = Promise.resolve(index);
+  const documentCount = Array.isArray(index.sources)
+    ? index.sources.filter((source) => source.id.startsWith("local-pdf-")).length
+    : 0;
+  const count = Array.isArray(index.sources) ? index.sources.length : 0;
+  $("#knowledgeStatus").textContent =
+    "Bibliothèque prête · " + count + " ressources consultables · " +
+    documentCount + " PDF personnel(s)";
+  return index;
+}
+
+async function handlePdfImport() {
+  const input = $("#pdfImportInput");
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+
+  const button = $("#pdfImportButton");
+  button.disabled = true;
+  const imported = [];
+  const failures = [];
+  try {
+    for (let index = 0; index < files.length; index += 1) {
+      const file = files[index];
+      $("#pdfImportStatus").textContent =
+        "Lecture de " + file.name + " (" + (index + 1) + " / " + files.length + ")…";
+      try {
+        const document = await importPdfFile(file);
+        imported.push(document);
+      } catch (error) {
+        failures.push(file.name + " : " + explainError(error.message || error));
+      }
+    }
+
+    if (imported.length) {
+      await refreshKnowledgeIndex();
+      await renderImportedDocuments();
+    }
+    const successText = imported.length
+      ? imported.length + " PDF ajouté(s) à la recherche locale."
+      : "Aucun PDF n'a été ajouté.";
+    const failureText = failures.length ? " Échecs : " + failures.join(" | ") : "";
+    $("#pdfImportStatus").textContent = successText + failureText;
+  } catch (error) {
+    $("#pdfImportStatus").textContent =
+      "Importation impossible : " + explainError(error.message || error);
+  } finally {
+    button.disabled = false;
+    input.value = "";
+  }
 }
 
 function cleanMarkdownForDisplay(value) {
@@ -1164,7 +1279,7 @@ async function sendMessage(event) {
     sources = searchKnowledge(index, text, 3);
     const count = Array.isArray(index.sources) ? index.sources.length : 0;
     $("#knowledgeStatus").textContent =
-      "Bibliothèque prête · " + count + " leçons consultables";
+      "Bibliothèque prête · " + count + " ressources consultables";
   } catch (error) {
     $("#knowledgeStatus").textContent =
       "Recherche documentaire indisponible · réponse générale possible.";
@@ -1285,6 +1400,8 @@ $("#startQueueButton").addEventListener("click", startQueue);
 $("#pauseQueueButton").addEventListener("click", pauseQueue);
 $("#clearQueueButton").addEventListener("click", clearQueue);
 $("#chatForm").addEventListener("submit", sendMessage);
+$("#pdfImportButton").addEventListener("click", () => $("#pdfImportInput").click());
+$("#pdfImportInput").addEventListener("change", handlePdfImport);
 $("#messageInput").addEventListener("input", updateCounter);
 $("#messageInput").addEventListener("keydown", (event) => {
   if (event.key === "Enter" && !event.shiftKey) {
