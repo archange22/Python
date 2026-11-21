@@ -28,6 +28,9 @@ def main() -> int:
     parser.add_argument("--gradient-accumulation", type=int, default=8)
     parser.add_argument("--learning-rate", type=float, default=2e-4)
     parser.add_argument("--max-length", type=int, default=1024)
+    parser.add_argument("--seed", type=int, default=20261121)
+    parser.add_argument("--lora-rank", type=int, default=16)
+    parser.add_argument("--lora-alpha", type=int, default=32)
     parser.add_argument(
         "--lora",
         dest="lora",
@@ -41,7 +44,19 @@ def main() -> int:
         action="store_false",
         help="Désactiver LoRA et entraîner tous les poids (plus exigeant en mémoire)",
     )
-    parser.add_argument("--assistant-only-loss", action="store_true", help="N'entraîner que sur les réponses assistant si le template du modèle le prend en charge")
+    parser.add_argument(
+        "--assistant-only-loss",
+        dest="assistant_only_loss",
+        action="store_true",
+        default=True,
+        help="Calculer la loss uniquement sur les réponses SUN (défaut)",
+    )
+    parser.add_argument(
+        "--full-sequence-loss",
+        dest="assistant_only_loss",
+        action="store_false",
+        help="Calculer la loss sur tous les tokens, y compris les messages utilisateur",
+    )
     args = parser.parse_args()
 
     try:
@@ -67,9 +82,20 @@ def main() -> int:
             print(f"Split {split} absent : {path}. Lance prepare_sft_dataset.py puis evaluate_dataset.py.", file=sys.stderr)
             return 2
 
-    if args.epochs <= 0 or args.batch_size <= 0 or args.gradient_accumulation <= 0:
-        print("Les epochs, batch-size et gradient-accumulation doivent être positifs.", file=sys.stderr)
+    if (
+        args.epochs <= 0
+        or args.batch_size <= 0
+        or args.gradient_accumulation <= 0
+        or args.max_length < 128
+        or args.lora_rank <= 0
+        or args.lora_alpha <= 0
+    ):
+        print("Les paramètres d'entraînement doivent être positifs et max-length doit être au moins 128.", file=sys.stderr)
         return 2
+
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
     if not torch.cuda.is_available():
         print(
             "AVERTISSEMENT : aucun GPU CUDA détecté. L'entraînement peut être extrêmement lent ou manquer de mémoire sur CPU.",
@@ -92,8 +118,8 @@ def main() -> int:
         peft_config = None
         if args.lora:
             peft_config = LoraConfig(
-                r=16,
-                lora_alpha=32,
+                r=args.lora_rank,
+                lora_alpha=args.lora_alpha,
                 lora_dropout=0.05,
                 bias="none",
                 task_type="CAUSAL_LM",
@@ -115,6 +141,13 @@ def main() -> int:
             save_strategy="epoch",
             report_to="none",
             assistant_only_loss=args.assistant_only_loss,
+            gradient_checkpointing=torch.cuda.is_available(),
+            bf16=torch.cuda.is_available() and torch.cuda.is_bf16_supported(),
+            fp16=torch.cuda.is_available() and not torch.cuda.is_bf16_supported(),
+            optim="adamw_torch",
+            max_grad_norm=1.0,
+            save_total_limit=2,
+            seed=args.seed,
             packing=False,
         )
         trainer = SFTTrainer(
@@ -140,6 +173,15 @@ def main() -> int:
             "assistant_only_loss": args.assistant_only_loss,
             "epochs": args.epochs,
             "max_length": args.max_length,
+            "seed": args.seed,
+            "lora_rank": args.lora_rank if args.lora else None,
+            "lora_alpha": args.lora_alpha if args.lora else None,
+            "assistant_only_loss": args.assistant_only_loss,
+            "dataset_sizes": {
+                "train": len(dataset["train"]),
+                "validation": len(dataset["validation"]),
+                "test": len(dataset["test"]),
+            },
             "test_metrics": test_metrics,
             "warning": "La perte de test ne prouve pas à elle seule que les réponses sont exactes ou utiles. Effectuer une évaluation humaine et des tests Python séparés.",
         }
