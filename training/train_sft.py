@@ -111,10 +111,13 @@ def main() -> int:
             raise ValueError(
                 "Le tokenizer ne fournit pas de chat_template. Choisis un modèle conversationnel compatible et vérifie ses conditions d'utilisation."
             )
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
 
         model = AutoModelForCausalLM.from_pretrained(
             args.model, torch_dtype="auto", trust_remote_code=False
         )
+        model.config.use_cache = False
         peft_config = None
         if args.lora:
             peft_config = LoraConfig(
@@ -170,13 +173,11 @@ def main() -> int:
             "lora": args.lora,
             "artifact_type": "peft_adapter" if args.lora else "full_model_checkpoint",
             "browser_deployment": "Non automatique : fusionner l'adaptateur, exporter et quantifier en ONNX avant intégration dans la PWA.",
-            "assistant_only_loss": args.assistant_only_loss,
             "epochs": args.epochs,
             "max_length": args.max_length,
             "seed": args.seed,
             "lora_rank": args.lora_rank if args.lora else None,
             "lora_alpha": args.lora_alpha if args.lora else None,
-            "assistant_only_loss": args.assistant_only_loss,
             "dataset_sizes": {
                 "train": len(dataset["train"]),
                 "validation": len(dataset["validation"]),
