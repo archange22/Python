@@ -24,22 +24,43 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Test preparation and evaluation pipeline
-        run: python -m unittest discover -s training/tests -v
-      - name: Prepare the original sample dataset
-        run: python training/prepare_sft_dataset.py --input training/data/seed.jsonl --output-dir /tmp/sun-prepared
-      - name: Audit the prepared dataset
-        run: python training/evaluate_dataset.py --data-dir /tmp/sun-prepared
-      - name: Validate SUN Neural trainer and synthetic corpus
+      - name: Compile SUN training and evaluation scripts
         run: |
-          python -m py_compile training/train_sun_neural.py
+          python -m py_compile training/prepare_sft_dataset.py
+          python -m py_compile training/evaluate_dataset.py
+          python -m py_compile training/evaluate_responses.py
+          python -m py_compile training/train_sft.py
+          python -m py_compile training/merge_sun_lora.py
+          python -m py_compile training/evaluate_sun_model.py
+      - name: Test dataset preparation, topic splits and benchmark
+        run: python -m unittest discover -s training/tests -v
+      - name: Prepare the original SUN dataset
+        run: python training/prepare_sft_dataset.py --input training/data/seed.jsonl --output-dir /tmp/sun-prepared
+      - name: Audit data splits
+        run: python training/evaluate_dataset.py --data-dir /tmp/sun-prepared
+      - name: Validate corpus coverage and provenance fields
+        run: |
           python - <<'PY'
-          import base64, gzip, json
+          import json
+          from collections import Counter
           from pathlib import Path
-          path = Path("training/neural/intents.jsonl.gz.b64")
-          rows = [json.loads(line) for line in gzip.decompress(base64.b64decode(path.read_text().strip())).decode().splitlines() if line.strip()]
-          labels = {"greeting", "python_variable_equal", "python_control_flow", "python_function", "python_collections", "python_input_files", "python_error", "python_beginner", "unknown"}
-          assert len(rows) == 260, f"Expected 260 corpus rows, got {len(rows)}"
-          assert all(isinstance(row, list) and len(row) == 2 and row[0] in labels and isinstance(row[1], str) and row[1].strip() for row in rows)
-          print(f"Validated {len(rows)} original synthetic SUN Neural examples.")
+
+          rows = [
+              json.loads(line)
+              for line in Path("training/data/seed.jsonl").read_text(encoding="utf-8").splitlines()
+              if line.strip()
+          ]
+          assert len(rows) == 126, f"Expected 126 examples, found {len(rows)}"
+          assert all(row.get("license_verified") is True for row in rows)
+          assert all(row.get("privacy_reviewed") is True for row in rows)
+          assert all(row.get("quality_status") == "approved" for row in rows)
+          assert all(row.get("rights_status") in {"project_original", "explicit_permission", "open_license_verified"} for row in rows)
+          topics = Counter(row.get("topic", "general") for row in rows)
+          languages = Counter(row["language"] for row in rows)
+          required = {"mathematics", "physics", "chemistry", "python", "javascript", "java", "c", "html-css", "sql"}
+          assert required.issubset(topics), f"Missing subjects: {required - set(topics)}"
+          assert {"fr", "en"}.issubset(languages)
+          print("Validated", len(rows), "original examples")
+          print("Domains:", dict(topics))
+          print("Languages:", dict(languages))
           PY
