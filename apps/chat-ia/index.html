@@ -23,32 +23,30 @@
 
   <main class="chat-page">
     <section class="chat-hero">
-      <span class="eyebrow">ASSISTANT PÉDAGOGIQUE LOCAL</span>
+      <span class="eyebrow">MODÈLE NEURONAL LOCAL · SUN</span>
       <h1>Une question ?<br><span>On la travaille ensemble.</span></h1>
-      <p>SUN reste utilisable sans télécharger de modèle : échanges courants et recherche dans les leçons. Charge un modèle local uniquement pour obtenir des réponses générées plus libres et détaillées.</p>
+      <p>SUN est le seul modèle IA proposé dans Académique. Son petit réseau neuronal fonctionne localement et utilise aussi la bibliothèque des cours et les PDF importés.</p>
     </section>
 
     <section class="model-card" aria-labelledby="modelPanelTitle">
       <div class="model-top">
-        <div class="model-icon">✦</div>
+        <div class="model-icon">SUN</div>
         <div class="model-copy">
-          <span class="eyebrow" id="modelPanelTitle">MODÈLES IA LOCAUX DE SUN</span>
-          <strong id="modelStatus">SUN prêt · modèle optionnel</strong>
-          <p id="modelHint">Sélectionne un modèle pour examiner les fichiers et l’espace nécessaires.</p>
+          <span class="eyebrow" id="modelPanelTitle">MODÈLE IA UNIQUE DE SUN</span>
+          <strong id="modelStatus">SUN prêt · modèle neuronal unique</strong>
+          <p id="modelHint">Initialise SUN Neural 0.1 pour utiliser le réseau neuronal intégré.</p>
         </div>
         <div class="model-buttons">
-          <button id="loadModelButton" class="load-button" type="button">Charger pour réponses avancées</button>
+          <button id="loadModelButton" class="load-button" type="button">Initialiser SUN</button>
           <button id="cancelDownloadButton" class="cancel-button" type="button" hidden>Arrêter</button>
         </div>
       </div>
 
       <div class="model-controls">
-        <label for="modelSelect">Modèle sélectionné</label>
+        <label for="modelSelect">Modèle unique</label>
         <select id="modelSelect">
           <option value="sun-neural-0.1">SUN Neural 0.1 · prototype neuronal local</option>
-          <option value="lamini-77">LaMini-Flan-T5-77M · léger</option>
-          <option value="lamini-248">LaMini-Flan-T5-248M · plus complet</option>
-          <option value="smollm2-135">SmolLM2-135M-Instruct · conversation</option>
+          <option value="sun-neural">SUN Neural 0.1 · réseau neuronal local</option>
         </select>
         <p id="modelDescription" class="model-description"></p>
       </div>
@@ -65,7 +63,7 @@
         <span id="downloadEta">Temps restant : —</span>
       </div>
       <div class="model-footer">
-        <span id="downloadStats">Les statistiques restent sur cet appareil.</span>
+        <span id="downloadStats">SUN Neural 0.1 · modèle unique intégré à l’application.</span>
         <button id="clearModelCacheButton" class="cache-button" type="button">Nettoyer le cache IA</button>
       </div>
     </section>
@@ -142,8 +140,8 @@
         <article class="message assistant">
           <span class="message-avatar">✦</span>
           <div class="message-bubble">
-            <strong>SUN · Mode sans modèle</strong>
-            <p>Bonjour ! Je suis SUN, l’assistant d’Académique. Tu peux me parler normalement ou me poser une question sur les leçons et les documents de cours.</p>
+            <strong>SUN · Réseau neuronal local</strong>
+            <p>Bonjour ! Je suis SUN, le modèle neuronal d’Académique. Je peux reconnaître certaines demandes sur les bases de Python et retrouver des passages dans les cours ou les PDF importés.</p>
           </div>
         </article>
       </div>
@@ -157,7 +155,7 @@
 
     <section class="model-warning">
       <strong>Limites à connaître</strong>
-      <p>Les échanges simples sont gérés localement. SUN Neural 0.1 est un petit classificateur neuronal : il reconnaît quelques intentions en français et renvoie des explications préparées sur les bases de Python. Ce n’est pas un modèle génératif libre. Les autres modèles sont compacts et expérimentaux : ils peuvent se tromper, oublier certains éléments du contexte ou répondre lentement. SmolLM2 est surtout documenté pour l’anglais. Le mode Rapide limite le contexte et le nombre de tokens pour réduire le temps de calcul. Le mode Approfondi autorise des réponses plus longues. SmolLM2 affiche les tokens progressivement ; les modèles T5 affichent leur réponse à la fin. Les fichiers terminés peuvent être réutilisés depuis le cache, mais un fichier interrompu n’est pas forcément repris au dernier octet.</p>
+      <p>SUN Neural 0.1 est un petit réseau neuronal de classification (512 entrées, 32 neurones cachés, 9 catégories). Il reconnaît certaines demandes en français et choisit une explication pédagogique préparée ; ce n’est pas encore un grand modèle génératif comme ChatGPT. Son premier test synthétique a obtenu 59 % d’exactitude sur 39 exemples, résultat trop faible pour le considérer comme expert. La recherche dans les cours et les PDF reste disponible séparément. Les PDF scannés sans texte sélectionnable ne sont pas encore reconnus.</p>
     </section>
 
     <footer>SUN · Assistant d’Académique</footer>
