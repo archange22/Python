@@ -1349,6 +1349,7 @@ function updateCounter() {
 function initializeApp() {
   selectedModel = localStorage.getItem(SELECTED_MODEL_KEY) || "sun-neural";
   if (!MODELS[selectedModel]) selectedModel = "sun-neural";
+  persist(SELECTED_MODEL_KEY, selectedModel);
 
   responseLength = localStorage.getItem(RESPONSE_LENGTH_KEY) || "normal";
   if (!["short", "normal", "detailed"].includes(responseLength)) responseLength = "normal";
@@ -1358,24 +1359,33 @@ function initializeApp() {
 
   stats = readJSON(STATS_KEY, {});
   if (!stats || typeof stats !== "object" || Array.isArray(stats)) stats = {};
+  for (const key of Object.keys(stats)) {
+    if (key !== selectedModel) delete stats[key];
+  }
+  persist(STATS_KEY, stats);
 
   const savedQueue = readJSON(QUEUE_KEY, []);
   downloadQueue = Array.isArray(savedQueue)
-    ? savedQueue.filter((item) => item && MODELS[item.modelKey])
+    ? savedQueue.filter((item) => item && item.modelKey === selectedModel)
     : [];
   for (const item of downloadQueue) {
     if (item.status === "running") item.status = "interrupted";
   }
+  persist(QUEUE_KEY, downloadQueue);
 
   const savedFiles = readJSON(FILES_KEY, null);
-  if (savedFiles && Array.isArray(savedFiles.files)) {
-    downloadFilesModelKey = MODELS[savedFiles.modelKey] ? savedFiles.modelKey : selectedModel;
+  if (savedFiles && savedFiles.modelKey === selectedModel && Array.isArray(savedFiles.files)) {
+    downloadFilesModelKey = selectedModel;
     const heading = $(".file-list-heading strong");
-    if (heading) heading.textContent = "Fichiers · " + (MODELS[downloadFilesModelKey]?.name || "Modèle IA");
+    if (heading) heading.textContent = "Fichiers · " + MODELS[selectedModel].name;
     downloadFiles = savedFiles.files.map((file) => ({
       ...file,
       status: ["downloading", "preparing"].includes(file.status) ? "interrupted" : file.status
     }));
+  } else {
+    downloadFiles = [];
+    downloadFilesModelKey = selectedModel;
+    try { localStorage.removeItem(FILES_KEY); } catch (error) {}
   }
 
   const savedHistory = readJSON(STORAGE_KEY, []);
