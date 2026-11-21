@@ -1,6 +1,9 @@
 const STORAGE_KEY = "academique-python-console-v2";
 const LEGACY_STORAGE_KEY = "academique-python-console-v1";
 const FILE_NAME_KEY = "academique-python-console-filename-v1";
+const PROJECT_KEY = "academique-python-project-v1";
+const THEME_KEY = "academique-python-theme-v1";
+const FONT_KEY = "academique-python-font-v1";
 const DEFAULT_CODE = "nom = input(\"Ton prénom ? \")\nprint(\"Bonjour\", nom)\nprint(\"Bienvenue dans Python 3 !\")\n\nfor nombre in range(1, 4):\n    print(\"Étape\", nombre)";
 const MAX_TERMINAL_LINES = 1500;
 const MAX_FILE_SIZE = 1024 * 1024;
@@ -25,10 +28,91 @@ let pendingCode = null;
 let currentFileName = "main.py";
 let startedAt = 0;
 let saveTimer = null;
+let projectFiles = {};
+let activeFile = "main.py";
+let editorDirty = false;
+let fontSize = 14;
+
+
+function updateDirtyState() {
+  $("#dirtyDot").hidden = !editorDirty;
+  $("#tabUnsaved").hidden = !editorDirty;
+}
+
+function updateCursorPosition() {
+  const before = editor.value.slice(0, editor.selectionStart);
+  const line = before.split("\n");
+  $("#cursorPosition").textContent = "Ln " + line.length + ", Col " + (line[line.length - 1].length + 1);
+}
+
+function renderFileList() {
+  const list = $("#fileList");
+  list.textContent = "";
+  Object.keys(projectFiles).sort().forEach((name) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "file-entry" + (name === activeFile ? " active" : "");
+    const icon = document.createElement("span");
+    icon.className = "file-icon";
+    icon.textContent = "Py";
+    const label = document.createElement("span");
+    label.textContent = name;
+    button.append(icon, label);
+    button.addEventListener("click", () => switchFile(name));
+    list.appendChild(button);
+  });
+}
+
+function switchFile(name) {
+  if (!Object.prototype.hasOwnProperty.call(projectFiles, name)) return;
+  saveEditor();
+  activeFile = name;
+  editor.value = projectFiles[name];
+  setFileName(name);
+  editorDirty = false;
+  updateDirtyState();
+  updateEditorMeta();
+  updateCursorPosition();
+  renderFileList();
+  editor.focus();
+}
+
+function createPythonFile() {
+  const raw = window.prompt("Nom du nouveau fichier Python :", "nouveau.py");
+  if (raw === null) return;
+  let name = raw.trim().split(/[\\/]/).pop();
+  if (!name) return;
+  if (!name.toLowerCase().endsWith(".py")) name += ".py";
+  if (!/^[\p{L}\p{N}_ .-]+\.py$/u.test(name) || name.length > 80) {
+    addLine("Nom de fichier invalide. Utilise des lettres, chiffres, espaces, tirets ou underscores.", "error");
+    return;
+  }
+  if (Object.prototype.hasOwnProperty.call(projectFiles, name)) {
+    addLine("Ce fichier existe déjà.", "info");
+    return;
+  }
+  saveEditor();
+  projectFiles[name] = "# " + name + "\n\n";
+  localStorage.setItem(PROJECT_KEY, JSON.stringify(projectFiles));
+  switchFile(name);
+}
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = theme === "light" ? "#e9edf0" : "#17212b";
+  try { localStorage.setItem(THEME_KEY, theme); } catch (error) {}
+}
+
+function changeFont(delta) {
+  fontSize = Math.max(11, Math.min(22, fontSize + delta));
+  document.documentElement.style.setProperty("--code-size", fontSize + "px");
+  try { localStorage.setItem(FONT_KEY, String(fontSize)); } catch (error) {}
+}
 
 function setStatus(message, kind = "loading") {
   $("#runtimeStatus").textContent = message;
-  $("#statusDot").className = "status-dot" + (kind === "ready" ? " ready" : kind === "error" ? " error" : "");
+  $("#statusDot").className = "runtime-led" + (kind === "ready" ? " ready" : kind === "error" ? " error" : "");
 }
 
 function setExecution(message) {
@@ -50,7 +134,7 @@ function addLine(text, kind = "normal") {
 function updateEditorMeta() {
   const count = editor.value.length;
   const lines = editor.value.split("\n").length;
-  $("#codeLength").textContent = count + " caractères · " + lines + (lines > 1 ? " lignes" : " ligne");
+  $("#codeLength").textContent = count + " caractères";
   lineNumbers.textContent = Array.from({ length: lines }, (_, index) => String(index + 1)).join("\n");
   lineNumbers.scrollTop = editor.scrollTop;
 }
@@ -59,6 +143,8 @@ function setFileName(name) {
   const safeName = String(name || "main.py").split(/[\\/]/).pop().slice(0, 100);
   currentFileName = safeName.toLowerCase().endsWith(".py") ? safeName : safeName + ".py";
   $("#fileName").textContent = currentFileName;
+  $("#tabFileName").textContent = currentFileName;
+  $("#mobileFileName").textContent = currentFileName;
   try {
     localStorage.setItem(FILE_NAME_KEY, currentFileName);
   } catch (error) {
@@ -70,7 +156,11 @@ function saveEditor(showStatus = false) {
   try {
     localStorage.setItem(STORAGE_KEY, editor.value);
     localStorage.setItem(FILE_NAME_KEY, currentFileName);
-    if (showStatus) setExecution("Code enregistré sur cet appareil");
+    projectFiles[activeFile] = editor.value;
+    localStorage.setItem(PROJECT_KEY, JSON.stringify(projectFiles));
+    editorDirty = false;
+    updateDirtyState();
+    if (showStatus) setExecution("Fichier enregistré");
   } catch (error) {
     addLine("Impossible d’enregistrer le code : le stockage local est peut-être plein.", "error");
   }
@@ -471,12 +561,16 @@ async function openPythonFile(event) {
 }
 
 editor.addEventListener("input", () => {
+  editorDirty = true;
+  updateDirtyState();
   updateEditorMeta();
   scheduleSave();
 });
 editor.addEventListener("scroll", () => {
   lineNumbers.scrollTop = editor.scrollTop;
 });
+editor.addEventListener("click", updateCursorPosition);
+editor.addEventListener("keyup", updateCursorPosition);
 editor.addEventListener("keydown", handleEditorKeydown);
 
 runButton.addEventListener("click", runCode);
@@ -490,28 +584,52 @@ $("#copyOutputButton").addEventListener("click", () => copyText(output.innerText
 $("#resetButton").addEventListener("click", resetRuntime);
 $("#sampleButton").addEventListener("click", () => {
   editor.value = DEFAULT_CODE;
-  setFileName("main.py");
+  projectFiles[activeFile] = DEFAULT_CODE;
+  setFileName(activeFile);
   updateEditorMeta();
   scheduleSave();
   editor.focus();
 });
 $("#openFileButton").addEventListener("click", () => fileInput.click());
 $("#downloadButton").addEventListener("click", downloadCode);
+$("#newFileButton").addEventListener("click", createPythonFile);
+$("#themeButton").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
+$("#increaseFontButton").addEventListener("click", () => changeFont(1));
+$("#decreaseFontButton").addEventListener("click", () => changeFont(-1));
+$("#mobileFilesButton").addEventListener("click", () => document.body.classList.toggle("files-open"));
+$("#mobileEditorButton").addEventListener("click", () => { $("#codeEditor").focus(); $("#mobileEditorButton").classList.add("selected"); $("#mobileConsoleButton").classList.remove("selected"); });
+$("#mobileConsoleButton").addEventListener("click", () => { $("#terminalOutput").scrollIntoView({block:"nearest"}); $("#mobileConsoleButton").classList.add("selected"); $("#mobileEditorButton").classList.remove("selected"); });
 fileInput.addEventListener("change", openPythonFile);
 stdinForm.addEventListener("submit", answerInput);
 window.addEventListener("pagehide", saveEditor);
 
 try {
+  const storedProject = localStorage.getItem(PROJECT_KEY);
+  if (storedProject) {
+    const parsed = JSON.parse(storedProject);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) projectFiles = parsed;
+  }
+  const savedTheme = localStorage.getItem(THEME_KEY);
+  if (savedTheme === "light" || savedTheme === "dark") applyTheme(savedTheme);
+  const savedFont = Number(localStorage.getItem(FONT_KEY));
+  if (Number.isFinite(savedFont) && savedFont >= 11 && savedFont <= 22) changeFont(savedFont - 14);
   const saved = localStorage.getItem(STORAGE_KEY);
   const legacySaved = saved === null ? localStorage.getItem(LEGACY_STORAGE_KEY) : null;
   const savedName = localStorage.getItem(FILE_NAME_KEY);
   if (saved !== null) editor.value = saved;
   else if (legacySaved !== null) editor.value = legacySaved;
   if (savedName) setFileName(savedName);
+  activeFile = savedName || "main.py";
+  if (!Object.keys(projectFiles).length) projectFiles[activeFile] = editor.value;
+  else if (!Object.prototype.hasOwnProperty.call(projectFiles, activeFile)) projectFiles[activeFile] = editor.value;
+  editor.value = projectFiles[activeFile];
+  renderFileList();
 } catch (error) {
   addLine("Le stockage local est indisponible. Le code ne sera pas conservé après fermeture.", "info");
 }
 
 updateEditorMeta();
+updateCursorPosition();
+updateDirtyState();
 setBusy(false);
 createWorker();
