@@ -1,4 +1,4 @@
-const APP_CACHE = "academique-sun-shell-v7";
+const APP_CACHE = "academique-sun-shell-v8";
 const LIBRARY_CACHE = "academique-chat-ia-library-v3";
 const APP_FILES = [
   "./",
