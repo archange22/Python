@@ -88,6 +88,29 @@ self.addEventListener("message", async (event) => {
     return;
   }
 
+  if (data.type === "check") {
+    try {
+      await pyodide.runPythonAsync("import ast\nast.parse(" + JSON.stringify(String(data.code || "")) + ", filename='<console>')");
+      send("check-result", { ok: true, message: "Aucune erreur de syntaxe détectée." });
+    } catch (error) {
+      send("check-result", { ok: false, message: error && error.message ? error.message : String(error) });
+    }
+    return;
+  }
+
+  if (data.type === "install-package") {
+    try {
+      await pyodide.loadPackage("micropip");
+      pyodide.globals.set("_academique_package_name", String(data.name || ""));
+      await pyodide.runPythonAsync("import micropip\nawait micropip.install(_academique_package_name)");
+      pyodide.globals.delete("_academique_package_name");
+      send("package-result", { ok: true, message: "Bibliothèque installée : " + String(data.name || "") });
+    } catch (error) {
+      send("package-result", { ok: false, message: "Installation impossible : " + (error && error.message ? error.message : String(error)) });
+    }
+    return;
+  }
+
   if (data.type === "run") {
     try {
       await runCode(String(data.code || ""));
