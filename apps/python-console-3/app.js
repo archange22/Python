@@ -593,6 +593,8 @@ $("#sampleButton").addEventListener("click", () => {
 $("#openFileButton").addEventListener("click", () => fileInput.click());
 $("#downloadButton").addEventListener("click", downloadCode);
 $("#newFileButton").addEventListener("click", createPythonFile);
+$("#checkButton").addEventListener("click", () => { if (!worker || !runtimeReady) { addLine("Prépare Python avant de vérifier le code.", "info"); return; } worker.postMessage({type:"check",code:editor.value}); });
+$("#packageButton").addEventListener("click", () => { const name = window.prompt("Nom du paquet Python à installer avec micropip :", "requests"); if (name && /^[A-Za-z0-9_.-]{1,80}$/.test(name)) { if (!worker || !runtimeReady) { addLine("Prépare Python avant d’installer un paquet.", "info"); return; } worker.postMessage({type:"install-package",name}); setExecution("Installation de " + name + "…"); } else if (name) addLine("Nom de paquet invalide.", "error"); });
 $("#themeButton").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
 $("#increaseFontButton").addEventListener("click", () => changeFont(1));
 $("#decreaseFontButton").addEventListener("click", () => changeFont(-1));
