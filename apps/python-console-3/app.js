@@ -306,6 +306,12 @@ function handleWorkerMessage(event) {
     setStatus("Moteur indisponible. Une connexion peut être nécessaire au premier téléchargement.", "error");
     addLine(data.message || "Le téléchargement du moteur Python a échoué.", "error");
     pendingCode = null;
+  } else if (data.type === "check-result") {
+    setExecution(data.ok ? "Syntaxe correcte" : "Erreur de syntaxe");
+    addLine(data.message, data.ok ? "info" : "error");
+  } else if (data.type === "package-result") {
+    setExecution(data.ok ? "Bibliothèque installée" : "Échec de l’installation");
+    addLine(data.message, data.ok ? "info" : "error");
   } else if (data.type === "package-warning") {
     addLine(data.message, "info");
   }
