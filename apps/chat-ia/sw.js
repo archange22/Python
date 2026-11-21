@@ -1,4 +1,4 @@
-const APP_CACHE = "academique-sun-shell-v6";
+const APP_CACHE = "academique-sun-shell-v7";
 const LIBRARY_CACHE = "academique-chat-ia-library-v3";
 const APP_FILES = [
   "./",
@@ -10,7 +10,10 @@ const APP_FILES = [
   "./document-library.js",
   "./conversation.js",
   "./sun-neural.js",
-  "./models/sun-neural-v1.json",
+  "./models/sun-neural-v1.part-01.txt",
+  "./models/sun-neural-v1.part-02.txt",
+  "./models/sun-neural-v1.part-03.txt",
+  "./models/sun-neural-v1.part-04.txt",
   "./manifest.webmanifest",
   "./icon.svg"
 ];
