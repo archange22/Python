@@ -279,6 +279,20 @@ async function generateReply(data) {
     Array.isArray(data.sources) ? data.sources : []
   );
 
+  let prompt;
+  try {
+    prompt = generator.tokenizer.apply_chat_template(messages, {
+      tokenize: false,
+      add_generation_prompt: true,
+      enable_thinking: false
+    });
+  } catch (error) {
+    throw new Error("Le format de conversation du modèle SUN n’a pas pu être préparé : " + (error?.message || String(error)));
+  }
+  if (typeof prompt !== "string" || !prompt.trim()) {
+    throw new Error("Le modèle SUN n’a pas produit de prompt de conversation valide.");
+  }
+
   const generationOptions = getSunGenerationOptions(data.performanceMode, data.responseLength);
   send("generation-start", {
     model: SUN_MODEL_LABEL,
@@ -299,12 +313,11 @@ async function generateReply(data) {
     });
   }
 
-  const result = await generator(messages, {
+  const result = await generator(prompt, {
     ...generationOptions,
-    streamer,
-    continue_final_message: false
+    streamer
   });
-  const finalText = extractGeneratedText(result, "");
+  const finalText = extractGeneratedText(result, prompt);
   send("reply", {
     text: finalText,
     streamed: Boolean(streamer),
