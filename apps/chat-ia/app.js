@@ -1347,8 +1347,8 @@ function updateCounter() {
 }
 
 function initializeApp() {
-  selectedModel = localStorage.getItem(SELECTED_MODEL_KEY) || "sun-neural-0.1";
-  if (!MODELS[selectedModel]) selectedModel = "sun-neural-0.1";
+  selectedModel = localStorage.getItem(SELECTED_MODEL_KEY) || "sun-neural";
+  if (!MODELS[selectedModel]) selectedModel = "sun-neural";
 
   responseLength = localStorage.getItem(RESPONSE_LENGTH_KEY) || "normal";
   if (!["short", "normal", "detailed"].includes(responseLength)) responseLength = "normal";
