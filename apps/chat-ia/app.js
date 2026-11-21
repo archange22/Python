@@ -11,6 +11,11 @@ const RESPONSE_LENGTH_KEY = "academique-chat-ia-response-length-v1";
 const PERFORMANCE_MODE_KEY = "academique-chat-ia-performance-mode-v1";
 
 const MODELS = {
+  "sun-neural-0.1": {
+    name: "SUN Neural 0.1",
+    description: "Petit réseau neuronal français intégré à Académique. Il classe des intentions et propose des explications ciblées sur les bases de Python ; ce n’est pas un modèle génératif libre.",
+    family: "Neuronal"
+  },
   "lamini-77": {
     name: "LaMini-Flan-T5-77M",
     description: "Le modèle le plus léger. Utile pour découvrir le chat local, mais ses réponses peuvent rester limitées.",
@@ -332,8 +337,14 @@ function resetSpeed() {
 function setModelDescription() {
   const model = MODELS[selectedModel];
   $("#modelDescription").textContent = model.description;
-  $("#modelHint").textContent = "La taille exacte et les fichiers nécessaires seront demandés au registre du modèle avant le chargement.";
-  $("#clearModelCacheButton").textContent = "Effacer le cache de ce modèle";
+  const isBundled = model.family === "Neuronal";
+  $("#modelHint").textContent = isBundled
+    ? "Modèle intégré à Académique : aucun poids externe à télécharger."
+    : "La taille exacte et les fichiers nécessaires seront demandés au registre du modèle avant le chargement.";
+  $("#clearModelCacheButton").textContent = isBundled
+    ? "Modèle intégré · cache non applicable"
+    : "Effacer le cache de ce modèle";
+  $("#clearModelCacheButton").disabled = isBundled;
   renderStats();
 }
 
@@ -617,8 +628,13 @@ function startModelLoad(purpose = "manual", modelKey = selectedModel) {
   $("#loadModelButton").disabled = true;
   $("#modelSelect").disabled = true;
   $("#cancelDownloadButton").hidden = false;
-  $("#modelHint").textContent = "Vérification du stockage, du registre et des fichiers du modèle…";
-  $("#downloadDetails").textContent = "Préparation du téléchargement…";
+  const isBundledSun = MODELS[modelKey]?.family === "Neuronal";
+  $("#modelHint").textContent = isBundledSun
+    ? "Chargement du petit réseau neuronal intégré…"
+    : "Vérification du stockage, du registre et des fichiers du modèle…";
+  $("#downloadDetails").textContent = isBundledSun
+    ? "Aucun téléchargement externe nécessaire."
+    : "Préparation du téléchargement…";
   $("#messageInput").disabled = busy;
   $("#sendButton").disabled = busy;
   $("#generationStatus").textContent = purpose === "queue"
@@ -628,8 +644,10 @@ function startModelLoad(purpose = "manual", modelKey = selectedModel) {
 
   (async () => {
     try {
-      const storageMessage = await prepareStorage();
-      if ("serviceWorker" in navigator) {
+      const storageMessage = isBundledSun
+        ? "Modèle neuronal intégré à l’application."
+        : await prepareStorage();
+      if (!isBundledSun && "serviceWorker" in navigator) {
         const registration = await navigator.serviceWorker.register("./sw.js");
         await waitForServiceWorker(registration);
       }
@@ -929,13 +947,19 @@ function handleQueueReady() {
   $("#loadModelButton").textContent = "Charger pour réponses avancées";
   $("#modelSelect").disabled = false;
   updateGenerationControls(false);
-  $("#generationStatus").textContent =
-    "Modèle téléchargé, pas encore chargé en mémoire. Tu peux discuter sans lui ou le charger pour les réponses libres.";
-  $("#downloadDetails").textContent = "Téléchargement terminé · " + downloadFiles.length + " fichier(s) suivis.";
+  const isBundledSun = MODELS[finishedKey]?.family === "Neuronal";
+  $("#generationStatus").textContent = isBundledSun
+    ? "SUN Neural vérifié · il sera initialisé au prochain chargement."
+    : "Modèle téléchargé, pas encore chargé en mémoire. Tu peux discuter sans lui ou le charger pour les réponses libres.";
+  $("#downloadDetails").textContent = isBundledSun
+    ? "Modèle intégré · aucun téléchargement externe."
+    : "Téléchargement terminé · " + downloadFiles.length + " fichier(s) suivis.";
   $("#downloadSpeed").textContent = "Vitesse : terminée";
   $("#downloadEta").textContent = "Temps restant : 0 s";
-  setStatus("SUN prêt · modèle téléchargé", "ready");
-  $("#modelStatus").textContent = MODELS[finishedKey]?.name + " · fichiers prêts";
+  setStatus(isBundledSun ? "SUN Neural prêt à charger" : "SUN prêt · modèle téléchargé", "ready");
+  $("#modelStatus").textContent = isBundledSun
+    ? "SUN Neural 0.1 · modèle intégré"
+    : MODELS[finishedKey]?.name + " · fichiers prêts";
   setTimeout(processQueue, 200);
 }
 
@@ -1022,15 +1046,22 @@ function handleWorkerMessage(event) {
     }
     setStatus("Modèle local prêt", "ready");
     $("#modelStatus").textContent = MODELS[selectedModel].name + " est prêt";
-    $("#modelHint").textContent = "Le modèle est chargé et les fichiers requis ont été vérifiés par le moteur.";
-    $("#downloadDetails").textContent = "Initialisation terminée · " + downloadFiles.length + " fichiers suivis.";
+    const isBundledSun = MODELS[selectedModel]?.family === "Neuronal";
+    $("#modelHint").textContent = isBundledSun
+      ? "Le réseau neuronal SUN est chargé localement. Il reconnaît un nombre limité d’intentions en français, surtout sur les bases de Python."
+      : "Le modèle est chargé et les fichiers requis ont été vérifiés par le moteur.";
+    $("#downloadDetails").textContent = isBundledSun
+      ? "Modèle intégré chargé · aucun téléchargement nécessaire."
+      : "Initialisation terminée · " + downloadFiles.length + " fichiers suivis.";
     $("#loadModelButton").textContent = "Modèle prêt";
     $("#loadModelButton").disabled = true;
     $("#cancelDownloadButton").hidden = true;
     $("#modelSelect").disabled = false;
     $("#messageInput").disabled = false;
     $("#sendButton").disabled = false;
-    $("#generationStatus").textContent = "Modèle local chargé · SUN peut répondre librement.";
+    $("#generationStatus").textContent = MODELS[selectedModel]?.family === "Neuronal"
+      ? "Prototype neuronal chargé · réponses ciblées, pas de génération libre."
+      : "Modèle local chargé · SUN peut répondre librement.";
     $("#downloadSpeed").textContent = "Vitesse : terminée";
     $("#downloadEta").textContent = "Temps restant : 0 s";
     $("#messageInput").focus();
@@ -1204,7 +1235,7 @@ function changePerformanceMode() {
 }
 
 function clearModelCache() {
-  if (loading || queueRunning) return;
+  if (loading || queueRunning || MODELS[selectedModel]?.family === "Neuronal") return;
   const confirmed = window.confirm("Effacer les fichiers en cache de " + MODELS[selectedModel].name + " ? Les prochains chargements devront retélécharger les fichiers.");
   if (!confirmed) return;
 
@@ -1332,8 +1363,8 @@ function updateCounter() {
 }
 
 function initializeApp() {
-  selectedModel = localStorage.getItem(SELECTED_MODEL_KEY) || "lamini-77";
-  if (!MODELS[selectedModel]) selectedModel = "lamini-77";
+  selectedModel = localStorage.getItem(SELECTED_MODEL_KEY) || "sun-neural-0.1";
+  if (!MODELS[selectedModel]) selectedModel = "sun-neural-0.1";
 
   responseLength = localStorage.getItem(RESPONSE_LENGTH_KEY) || "normal";
   if (!["short", "normal", "detailed"].includes(responseLength)) responseLength = "normal";
