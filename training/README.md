@@ -96,3 +96,19 @@ Comparer les mêmes cas sur le modèle d'origine et sur le modèle adapté. Gard
 - Ne pas entraîner sur les données de test.
 - Garder des traces des versions de corpus, scripts, modèle et paramètres.
 - Ne jamais considérer les réponses synthétiques comme exactes sans contrôle.
+
+
+## 7. Évaluer les réponses d'une version de SUN
+
+Le benchmark séparé contient 12 questions Python et conversationnelles dans \`training/evaluation/benchmark.jsonl\`. Pour ajouter les sorties d'un modèle, préparer un fichier JSONL dans lequel chaque ligne contient :
+- \`id\` : l'identifiant exact d'un cas du benchmark ;
+- \`response\` : le texte produit par SUN ;
+- \`human_score\` : note facultative de 1 à 5 après lecture humaine.
+
+Puis exécuter :
+
+    python training/evaluate_responses.py --responses training/evaluation/my-responses.jsonl
+
+L'évaluateur calcule une couverture de concepts indicative et, si des notes humaines sont présentes, leur moyenne. Les mots-clés peuvent apparaître dans une réponse fausse : relire les réponses, vérifier les références et exécuter les tests Python avant de conclure qu'un modèle est meilleur.
+
+Documentation officielle de TRL sur les formats conversationnels du SFT : https://huggingface.co/docs/trl/en/sft_trainer
