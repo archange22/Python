@@ -105,6 +105,22 @@
 
       <div class="knowledge-status" id="knowledgeStatus" aria-live="polite">Préparation de la bibliothèque des cours…</div>
 
+      <section class="document-library" aria-labelledby="documentLibraryTitle">
+        <div class="document-library-heading">
+          <div>
+            <strong id="documentLibraryTitle">Bibliothèque personnelle de SUN</strong>
+            <p>Ajoute des PDF pour que SUN puisse rechercher leur texte. L’extraction et le stockage restent sur cet appareil.</p>
+          </div>
+          <button id="pdfImportButton" class="secondary-button" type="button">Importer des PDF</button>
+          <input id="pdfImportInput" type="file" accept=".pdf,application/pdf" multiple hidden>
+        </div>
+        <p class="document-library-note">Limite : 12 Mo et 120 pages par PDF. Les PDF scannés sans texte sélectionnable ne sont pas encore reconnus. Les fichiers originaux ne sont pas conservés : seul le texte extrait est stocké localement.</p>
+        <p id="pdfImportStatus" class="document-import-status" aria-live="polite">Aucun PDF personnel importé.</p>
+        <div id="importedPdfList" class="imported-pdf-list">
+          <p class="empty-state">Tes documents PDF apparaîtront ici après importation.</p>
+        </div>
+      </section>
+
       <div class="chat-settings">
         <label for="performanceModeSelect">Vitesse / qualité</label>
         <select id="performanceModeSelect">
