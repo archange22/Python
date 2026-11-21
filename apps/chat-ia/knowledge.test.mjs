@@ -104,3 +104,43 @@ test("l’interface indique que le modèle est facultatif", () => {
   assert.match(html, /Charger pour réponses avancées/);
   assert.match(html, /SUN est prêt sans modèle/);
 });
+
+
+test("le catalogue inclut la bibliothèque Python, l'IA et les dialogues", () => {
+  const catalog = JSON.parse(readFileSync(
+    new URL("../../courses/catalog.json", import.meta.url), "utf8"
+  ));
+  const subjects = new Map(catalog.subjects.map((subject) => [subject.id, subject]));
+  assert.ok(subjects.has("python"));
+  assert.ok(subjects.has("ia"));
+  assert.ok(subjects.has("conversation"));
+
+  const contentPaths = [
+    "./python/guide-expert.md",
+    "./python/atelier-exercices.md",
+    "./ia/methodes-apprentissage.md",
+    "./ia/bibliotheque-ressources.md",
+    "./conversation/dialogues-reference.md"
+  ];
+  for (const contentPath of contentPaths) {
+    const fileUrl = new URL(contentPath, new URL("../../courses/catalog.json", import.meta.url));
+    assert.ok(readFileSync(fileUrl, "utf8").length > 500, contentPath + " doit être indexable");
+  }
+});
+
+test("la bibliothèque permet de retrouver des notions Python avancées et des méthodes IA", () => {
+  const pythonGuide = readFileSync(
+    new URL("../../courses/python/guide-expert.md", import.meta.url), "utf8"
+  );
+  const aiGuide = readFileSync(
+    new URL("../../courses/ia/methodes-apprentissage.md", import.meta.url), "utf8"
+  );
+  const expanded = buildSearchIndex([
+    { id: "python05", subject: "Python", title: "Python expert", lessonNumber: "05", content: pythonGuide },
+    { id: "ia02", subject: "Intelligence artificielle", title: "Méthodes IA", lessonNumber: "02", content: aiGuide }
+  ]);
+  const pythonResults = searchKnowledge(expanded, "générateurs décorateurs context managers asyncio");
+  const aiResults = searchKnowledge(expanded, "LoRA fine tuning SFT RAG embeddings");
+  assert.equal(pythonResults[0]?.id, "python05");
+  assert.equal(aiResults[0]?.id, "ia02");
+});
