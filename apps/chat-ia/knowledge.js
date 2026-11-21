@@ -1,4 +1,4 @@
-const CACHE_KEY = "sun-course-index-v2";
+const CACHE_KEY = "sun-course-index-v3";
 const CACHE_MAX_AGE = 6 * 60 * 60 * 1000;
 const CATALOG_URL = new URL("../../courses/catalog.json", import.meta.url);
 
@@ -12,6 +12,7 @@ const LEGACY_PYTHON_LESSONS = ["01", "02", "03", "04"].map((number) => ({
 
 const SUBJECT_NAMES = {
   python: "Python",
+  conversation: "Conversation générale",
   ia: "Intelligence artificielle",
   discord: "Discord",
   web: "Création de sites Web"
