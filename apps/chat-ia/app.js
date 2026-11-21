@@ -608,7 +608,7 @@ function startModelLoad(purpose = "manual", modelKey = selectedModel) {
   $("#loadModelButton").disabled = true;
   $("#modelSelect").disabled = true;
   $("#cancelDownloadButton").hidden = false;
-  const isBundledSun = MODELS[modelKey]?.family === "Neuronal";
+  const isBundledSun = MODELS[modelKey]?.family === "Bundled";
   $("#modelHint").textContent = isBundledSun
     ? "Chargement du petit réseau neuronal intégré…"
     : "Vérification du stockage, du registre et des fichiers du modèle…";
@@ -927,7 +927,7 @@ function handleQueueReady() {
   $("#loadModelButton").textContent = "Initialiser SUN";
   $("#modelSelect").disabled = false;
   updateGenerationControls(false);
-  const isBundledSun = MODELS[finishedKey]?.family === "Neuronal";
+  const isBundledSun = MODELS[finishedKey]?.family === "Bundled";
   $("#generationStatus").textContent = isBundledSun
     ? "SUN Neural vérifié · il sera initialisé au prochain chargement."
     : "Modèle téléchargé, pas encore chargé en mémoire. Tu peux discuter sans lui ou le charger pour les réponses libres.";
@@ -1026,7 +1026,7 @@ function handleWorkerMessage(event) {
     }
     setStatus("Modèle local prêt", "ready");
     $("#modelStatus").textContent = MODELS[selectedModel].name + " est prêt";
-    const isBundledSun = MODELS[selectedModel]?.family === "Neuronal";
+    const isBundledSun = MODELS[selectedModel]?.family === "Bundled";
     $("#modelHint").textContent = isBundledSun
       ? "Le réseau neuronal SUN est chargé localement. Il reconnaît un nombre limité d’intentions en français, surtout sur les bases de Python."
       : "Le modèle est chargé et les fichiers requis ont été vérifiés par le moteur.";
@@ -1039,7 +1039,7 @@ function handleWorkerMessage(event) {
     $("#modelSelect").disabled = false;
     $("#messageInput").disabled = false;
     $("#sendButton").disabled = false;
-    $("#generationStatus").textContent = MODELS[selectedModel]?.family === "Neuronal"
+    $("#generationStatus").textContent = MODELS[selectedModel]?.family === "Bundled"
       ? "Prototype neuronal chargé · réponses ciblées, pas de génération libre."
       : "Modèle local chargé · SUN peut répondre librement.";
     $("#downloadSpeed").textContent = "Vitesse : terminée";
