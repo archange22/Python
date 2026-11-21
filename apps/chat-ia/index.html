@@ -45,6 +45,7 @@
       <div class="model-controls">
         <label for="modelSelect">Modèle sélectionné</label>
         <select id="modelSelect">
+          <option value="sun-neural-0.1">SUN Neural 0.1 · prototype neuronal local</option>
           <option value="lamini-77">LaMini-Flan-T5-77M · léger</option>
           <option value="lamini-248">LaMini-Flan-T5-248M · plus complet</option>
           <option value="smollm2-135">SmolLM2-135M-Instruct · conversation</option>
@@ -156,7 +157,7 @@
 
     <section class="model-warning">
       <strong>Limites à connaître</strong>
-      <p>Les échanges simples sont gérés localement. Les modèles sont compacts et expérimentaux : ils peuvent se tromper, oublier certains éléments du contexte ou répondre lentement. SmolLM2 est surtout documenté pour l’anglais. Le mode Rapide limite le contexte et le nombre de tokens pour réduire le temps de calcul. Le mode Approfondi autorise des réponses plus longues. SmolLM2 affiche les tokens progressivement ; les modèles T5 affichent leur réponse à la fin. Les fichiers terminés peuvent être réutilisés depuis le cache, mais un fichier interrompu n’est pas forcément repris au dernier octet.</p>
+      <p>Les échanges simples sont gérés localement. SUN Neural 0.1 est un petit classificateur neuronal : il reconnaît quelques intentions en français et renvoie des explications préparées sur les bases de Python. Ce n’est pas un modèle génératif libre. Les autres modèles sont compacts et expérimentaux : ils peuvent se tromper, oublier certains éléments du contexte ou répondre lentement. SmolLM2 est surtout documenté pour l’anglais. Le mode Rapide limite le contexte et le nombre de tokens pour réduire le temps de calcul. Le mode Approfondi autorise des réponses plus longues. SmolLM2 affiche les tokens progressivement ; les modèles T5 affichent leur réponse à la fin. Les fichiers terminés peuvent être réutilisés depuis le cache, mais un fichier interrompu n’est pas forcément repris au dernier octet.</p>
     </section>
 
     <footer>SUN · Assistant d’Académique</footer>
