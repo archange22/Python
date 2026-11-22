@@ -270,77 +270,7 @@ width: 100% utilise l'espace disponible. max-width empêche la carte de devenir 
 
 Les unités relatives comme %, rem, vw et vh ont des usages différents. Teste sur un écran étroit avant de conclure que les dimensions sont correctes.
 
-## 11. Construire une carte de présentation
-
-HTML :
-
-~~~html
-<main>
-  <article class="card">
-    <p class="label">PROJET</p>
-    <h1>Mon premier site</h1>
-    <p>J'apprends à organiser une page Web.</p>
-    <a class="link" href="#details">Voir les détails</a>
-  </article>
-</main>
-~~~
-
-CSS :
-
-~~~css
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    padding: 24px;
-    font-family: Arial, sans-serif;
-    color: #28231f;
-    background: #f5efe9;
-}
-
-.card {
-    width: 100%;
-    max-width: 520px;
-    margin: 24px auto;
-    padding: 24px;
-    background: white;
-    border: 1px solid #e5d8cd;
-    border-radius: 16px;
-}
-
-.label {
-    color: #a34d20;
-    font-size: 0.8rem;
-    font-weight: bold;
-}
-~~~
-
-Le HTML décrit le contenu. Le CSS définit la palette, les espacements et les dimensions. Tu peux changer les couleurs sans réécrire la structure.
-
-## 12. Pseudo-classes et états
-
-Une pseudo-classe cible un état ou une position particulière.
-
-~~~css
-a:hover {
-    text-decoration: underline;
-}
-
-a:focus-visible {
-    outline: 3px solid #e58b45;
-    outline-offset: 3px;
-}
-~~~
-
-:hover s'applique lorsque le pointeur survole un élément. Sur un écran tactile, cet état peut être absent ou différent.
-
-:focus-visible rend visible l'élément qui reçoit le focus clavier. Ne supprime pas l'indicateur de focus sans alternative claire.
-
-D'autres pseudo-classes existent, comme :first-child ou :checked. Elles seront utiles avec les formulaires et les listes.
-
-## 13. Débuter avec le responsive design
+## 11. Responsive design : adapter la page aux écrans
 
 Responsive signifie que la présentation s'adapte à différentes tailles d'écran. Il ne suffit pas de réduire tout le contenu : il faut préserver la lisibilité.
 
@@ -364,9 +294,9 @@ Les règles de la media query s'appliquent lorsque la fenêtre ne dépasse pas 4
 
 Le meta viewport dans HTML aide le navigateur mobile à adapter la largeur de la page. Teste un écran étroit, moyen et large, ainsi qu'une taille de texte augmentée.
 
-Le responsive ne consiste pas à cacher automatiquement les informations qui ne rentrent pas. Il faut choisir une disposition qui conserve le contenu essentiel.
+Le responsive ne consiste pas à cacher automatiquement les informations qui ne rentrent pas. Il faut choisir une disposition qui conserve le contenu essentiel. Conserve aussi un focus visible pour les liens et les boutons, afin que la navigation au clavier reste compréhensible.
 
-## 14. Erreurs fréquentes et débogage
+## 12. Erreurs fréquentes et débogage
 
 | Problème | Cause possible | Vérification |
 |---|---|---|
@@ -386,7 +316,7 @@ Méthode :
 
 Sur téléphone, le cache peut conserver une ancienne version. Recharge la page et vérifie le bon dossier avant de conclure que le CSS est cassé.
 
-## 15. Exercices progressifs
+## 13. Exercices progressifs
 
 **Exercice 1 :** rends les h1 bleu foncé et donne-leur une taille de 2rem.
 
@@ -398,7 +328,7 @@ Sur téléphone, le cache peut conserver une ancienne version. Recharge la page 
 
 **Exercice 5 :** ajoute un style :focus-visible aux liens et teste avec la touche Tab.
 
-## 16. Mini-projet : carte de profil responsive
+## 14. Mini-projet : carte de profil responsive
 
 Crée une page de profil fictive contenant un titre, une présentation, une liste de trois compétences et un lien interne.
 
@@ -412,7 +342,7 @@ La carte doit avoir :
 
 Commence par HTML, puis ajoute CSS dans un fichier séparé. Teste sur téléphone en portrait et en paysage si possible. L'objectif est de comprendre les sélecteurs, la cascade, les couleurs, les espacements et les dimensions.
 
-## 17. Corrigés expliqués
+## 15. Corrigés expliqués
 
 **Exercice 1**
 
@@ -475,7 +405,7 @@ a:focus-visible {
 
 La règle rend le focus visible au clavier. Ne retire pas cet indicateur sans remplacement.
 
-## 18. Mini-projet corrigé et fiche de révision
+## 16. Mini-projet corrigé et fiche de révision
 
 HTML :
 
