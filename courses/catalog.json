@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-21",
+  "updatedAt": "2026-11-22",
   "subjects": [
     {
       "id": "ia",
@@ -26,6 +26,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/ia/lesson-02.md",
           "pdf": "./pdf/courses/ia-02.pdf"
+        },
+        {
+          "id": "ia03",
+          "title": "Premiers principes du Machine Learning",
+          "description": "Comprendre comment un algorithme apprend à partir d'exemples, distinguer apprentissage supervisé, non supervisé et par renforcement, puis évaluer un modèle et ses limites.",
+          "level": "Débutant",
+          "duration": "Leçon 03",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/ia/lesson-03.md",
+          "pdf": "./pdf/courses/ia-03.pdf"
         }
       ]
     },
@@ -53,6 +64,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/discord/lesson-02.md",
           "pdf": "./pdf/courses/discord-02.pdf"
+        },
+        {
+          "id": "discord03",
+          "title": "Préparer Python et lancer un premier bot Discord",
+          "description": "Installer discord.py, créer un bot de test, comprendre les événements et commandes, configurer les intents et protéger le token avec une variable d'environnement.",
+          "level": "Débutant",
+          "duration": "Leçon 03",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/discord/lesson-03.md",
+          "pdf": "./pdf/courses/discord-03.pdf"
         }
       ]
     },
@@ -80,6 +102,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/web/lesson-02.md",
           "pdf": "./pdf/courses/web-02.pdf"
+        },
+        {
+          "id": "web03",
+          "title": "CSS : sélecteurs, couleurs et mise en forme",
+          "description": "Découvrir les règles CSS, les sélecteurs, la cascade, les couleurs, les polices, les espacements et le modèle de boîte pour mettre en forme une page sur téléphone et ordinateur.",
+          "level": "Débutant",
+          "duration": "Leçon 03",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/web/lesson-03.md",
+          "pdf": "./pdf/courses/web-03.pdf"
         }
       ]
     },
@@ -96,6 +129,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/python/lesson-05.md",
           "pdf": "./pdf/courses/python-05.pdf"
+        },
+        {
+          "id": "python06",
+          "title": "Les boucles for et while : répéter des actions",
+          "description": "Utiliser for, range et while pour répéter des instructions, accumuler des résultats, contrôler une boucle et éviter les boucles infinies.",
+          "level": "Débutant",
+          "duration": "Leçon 06",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/python/lesson-06.md",
+          "pdf": "./pdf/courses/python-06.pdf"
         }
       ]
     }
