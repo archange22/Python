@@ -1,13 +1,13 @@
 {
-  "name": "Académique — Apprendre, comprendre, construire",
-  "short_name": "Académique",
-  "description": "Formations pour apprendre Python, l'intelligence artificielle, Discord et la création de sites Web.",
-  "start_url": "./",
+  "name": "Sun IA — Fais rayonner tes idées",
+  "short_name": "Sun IA",
+  "description": "Interface de discussion locale, formations et bibliothèque de cours.",
+  "start_url": "./#sun",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#090e1b",
-  "theme_color": "#0b1020",
+  "background_color": "#0b0d13",
+  "theme_color": "#0b0d13",
   "icons": [
     {
       "src": "icon.svg",
