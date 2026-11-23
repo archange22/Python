@@ -93,7 +93,7 @@
   function clean(s) {
     return String(s).replace(/\*\*([^*]+)\*\*/g, "$1").replace(/\*([^*]+)\*/g, "$1")
       .replace(/^#{1,6}\s+/gm, "").replace(/^\s*\|?[-:| ]{3,}\|?\s*$/gm, "")
-      .replace(/\x60([^\x60]+)\x60/g, "$1").replace(/~~~[\\w-]*\\n?/g, "")
+      .replace(/\x60([^\x60]+)\x60/g, "$1").replace(/~~~[\w-]*\n?/g, "")
       .replace(/\n{3,}/g, "\n\n").trim();
   }
   function split(md, path) {
