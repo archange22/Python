@@ -157,6 +157,7 @@
             '<span class="sun-side-label">APPRENDRE</span>' +
             '<a href="#formations"><span aria-hidden="true">▦</span> Formations</a>' +
             '<a href="#bibliotheque"><span aria-hidden="true">▤</span> Cours et PDF</a>' +
+            '<a href="#progression" data-nav="progression"><span aria-hidden="true">◷</span> Progression</a>' +
             '<a href="./apps/python-console-3/index.html"><span aria-hidden="true">⌘</span> Console Python 3</a>' +
             '<div class="sun-local-status"><span class="sun-status-light"></span><span><strong>Stockage local</strong><small>Aucun moteur ni API actif</small></span></div>' +
           '</div>' +
