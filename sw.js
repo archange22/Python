@@ -1,10 +1,11 @@
-const STATIC_CACHE = "academique-shell-v14";
+const STATIC_CACHE = "academique-shell-v15";
 const PDF_CACHE = "academique-pdf-v2";
 const APP_FILES = [
   "./",
   "./index.html",
   "./styles.css",
   "./sun-ia.css",
+  "./sun-brain.js",
   "./sun-ia.js",
   "./app.js",
   "./manifest.webmanifest",
@@ -13,19 +14,32 @@ const APP_FILES = [
   "./pdf/lecon-01-content.md.gz.b64",
   "./pdf/reader.html",
   "./courses/catalog.json",
+  "./pdf/lecon-01.md",
   "./pdf/lecon-02.md",
   "./pdf/lecon-03.md",
   "./pdf/lecon-04.md",
   "./courses/ia/lesson-01.md",
+  "./courses/ia/lesson-02.md",
+  "./courses/ia/lesson-03.md",
+  "./courses/ia/lesson-04.md",
+  "./courses/python/lesson-05.md",
+  "./courses/python/lesson-06.md",
+  "./courses/python/lesson-07.md",
   "./courses/discord/lesson-01.md",
+  "./courses/discord/lesson-02.md",
+  "./courses/discord/lesson-03.md",
+  "./courses/discord/lesson-04.md",
   "./courses/web/lesson-01.md",
+  "./courses/web/lesson-02.md",
+  "./courses/web/lesson-03.md",
+  "./courses/web/lesson-04.md",
   "./apps/python-console-3/index.html",
   "./apps/python-console-3/styles.css",
   "./apps/python-console-3/app.js",
   "./apps/python-console-3/python.worker.js",
   "./apps/python-console-3/sw.js",
   "./apps/python-console-3/manifest.webmanifest",
-  "./apps/python-console-3/icon.svg",
+  "./apps/python-console-3/icon.svg"
 ];
 
 self.addEventListener("install", (event) => {
