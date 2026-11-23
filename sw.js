@@ -1,4 +1,4 @@
-const STATIC_CACHE = "academique-shell-v12";
+const STATIC_CACHE = "academique-shell-v13";
 const PDF_CACHE = "academique-pdf-v2";
 const APP_FILES = [
   "./",
@@ -24,13 +24,6 @@ const APP_FILES = [
   "./apps/python-console-3/sw.js",
   "./apps/python-console-3/manifest.webmanifest",
   "./apps/python-console-3/icon.svg",
-  "./apps/chat-ia/index.html",
-  "./apps/chat-ia/styles.css",
-  "./apps/chat-ia/app.js",
-  "./apps/chat-ia/chat.worker.js",
-  "./apps/chat-ia/sw.js",
-  "./apps/chat-ia/manifest.webmanifest",
-  "./apps/chat-ia/icon.svg"
 ];
 
 self.addEventListener("install", (event) => {
