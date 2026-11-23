@@ -1,9 +1,11 @@
-const STATIC_CACHE = "academique-shell-v13";
+const STATIC_CACHE = "academique-shell-v14";
 const PDF_CACHE = "academique-pdf-v2";
 const APP_FILES = [
   "./",
   "./index.html",
   "./styles.css",
+  "./sun-ia.css",
+  "./sun-ia.js",
   "./app.js",
   "./manifest.webmanifest",
   "./icon.svg",
@@ -76,7 +78,6 @@ self.addEventListener("fetch", (event) => {
       return response;
     }).catch(() => null);
 
-    // Register the background cache update while the fetch event is still active.
     event.waitUntil(update.then(() => undefined));
     event.respondWith(
       caches.open(PDF_CACHE).then((cache) => cache.match(request)).then((cached) => {
