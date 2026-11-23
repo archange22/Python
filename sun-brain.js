@@ -44,40 +44,69 @@
     feats(phrase).forEach(t => { if (index.has(t)) x[index.get(t)] = 1; });
     samples.push({ x, y });
   }));
+  const MODEL_CACHE_KEY = "sun-ia-neural-model-v1";
+  const modelSignature = JSON.stringify(data) + "|" + vocab.join("|");
+
   function rand(seed) {
     let n = seed >>> 0;
     return () => ((n = (n * 1664525 + 1013904223) >>> 0) / 4294967296);
   }
-  const random = rand(41721);
-  const hidden = 16;
-  const w1 = Array.from({ length: hidden }, () => Array.from({ length: vocab.length }, () => (random() - .5) * .2));
-  const b1 = new Array(hidden).fill(0);
-  const w2 = Array.from({ length: labels.length }, () => Array.from({ length: hidden }, () => (random() - .5) * .2));
-  const b2 = new Array(labels.length).fill(0);
+
   function softmax(a) {
     const m = Math.max(...a), e = a.map(v => Math.exp(v - m)), sum = e.reduce((x, y) => x + y, 0);
     return e.map(v => v / sum);
   }
-  for (let epoch = 0; epoch < 350; epoch++) {
-    samples.forEach(sample => {
-      const h = w1.map((row, j) => Math.tanh(row.reduce((sum, w, i) => sum + w * sample.x[i], b1[j])));
-      const out = softmax(w2.map((row, k) => row.reduce((sum, w, j) => sum + w * h[j], b2[k])));
-      const err = out.map((p, k) => p - (k === sample.y ? 1 : 0));
-      const back = new Array(hidden).fill(0);
-      for (let k = 0; k < labels.length; k++) {
-        for (let j = 0; j < hidden; j++) {
-          back[j] += err[k] * w2[k][j];
-          w2[k][j] -= .055 * err[k] * h[j];
+
+  function trainNetwork() {
+    const random = rand(41721);
+    const hiddenSize = 16;
+    const w1 = Array.from({ length: hiddenSize }, () => Array.from({ length: vocab.length }, () => (random() - .5) * .2));
+    const b1 = new Array(hiddenSize).fill(0);
+    const w2 = Array.from({ length: labels.length }, () => Array.from({ length: hiddenSize }, () => (random() - .5) * .2));
+    const b2 = new Array(labels.length).fill(0);
+
+    for (let epoch = 0; epoch < 350; epoch++) {
+      samples.forEach(sample => {
+        const h = w1.map((row, j) => Math.tanh(row.reduce((sum, w, i) => sum + w * sample.x[i], b1[j])));
+        const out = softmax(w2.map((row, k) => row.reduce((sum, w, j) => sum + w * h[j], b2[k])));
+        const err = out.map((p, k) => p - (k === sample.y ? 1 : 0));
+        const back = new Array(hiddenSize).fill(0);
+        for (let k = 0; k < labels.length; k++) {
+          for (let j = 0; j < hiddenSize; j++) {
+            back[j] += err[k] * w2[k][j];
+            w2[k][j] -= .055 * err[k] * h[j];
+          }
+          b2[k] -= .055 * err[k];
         }
-        b2[k] -= .055 * err[k];
-      }
-      for (let j = 0; j < hidden; j++) {
-        const d = back[j] * (1 - h[j] * h[j]);
-        for (let i = 0; i < vocab.length; i++) w1[j][i] -= .055 * d * sample.x[i];
-        b1[j] -= .055 * d;
-      }
-    });
+        for (let j = 0; j < hiddenSize; j++) {
+          const d = back[j] * (1 - h[j] * h[j]);
+          for (let i = 0; i < vocab.length; i++) w1[j][i] -= .055 * d * sample.x[i];
+          b1[j] -= .055 * d;
+        }
+      });
+    }
+    return { hidden: hiddenSize, w1, b1, w2, b2 };
   }
+
+  function loadNetwork() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(MODEL_CACHE_KEY) || "null");
+      if (saved && saved.version === 1 && saved.signature === modelSignature &&
+          Array.isArray(saved.w1) && Array.isArray(saved.w2) &&
+          saved.w1.length === 16 && saved.w2.length === labels.length) return saved;
+    } catch (_) {}
+    const trained = trainNetwork();
+    const model = { version: 1, signature: modelSignature, ...trained };
+    try { localStorage.setItem(MODEL_CACHE_KEY, JSON.stringify(model)); } catch (_) {}
+    return model;
+  }
+
+  const network = loadNetwork();
+  const hidden = network.hidden;
+  const w1 = network.w1;
+  const b1 = network.b1;
+  const w2 = network.w2;
+  const b2 = network.b2;
   function classify(s) {
     const x = new Array(vocab.length).fill(0);
     feats(s).forEach(t => { if (index.has(t)) x[index.get(t)] = 1; });
