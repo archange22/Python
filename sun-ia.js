@@ -162,7 +162,7 @@
           '</div>' +
         '</aside>' +
         '<button class="sun-sidebar-backdrop" type="button" data-sun-action="close-sidebar" aria-label="Fermer la navigation"></button>' +
-        '<main class="sun-main">' +
+        '<section class="sun-main" aria-label="Discussion Sun IA">' +
           '<header class="sun-main-header">' +
             '<div class="sun-main-heading">' +
               '<button class="sun-menu-button" type="button" data-sun-action="toggle-sidebar" aria-label="Ouvrir la navigation">☰</button>' +
@@ -181,7 +181,7 @@
             '</div>' +
             '<p class="sun-composer-disclaimer">Sun IA est actuellement une interface de démonstration sans moteur de génération. Tes messages restent dans le stockage de ce navigateur.</p>' +
           '</footer>' +
-        '</main>' +
+        '</section>' +
       '</div>';
 
     const area = document.querySelector("#sunConversationArea");
