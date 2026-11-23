@@ -669,3 +669,42 @@ body.sun-chat-mode .bottom-nav { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .sun-sidebar, .sun-sidebar-backdrop, .sun-suggestions button, .sun-new-chat { transition: none; }
 }
+
+
+/* Sun Brain v1: assistant messages */
+.sun-message-assistant {
+  justify-content: flex-start;
+}
+.sun-message-assistant .sun-message-avatar {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(237, 165, 80, .3);
+  border-radius: 11px;
+  background: rgba(237, 165, 80, .12);
+  color: var(--accent);
+  font-size: 19px;
+}
+.sun-message-assistant .sun-message-body {
+  max-width: min(90%, 690px);
+  border: 1px solid var(--line);
+  border-radius: 17px 17px 17px 5px;
+  background: var(--surface);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, .045);
+}
+.sun-message-assistant .sun-message-label {
+  color: var(--accent);
+}
+.sun-message-pending .sun-message-text {
+  color: var(--muted);
+  animation: sun-brain-pulse 1.2s ease-in-out infinite alternate;
+}
+@keyframes sun-brain-pulse {
+  from { opacity: .55; }
+  to { opacity: 1; }
+}
+@media (max-width: 700px) {
+  .sun-message-assistant .sun-message-body { max-width: calc(100% - 43px); }
+}
