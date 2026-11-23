@@ -447,7 +447,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: var(--accent-soft); color: var(--accent); font-size: 21px; font-weight: 900;
 }
 .app-product-python .app-product-icon { background: rgba(84,217,197,.12); color: var(--teal); }
-.app-product-ai .app-product-icon { background: rgba(149,132,255,.14); color: var(--accent); }
 .app-product-content { flex: 1; min-width: 0; }
 .app-product-content h3 { margin: 5px 0 6px; font-size: 16px; font-weight: 900; }
 .app-product-content p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.75; }
