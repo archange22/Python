@@ -1,20 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
   <defs>
-    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#20264f"/>
-      <stop offset=".58" stop-color="#111a33"/>
-      <stop offset="1" stop-color="#102b3b"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2c211a"/>
+      <stop offset=".55" stop-color="#17151a"/>
+      <stop offset="1" stop-color="#0d111a"/>
     </linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#b5a8ff"/>
-      <stop offset=".55" stop-color="#8d7cff"/>
-      <stop offset="1" stop-color="#52ddc7"/>
-    </linearGradient>
+    <radialGradient id="sun" cx=".36" cy=".3" r=".78">
+      <stop offset="0" stop-color="#fff0bd"/>
+      <stop offset=".32" stop-color="#ffc96f"/>
+      <stop offset=".68" stop-color="#ef963e"/>
+      <stop offset="1" stop-color="#a74e2e"/>
+    </radialGradient>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
   </defs>
-  <rect width="128" height="128" rx="30" fill="url(#background)"/>
-  <circle cx="103" cy="23" r="37" fill="#8d7cff" opacity=".15"/>
-  <circle cx="23" cy="111" r="39" fill="#52ddc7" opacity=".08"/>
-  <path d="M64 24 29 100h18l17-40 17 40h18L64 24Z" fill="#f4f2ff"/>
-  <path d="M48 81h32" stroke="url(#accent)" stroke-width="8" stroke-linecap="round"/>
-  <circle cx="98" cy="91" r="7" fill="#52ddc7"/>
+  <rect width="128" height="128" rx="31" fill="url(#bg)"/>
+  <circle cx="64" cy="63" r="38" fill="#ec9d48" opacity=".25" filter="url(#glow)"/>
+  <g stroke="#f5b65e" stroke-width="5" stroke-linecap="round" opacity=".95">
+    <path d="M64 18v11"/>
+    <path d="M64 99v11"/>
+    <path d="M18 64h11"/>
+    <path d="M99 64h11"/>
+    <path d="m31.5 31.5 8 8"/>
+    <path d="m88.5 88.5 8 8"/>
+    <path d="m96.5 31.5-8 8"/>
+    <path d="m39.5 88.5-8 8"/>
+  </g>
+  <circle cx="64" cy="64" r="28" fill="url(#sun)" stroke="#ffe1aa" stroke-opacity=".75" stroke-width="1.5"/>
+  <path d="M50 69c7 8 21 8 28-1" fill="none" stroke="#8b492f" stroke-width="4" stroke-linecap="round" opacity=".45"/>
+  <circle cx="54" cy="53" r="5" fill="#fff4d5" opacity=".5"/>
 </svg>
