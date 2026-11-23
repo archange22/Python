@@ -165,22 +165,18 @@ function renderApplicationCards() {
   return '<a class="app-product-card app-product-python" href="./apps/python-console-3/index.html">' +
     '<div class="app-product-icon">⌘</div><div class="app-product-content"><span class="eyebrow">OUTIL DE PROGRAMMATION</span>' +
     '<h3>Console Python 3</h3><p>Écris et exécute du vrai code Python dans ton navigateur. Le moteur reste disponible hors connexion après son premier chargement.</p>' +
-    '<span class="app-product-meta">Python 3 · WebAssembly · Mode hors ligne</span></div><span class="app-product-arrow">↗</span></a>' +
-    '<a class="app-product-card app-product-ai" href="./apps/chat-ia/index.html">' +
-    '<div class="app-product-icon">✦</div><div class="app-product-content"><span class="eyebrow">ASSISTANT PÉDAGOGIQUE</span>' +
-    '<h3>Chat IA</h3><p>Discute avec un petit modèle d’intelligence artificielle exécuté localement sur ton appareil, sans clé API.</p>' +
-    '<span class="app-product-meta">Modèle local · Téléchargement initial requis</span></div><span class="app-product-arrow">↗</span></a>';
+    '<span class="app-product-meta">Python 3 · WebAssembly · Mode hors ligne</span></div><span class="app-product-arrow">↗</span></a>';
 }
 
 function renderApplications() {
   $("#appView").innerHTML =
     '<section class="applications-page"><header class="page-heading"><div><span class="eyebrow">ÉCOSYSTÈME ACADÉMIQUE</span>' +
-    '<h1>Plus d’applications</h1><p>Académique reste ton espace de formation. Ces deux outils sont des applications distinctes, avec leur propre interface et leur propre fonctionnement.</p></div>' +
+    '<h1>Plus d’applications</h1><p>Académique reste ton espace de formation. La Console Python est un outil complémentaire avec sa propre interface et son propre fonctionnement.</p></div>' +
     '<span class="page-count">02</span></header>' +
-    '<div class="apps-intro"><span class="apps-intro-mark">A+</span><div><strong>Trois applications, un même univers.</strong>' +
-    '<p>Ouvre chaque outil séparément. Tu peux aussi l’ajouter à l’écran d’accueil depuis son propre menu d’installation.</p></div></div>' +
+    '<div class="apps-intro"><span class="apps-intro-mark">A+</span><div><strong>Un outil complémentaire, un même univers.</strong>' +
+    '<p>Ouvre la Console Python séparément. Tu peux aussi l’ajouter à l’écran d’accueil depuis son propre menu d’installation.</p></div></div>' +
     '<div class="apps-product-grid">' + renderApplicationCards() + '</div>' +
-    '<p class="reader-footnote">La Console Python télécharge son moteur une première fois. Le Chat IA télécharge son modèle local avant de pouvoir répondre ; une fois en cache, il peut fonctionner sans connexion si le navigateur conserve ses fichiers.</p>' +
+    '<p class="reader-footnote">La Console Python télécharge son moteur une première fois. Une fois initialisée et mise en cache, la Console Python peut fonctionner hors connexion selon les ressources utilisées.</p>' +
     '<footer class="app-footer">© ' + new Date().getFullYear() + ' Académique · Applications complémentaires.</footer></section>';
   setActiveNavigation("applications");
 }
@@ -378,9 +374,9 @@ function renderAbout() {
     install +
     '<section class="about-card"><span class="about-card-icon">✉</span><div class="about-card-copy"><span class="eyebrow">CONTACT</span><h2>Une question ou une remarque ?</h2><p>Signale un problème ou propose une amélioration de l’application.</p><a href="mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent("Contact depuis Académique") + '">' + CONTACT_EMAIL + '</a></div></section>' +
     '<section class="about-card"><span class="about-card-icon">◈</span><div class="about-card-copy"><span class="eyebrow">FONCTIONNEMENT</span><h2>Une application installable</h2><p>Académique fonctionne comme une PWA. Les contenus déjà mis en cache peuvent être consultés hors connexion. Aucun compte n’est nécessaire dans cette version.</p></div></section>' +
-    '<section class="panel support-apps-panel"><div class="panel-title-row"><div><span class="eyebrow">SUPPORT & OUTILS</span><h2>Besoin d’un autre outil ?</h2><p class="panel-subtitle">Retrouve les deux applications complémentaires d’Académique.</p></div></div>' +
+    '<section class="panel support-apps-panel"><div class="panel-title-row"><div><span class="eyebrow">SUPPORT & OUTILS</span><h2>Besoin d’un autre outil ?</h2><p class="panel-subtitle">Retrouve l’outil complémentaire d’Académique.</p></div></div>' +
     '<div class="support-app-links"><a href="./apps/python-console-3/index.html"><span class="support-app-symbol">⌘</span><span><strong>Console Python 3</strong><small>Programmer, même hors connexion après initialisation</small></span><b>↗</b></a>' +
-    '<a href="./apps/chat-ia/index.html"><span class="support-app-symbol">✦</span><span><strong>Chat IA</strong><small>Assistant pédagogique avec modèle local</small></span><b>↗</b></a></div></section>' +
+    '</div></section>' +
     '<p class="about-legal">© ' + new Date().getFullYear() + ' Académique. Les progrès, favoris et notes sont conservés localement sur cet appareil. Cette version ne fournit pas encore de fichier APK indépendant.</p></section>';
   setActiveNavigation("");
 }
