@@ -233,7 +233,7 @@ Ce programme permet d'ajouter, afficher et supprimer des tâches. Il réutilise 
 taches = []
 
 while True:
-    print("\\n1. Ajouter")
+    print("\n1. Ajouter")
     print("2. Afficher")
     print("3. Supprimer")
     print("4. Quitter")
