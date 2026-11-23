@@ -230,6 +230,7 @@ body.sun-chat-mode .bottom-nav { display: none !important; }
   font-weight: 750;
 }
 .sun-side-bottom > a:hover { background: rgba(255,255,255,.06); color: #ffca7c; }
+.sun-side-bottom > a.active { background: rgba(245, 180, 94, .12); color: #ffca7c; }
 :root[data-theme="light"] .sun-side-bottom > a { color: #5e574d; }
 .sun-side-bottom > a > span { width: 17px; color: #d6a45d; font-size: 14px; text-align: center; }
 .sun-local-status {
