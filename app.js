@@ -116,7 +116,7 @@ function totalPublishedCourses() {
 function applyTheme() {
   document.documentElement.dataset.theme = appState.theme;
   const meta = $('meta[name="theme-color"]');
-  if (meta) meta.content = appState.theme === "dark" ? "#0b1020" : "#f3f5fb";
+  if (meta) meta.content = appState.theme === "dark" ? "#0b0d13" : "#f8f6f1";
   const icon = $("#themeIcon");
   if (icon) icon.textContent = appState.theme === "dark" ? "☼" : "☾";
 }
@@ -171,13 +171,13 @@ function renderApplicationCards() {
 function renderApplications() {
   $("#appView").innerHTML =
     '<section class="applications-page"><header class="page-heading"><div><span class="eyebrow">ÉCOSYSTÈME ACADÉMIQUE</span>' +
-    '<h1>Plus d’applications</h1><p>Académique reste ton espace de formation. La Console Python est un outil complémentaire avec sa propre interface et son propre fonctionnement.</p></div>' +
+    '<h1>Plus d’applications</h1><p>Sun IA reste ton espace de formation. La Console Python est un outil complémentaire avec sa propre interface et son propre fonctionnement.</p></div>' +
     '<span class="page-count">02</span></header>' +
     '<div class="apps-intro"><span class="apps-intro-mark">A+</span><div><strong>Un outil complémentaire, un même univers.</strong>' +
     '<p>Ouvre la Console Python séparément. Tu peux aussi l’ajouter à l’écran d’accueil depuis son propre menu d’installation.</p></div></div>' +
     '<div class="apps-product-grid">' + renderApplicationCards() + '</div>' +
     '<p class="reader-footnote">La Console Python télécharge son moteur une première fois. Une fois initialisée et mise en cache, la Console Python peut fonctionner hors connexion selon les ressources utilisées.</p>' +
-    '<footer class="app-footer">© ' + new Date().getFullYear() + ' Académique · Applications complémentaires.</footer></section>';
+    '<footer class="app-footer">© ' + new Date().getFullYear() + ' Sun IA · Applications complémentaires.</footer></section>';
   setActiveNavigation("applications");
 }
 
@@ -203,7 +203,7 @@ function renderHome() {
       continueMarkup +
       '<div class="section-heading"><div><span class="eyebrow">APPRENDS À TON RYTHME</span><h2>Choisis ta formation</h2><p>Trois domaines, un seul espace pour progresser.</p></div><a class="text-button" href="#formations">Tout voir →</a></div>' +
       '<div class="subject-grid">' + renderSubjectCards() + '</div>' +
-      '<footer class="app-footer">© ' + new Date().getFullYear() + ' Académique · Apprendre avec méthode.</footer>' +
+      '<footer class="app-footer">© ' + new Date().getFullYear() + ' Sun IA · Apprendre avec méthode.</footer>' +
     '</section>';
   setActiveNavigation("accueil");
 }
@@ -213,7 +213,7 @@ function renderFormations() {
     '<section><header class="page-heading"><div><span class="eyebrow">PARCOURS D’APPRENTISSAGE</span><h1>Les formations</h1><p>Choisis un domaine pour consulter son programme et retrouver les leçons disponibles.</p></div><span class="page-count">03</span></header>' +
     '<div class="subject-grid">' + renderSubjectCards() + '</div>' +
     '<section class="panel" style="margin-top:18px"><div class="panel-title-row"><div><span class="eyebrow">PROGRESSION</span><h2>Un apprentissage organisé</h2><p class="panel-subtitle">Chaque formation avance par étapes. Les cours sont publiés lorsqu’ils sont prêts.</p></div></div></section>' +
-    '<footer class="app-footer">© ' + new Date().getFullYear() + ' Académique</footer></section>';
+    '<footer class="app-footer">© ' + new Date().getFullYear() + ' Sun IA</footer></section>';
   setActiveNavigation("formations");
 }
 
@@ -243,7 +243,7 @@ function renderLibrary(query = "") {
     '<section><header class="page-heading"><div><span class="eyebrow">CENTRE DE RESSOURCES</span><h1>Bibliothèque</h1><p>Retrouve les cours publiés et consulte les prochaines leçons en préparation.</p></div></header>' +
     '<label class="library-search"><span class="library-search-icon" aria-hidden="true">⌕</span><input id="librarySearch" type="search" autocomplete="off" placeholder="Rechercher un cours, un sujet…" value="' + escapeHtml(query) + '" aria-label="Rechercher un cours"></label>' +
     '<div class="library-results" id="libraryResults">' + libraryResultMarkup(query) + '</div>' +
-    '<footer class="app-footer">Les cours disponibles sont lisibles directement dans Académique.</footer></section>';
+    '<footer class="app-footer">Les cours disponibles sont lisibles directement dans Sun IA.</footer></section>';
   setActiveNavigation("bibliotheque");
 }
 
@@ -270,7 +270,7 @@ function renderSubject(subjectId) {
       '<section class="panel" style="margin-top:16px"><div class="panel-title-row"><div><span class="eyebrow">BIBLIOTHÈQUE</span><h2>Les cours</h2><p class="panel-subtitle">' + completeCount + ' cours terminé' + (completeCount > 1 ? "s" : "") + ' sur ' + available.length + ' disponible' + (available.length > 1 ? "s" : "") + '.</p></div><span class="page-count">' + String(available.length).padStart(2, "0") + '</span></div>' +
         availableMarkup + pendingMarkup + '</section>' +
       '<section class="panel"><div class="panel-title-row"><div><span class="eyebrow">PROGRAMME</span><h2>Parcours prévu</h2></div></div><div class="roadmap">' + roadmap + '</div></section>' +
-      '<footer class="app-footer"><a href="#apropos">Contacter Académique</a></footer></section>';
+      '<footer class="app-footer"><a href="#apropos">Contacter Sun IA</a></footer></section>';
   setActiveNavigation("formations");
 }
 
@@ -321,7 +321,7 @@ function renderCourse(courseId) {
   const nativePdfPanel = course.pdf
     ? '<section class="native-pdf-panel"><span class="eyebrow">LECTURE PDF DU NAVIGATEUR</span>' +
       '<h2>Ouvrir le document</h2>' +
-      '<p>Depuis le site, le cours s’ouvre avec le lecteur PDF de ton navigateur. Dans l’application installée, tu retrouves le lecteur pédagogique Académique.</p>' +
+      '<p>Depuis le site, le cours s’ouvre avec le lecteur PDF de ton navigateur. Dans l’application installée, tu retrouves le lecteur pédagogique Sun IA.</p>' +
       '<div class="native-pdf-actions"><a class="small-action primary" href="' + escapeHtml(course.pdf) + '" target="_blank" rel="noopener">Ouvrir le PDF ↗</a>' +
       '<a class="small-action" href="' + escapeHtml(course.pdf) + '" download="' + escapeHtml(fileName) + '">Télécharger le PDF ↓</a></div></section>'
     : '<div class="empty-state"><h3>PDF non disponible</h3><p>Le document de cette leçon sera publié ici lorsqu’il sera prêt.</p></div>';
@@ -346,7 +346,7 @@ function renderCourse(courseId) {
         '<button class="small-action primary" type="button" data-action="toggle-complete" data-course="' + course.id + '">' + (isCompleted(course.id) ? "✓ Terminé" : "Marquer terminé") + '</button>' +
       '</div>' +
       (useAcademiqueReader
-        ? '<div class="reader-mode-label">Lecteur Académique · Application installée</div><div class="reader-frame-wrap"><iframe class="reader-frame" id="courseFrame" src="' + escapeHtml(readerUrl) + '" title="Lecture du cours : ' + escapeHtml(course.title) + '" allow="clipboard-read; clipboard-write"></iframe></div>'
+        ? '<div class="reader-mode-label">Lecteur Sun IA · Application installée</div><div class="reader-frame-wrap"><iframe class="reader-frame" id="courseFrame" src="' + escapeHtml(readerUrl) + '" title="Lecture du cours : ' + escapeHtml(course.title) + '" allow="clipboard-read; clipboard-write"></iframe></div>'
         : nativePdfPanel) +
       '<p class="reader-footnote">' + (useAcademiqueReader
         ? "La recherche, les thèmes de lecture, la taille du texte et la reprise de position sont disponibles dans le lecteur."
@@ -367,17 +367,17 @@ function canOfferInstall() {
 
 function renderAbout() {
   const install = canOfferInstall()
-    ? '<section class="about-card featured"><span class="about-card-icon">↓</span><div class="about-card-copy"><span class="eyebrow">INSTALLATION</span><h2>Installer Académique</h2><p>Ajoute l’application à l’écran d’accueil pour la retrouver comme une application classique.</p></div><button class="small-action primary install-action" type="button" data-action="install-app">' + (deferredInstallPrompt ? "Installer" : "Instructions") + '</button></section>'
+    ? '<section class="about-card featured"><span class="about-card-icon">↓</span><div class="about-card-copy"><span class="eyebrow">INSTALLATION</span><h2>Installer Sun IA</h2><p>Ajoute l’application à l’écran d’accueil pour la retrouver comme une application classique.</p></div><button class="small-action primary install-action" type="button" data-action="install-app">' + (deferredInstallPrompt ? "Installer" : "Instructions") + '</button></section>'
     : "";
   $("#appView").innerHTML =
-    '<section class="about-layout"><header class="about-hero"><span class="about-mark">A</span><span class="eyebrow">À PROPOS</span><h1>Académique</h1><p>Un espace d’apprentissage consacré à Python, à l’intelligence artificielle, à Discord et à la création de sites Web. Des cours progressifs, lisibles et conçus pour la pratique.</p></header>' +
+    '<section class="about-layout"><header class="about-hero"><span class="about-mark">A</span><span class="eyebrow">À PROPOS</span><h1>Sun IA</h1><p>Sun IA réunit ton espace de discussion et tes ressources d’apprentissage : Python, intelligence artificielle, Discord et création de sites Web, avec les cours et PDF déjà disponibles.</p></header>' +
     install +
-    '<section class="about-card"><span class="about-card-icon">✉</span><div class="about-card-copy"><span class="eyebrow">CONTACT</span><h2>Une question ou une remarque ?</h2><p>Signale un problème ou propose une amélioration de l’application.</p><a href="mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent("Contact depuis Académique") + '">' + CONTACT_EMAIL + '</a></div></section>' +
-    '<section class="about-card"><span class="about-card-icon">◈</span><div class="about-card-copy"><span class="eyebrow">FONCTIONNEMENT</span><h2>Une application installable</h2><p>Académique fonctionne comme une PWA. Les contenus déjà mis en cache peuvent être consultés hors connexion. Aucun compte n’est nécessaire dans cette version.</p></div></section>' +
-    '<section class="panel support-apps-panel"><div class="panel-title-row"><div><span class="eyebrow">SUPPORT & OUTILS</span><h2>Besoin d’un autre outil ?</h2><p class="panel-subtitle">Retrouve l’outil complémentaire d’Académique.</p></div></div>' +
+    '<section class="about-card"><span class="about-card-icon">✉</span><div class="about-card-copy"><span class="eyebrow">CONTACT</span><h2>Une question ou une remarque ?</h2><p>Signale un problème ou propose une amélioration de l’application.</p><a href="mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent("Contact depuis Sun IA") + '">' + CONTACT_EMAIL + '</a></div></section>' +
+    '<section class="about-card"><span class="about-card-icon">◈</span><div class="about-card-copy"><span class="eyebrow">FONCTIONNEMENT</span><h2>Une application installable</h2><p>Sun IA fonctionne comme une PWA. Les contenus déjà mis en cache peuvent être consultés hors connexion. Aucun compte n’est nécessaire dans cette version.</p></div></section>' +
+    '<section class="panel support-apps-panel"><div class="panel-title-row"><div><span class="eyebrow">SUPPORT & OUTILS</span><h2>Besoin d’un autre outil ?</h2><p class="panel-subtitle">Retrouve l’outil complémentaire d’Sun IA.</p></div></div>' +
     '<div class="support-app-links"><a href="./apps/python-console-3/index.html"><span class="support-app-symbol">⌘</span><span><strong>Console Python 3</strong><small>Programmer, même hors connexion après initialisation</small></span><b>↗</b></a>' +
     '</div></section>' +
-    '<p class="about-legal">© ' + new Date().getFullYear() + ' Académique. Les progrès, favoris et notes sont conservés localement sur cet appareil. Cette version ne fournit pas encore de fichier APK indépendant.</p></section>';
+    '<p class="about-legal">© ' + new Date().getFullYear() + ' Sun IA. Les progrès, favoris et notes sont conservés localement sur cet appareil. Cette version ne fournit pas encore de fichier APK indépendant.</p></section>';
   setActiveNavigation("");
 }
 
@@ -405,12 +405,12 @@ function installInstructions() {
   } else {
     instructions = "Dans Chrome ou Edge, utilise l’icône d’installation dans la barre d’adresse ou le menu du navigateur.";
   }
-  openDialog("Installer Académique", '<p>' + instructions + '</p><p class="install-note">Académique s’installe depuis le navigateur sous forme de PWA. Il ne s’agit pas d’un fichier APK indépendant.</p>');
+  openDialog("Installer Sun IA", '<p>' + instructions + '</p><p class="install-note">Sun IA s’installe depuis le navigateur sous forme de PWA. Il ne s’agit pas d’un fichier APK indépendant.</p>');
 }
 
 async function installApp() {
   if (isInstalledApp()) {
-    showToast("Académique est déjà installée.");
+    showToast("Sun IA est déjà installée.");
     return;
   }
   if (!deferredInstallPrompt) {
@@ -533,8 +533,17 @@ $("#appDialog").addEventListener("click", (event) => {
 });
 
 function render() {
-  const route = decodeURIComponent(location.hash.replace(/^#/, "") || "accueil");
+  const route = decodeURIComponent(location.hash.replace(/^#/, "") || "sun");
   const [page, id] = route.split("/");
+  if (page === "sun" || page === "accueil") {
+    document.body.classList.add("sun-chat-mode");
+    window.renderSunChat($("#appView"));
+    setActiveNavigation("sun");
+    return;
+  }
+
+  document.body.classList.remove("sun-chat-mode");
+  $("#appView").classList.remove("sun-app-view");
   if (page === "matiere" && id) renderSubject(id);
   else if (page === "cours" && id) renderCourse(id);
   else if (page === "formations") renderFormations();
