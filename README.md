@@ -4,7 +4,7 @@ Sun IA est une application web progressive (PWA) à identité solaire. Sa page p
 
 ## Sun Brain — version locale 1
 
-- Un petit réseau neuronal artificiel à propagation avant, avec une couche cachée de 16 neurones, entraîné localement sur des exemples de phrases.
+- Un petit réseau neuronal artificiel à propagation avant, avec une couche cachée de 16 neurones, entraîné localement sur des exemples de phrases ; ses poids sont conservés dans le stockage local après le premier entraînement.
 - Classification de huit intentions de base : salutations, questions simples sur l’état, demande de nom, identité, remerciements, départ, demande d’aide et discussion informelle.
 - Compréhension de quelques abréviations françaises courantes, comme « ccmt », « cv », « bjr » et « slt ».
 - Indexation locale de 19 fichiers pédagogiques en Markdown : cours Python, IA, Discord et Web.
