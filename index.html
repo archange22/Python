@@ -3,30 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1020">
-  <meta name="description" content="Académique : apprends Python, l'intelligence artificielle, Discord et la création de sites Web avec des cours progressifs.">
+  <meta name="theme-color" content="#0b0d13">
+  <meta name="description" content="Sun IA : une interface de discussion à identité solaire, avec des formations, une bibliothèque de cours et une console Python.">
   <meta name="color-scheme" content="dark light">
-  <title>Académique — Apprendre, comprendre, construire</title>
+  <title>Sun IA — Fais rayonner tes idées</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./sun-ia.css">
+  <script src="./sun-ia.js" defer></script>
   <script src="./app.js" defer></script>
 </head>
 <body>
   <header class="app-header">
-    <a class="brand" href="#accueil" aria-label="Académique, accueil">
-      <span class="brand-mark" aria-hidden="true">A</span>
+    <a class="brand" href="#sun" aria-label="Sun IA, accueil">
+      <span class="brand-sun-icon" aria-hidden="true">☼</span>
       <span class="brand-copy">
-        <span class="brand-name">Académique</span>
-        <span class="brand-caption">APPRENDRE · COMPRENDRE · CRÉER</span>
+        <span class="brand-name">Sun IA</span>
+        <span class="brand-caption">FAIS RAYONNER TES IDÉES</span>
       </span>
     </a>
 
     <nav class="desktop-nav" aria-label="Navigation principale">
-      <a href="#accueil" data-nav="accueil">Accueil</a>
+      <a href="#sun" data-nav="sun">Discussion</a>
       <a href="#formations" data-nav="formations">Formations</a>
       <a href="#bibliotheque" data-nav="bibliotheque">Bibliothèque</a>
-      <a href="#applications" data-nav="applications">Plus d’applications</a>
+      <a href="./apps/python-console-3/index.html">Console Python</a>
       <a href="#progression" data-nav="progression">Progression</a>
     </nav>
 
@@ -39,22 +41,22 @@
   </header>
 
   <main id="appView" class="app-view" tabindex="-1">
-    <div class="loading-state"><span class="loading-dot"></span> Préparation de ton espace…</div>
+    <div class="loading-state"><span class="loading-dot"></span> Préparation de Sun IA…</div>
   </main>
 
   <nav class="bottom-nav" aria-label="Navigation mobile">
-    <a href="#accueil" data-nav="accueil"><span class="nav-icon" aria-hidden="true">⌂</span><span>Accueil</span></a>
-    <a href="#formations" data-nav="formations"><span class="nav-icon" aria-hidden="true">▦</span><span>Formations</span></a>
-    <a href="#bibliotheque" data-nav="bibliotheque"><span class="nav-icon" aria-hidden="true">▤</span><span>Cours</span></a>
-    <a href="#applications" data-nav="applications"><span class="nav-icon" aria-hidden="true">▣</span><span>Apps</span></a>
+    <a href="#sun" data-nav="sun"><span class="nav-icon" aria-hidden="true">☼</span><span>Chat</span></a>
+    <a href="#formations" data-nav="formations"><span class="nav-icon" aria-hidden="true">▦</span><span>Cours</span></a>
+    <a href="#bibliotheque" data-nav="bibliotheque"><span class="nav-icon" aria-hidden="true">▤</span><span>PDF</span></a>
+    <a href="./apps/python-console-3/index.html"><span class="nav-icon" aria-hidden="true">⌘</span><span>Python</span></a>
     <a href="#progression" data-nav="progression"><span class="nav-icon" aria-hidden="true">◷</span><span>Suivi</span></a>
   </nav>
 
   <dialog class="app-dialog" id="appDialog" aria-labelledby="dialogTitle">
     <div class="dialog-header">
       <div>
-        <span class="eyebrow">ACADÉMIQUE</span>
-        <h2 id="dialogTitle">Académique</h2>
+        <span class="eyebrow">SUN IA</span>
+        <h2 id="dialogTitle">Sun IA</h2>
       </div>
       <button class="dialog-close" type="button" data-action="close-dialog" aria-label="Fermer">×</button>
     </div>
