@@ -132,9 +132,16 @@
     terms = Array.from(new Set(expanded));
     let best = null;
     sections.forEach(section => {
-      const hay = norm(section.heading + " " + section.title + " " + section.body);
-      let score = terms.reduce((n, t) => n + (hay.includes(t) ? 1 : 0), 0);
-      if (norm(section.heading + " " + section.title).split(" ").some(t => terms.includes(t))) score += 1.5;
+      const headingTerms = norm(section.heading).split(/\s+/);
+      const titleTerms = norm(section.title).split(/\s+/);
+      const bodyTerms = norm(section.body).split(/\s+/);
+      let score = 0;
+      terms.forEach(term => {
+        if (headingTerms.includes(term)) score += 4;
+        else if (titleTerms.includes(term)) score += 0.8;
+        const occurrences = bodyTerms.filter(word => word === term).length;
+        score += Math.min(occurrences, 3) * 0.7;
+      });
       if (!best || score > best.score) best = { section, score };
     });
     if (!best || best.score < 1) return "Je n’ai pas trouvé de passage assez pertinent dans les cours chargés. Précise le sujet et je relancerai la recherche.";
