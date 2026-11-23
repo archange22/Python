@@ -121,7 +121,15 @@
   })).then(groups => { sections = groups.flat(); return status(); });
   function status() { return { documents: loaded, total: paths.length, sections: sections.length, failed }; }
   function searchDocs(query) {
-    const terms = norm(query).split(/\s+/).filter(t => t.length > 2 && !["comment", "pourquoi", "explique", "donne", "moi", "dans"].includes(t));
+    let terms = norm(query).split(/\s+/).filter(t => (t.length > 2 || t === "ia") && !["comment", "pourquoi", "explique", "donne", "moi", "dans", "quoi", "cest"].includes(t));
+    const expanded = terms.slice();
+    terms.forEach(t => {
+      if (t === "ia") expanded.push("intelligence", "artificielle");
+      if (t === "neurone" || t === "neurones") expanded.push("reseau", "reseaux", "deep");
+      if (t === "machine" || t === "learning") expanded.push("apprentissage", "automatique", "machine", "learning");
+      if (t === "python") expanded.push("programmation");
+    });
+    terms = Array.from(new Set(expanded));
     let best = null;
     sections.forEach(section => {
       const hay = norm(section.heading + " " + section.title + " " + section.body);
@@ -146,22 +154,38 @@
       try { localStorage.setItem("sun-ia-user-name", givenName); } catch (_) {}
       return "Enchanté, " + givenName + " ! Je peux t’appeler comme ça dans nos prochaines discussions sur cet appareil.";
     }
-    const greeting = /\b(bonjour|salut|yo|coucou|hello|hey|bonsoir|wesh)\b/.test(text);
-    const how = /\b(ca va|comment vas tu|comment tu vas|tu vas bien)\b/.test(text);
+    const greeting = /\b(bonjour|salut|yo|coucou|hello|hey|bonsoir|wesh|cc)\b/.test(text);
+    const how = /\b(ca va|comment vas tu|comment tu vas|tu vas bien|comment allez vous)\b/.test(text);
+    const asksName = /\b(ton nom|ton prenom|tu t appelles|tu appelles comment|comment dois je t appeler|comment t appelles tu)\b/.test(text);
     if (greeting && how) return "Bonjour ! Ça va bien, merci. Et toi, comment se passe ta journée ?";
     if (how && /\bet toi\b/.test(text)) return "De mon côté, tout fonctionne correctement. Et toi, comment vas-tu ?";
     const prediction = classify(message);
     if (prediction.confidence >= .34) {
       switch (prediction.intent) {
-        case "greeting": return "Salut ! ☀️ Je suis Sun IA. Comment ça va ?";
-        case "how": return "Ça va bien, merci ! Et toi ?";
-        case "name": return "Je m’appelle Sun IA. Et toi, comment puis-je t’appeler ?";
-        case "thanks": return "Avec plaisir ! Tu peux continuer.";
-        case "bye": return "À bientôt ! Tes conversations restent enregistrées sur cet appareil.";
-        case "identity": return "Je suis Sun IA. J’utilise un petit réseau neuronal local pour reconnaître quelques intentions, puis je recherche dans les cours de l’application. Je n’ai pas encore de grand modèle de langage : mes réponses restent limitées.";
+        case "greeting":
+          if (greeting) return "Salut ! ☀️ Je suis Sun IA. Comment ça va ?";
+          break;
+        case "how":
+          if (how) return "Ça va bien, merci ! Et toi ?";
+          break;
+        case "name":
+          if (asksName) return "Je m’appelle Sun IA. Et toi, comment puis-je t’appeler ?";
+          break;
+        case "thanks":
+          if (/\b(merci|remercie)\b/.test(text)) return "Avec plaisir ! Tu peux continuer.";
+          break;
+        case "bye":
+          if (/\b(au revoir|a bientot|a plus|bonne nuit|bonne journee|ciao|bye)\b/.test(text)) return "À bientôt ! Tes conversations restent enregistrées sur cet appareil.";
+          break;
+        case "identity":
+          if (/\b(qui es tu|tu es qui|tu es quoi|tu es une ia|intelligence artificielle|comment tu fonctionnes)\b/.test(text)) return "Je suis Sun IA. J’utilise un petit réseau neuronal local pour reconnaître quelques intentions, puis je recherche dans les cours de l’application. Je n’ai pas encore de grand modèle de langage : mes réponses restent limitées.";
+          break;
         case "help":
-          await ready;
-          return "Je peux discuter simplement et rechercher des explications dans les cours Python, IA, Discord et Web chargés depuis l’application. Je fonctionne sans API externe.";
+          if (/\b(que sais tu faire|tu peux faire quoi|comment peux tu m aider|capacites|comment utiliser sun ia)\b/.test(text)) {
+            await ready;
+            return "Je peux discuter simplement et rechercher des explications dans les cours Python, IA, Discord et Web chargés depuis l’application. Je fonctionne sans API externe.";
+          }
+          break;
       }
     }
     await ready;
