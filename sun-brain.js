@@ -113,7 +113,7 @@
   }
   const ready = Promise.all(paths.map(async path => {
     try {
-      const response = await fetch(new URL(path, document.baseURI), { credentials: "same-origin" });
+      const response = await fetch("./" + path, { credentials: "same-origin" });
       if (!response.ok) throw new Error("HTTP " + response.status);
       loaded++;
       return split(await response.text(), path);
