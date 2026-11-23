@@ -18,7 +18,8 @@
     thanks: ["merci", "merci beaucoup", "je te remercie"],
     bye: ["au revoir", "à bientôt", "bonne nuit", "ciao", "bye"],
     identity: ["tu es qui", "qui es tu", "tu es quoi", "tu es une ia"],
-    help: ["que sais tu faire", "tu peux faire quoi", "comment peux tu m aider"]
+    help: ["que sais tu faire", "tu peux faire quoi", "comment peux tu m aider"],
+    smalltalk: ["quoi de neuf", "tu fais quoi", "comment se passe ta journée", "on peut discuter", "parlons un peu", "raconte moi quelque chose", "tu es disponible", "ça dit quoi"]
   };
   function norm(s) {
     return String(s || "").toLowerCase().normalize("NFD")
@@ -92,7 +93,8 @@
   function clean(s) {
     return String(s).replace(/\*\*([^*]+)\*\*/g, "$1").replace(/\*([^*]+)\*/g, "$1")
       .replace(/^#{1,6}\s+/gm, "").replace(/^\s*\|?[-:| ]{3,}\|?\s*$/gm, "")
-      .replace(/\x60([^\x60]+)\x60/g, "$1").replace(/\n{3,}/g, "\n\n").trim();
+      .replace(/\x60([^\x60]+)\x60/g, "$1").replace(/~~~[\\w-]*\\n?/g, "")
+      .replace(/\n{3,}/g, "\n\n").trim();
   }
   function split(md, path) {
     const lines = md.split(/\r?\n/);
@@ -154,26 +156,37 @@
     if (!m || ["sun", "ia", "bien", "fatigue"].includes(m[1])) return "";
     return m[1].charAt(0).toUpperCase() + m[1].slice(1);
   }
-  async function reply(message) {
+  async function reply(message, history) {
     const text = norm(message);
-    const givenName = extractName(message);
+    let givenName = extractName(message);
+    const previousAssistant = Array.isArray(history)
+      ? history.slice(0, -1).reverse().find(item => item && item.role === "assistant")
+      : null;
+    if (!givenName && previousAssistant && /comment puis je t appeler/.test(norm(previousAssistant.content))) {
+      const singleWord = text.match(/^([a-z]{2,22})$/);
+      if (singleWord && !["oui", "non", "ok", "merci", "salut", "bonjour"].includes(singleWord[1])) {
+        givenName = singleWord[1].charAt(0).toUpperCase() + singleWord[1].slice(1);
+      }
+    }
     if (givenName) {
       try { localStorage.setItem("sun-ia-user-name", givenName); } catch (_) {}
       return "Enchanté, " + givenName + " ! Je peux t’appeler comme ça dans nos prochaines discussions sur cet appareil.";
     }
+    let savedName = "";
+    try { savedName = localStorage.getItem("sun-ia-user-name") || ""; } catch (_) {}
     const greeting = /\b(bonjour|salut|yo|coucou|hello|hey|bonsoir|wesh|cc)\b/.test(text);
     const how = /\b(ca va|comment vas tu|comment tu vas|tu vas bien|comment allez vous)\b/.test(text);
     const asksName = /\b(ton nom|ton prenom|tu t appelles|tu appelles comment|comment dois je t appeler|comment t appelles tu)\b/.test(text);
-    if (greeting && how) return "Bonjour ! Ça va bien, merci. Et toi, comment se passe ta journée ?";
-    if (how && /\bet toi\b/.test(text)) return "De mon côté, tout fonctionne correctement. Et toi, comment vas-tu ?";
+    if (greeting && how) return "Bonjour" + (savedName ? " " + savedName : "") + " ! Ça va bien, merci. Et toi, comment se passe ta journée ?";
+    if (how && /\bet toi\b/.test(text)) return "De mon côté, tout fonctionne correctement" + (savedName ? ", " + savedName : "") + ". Et toi, comment vas-tu ?";
     const prediction = classify(message);
     if (prediction.confidence >= .34) {
       switch (prediction.intent) {
         case "greeting":
-          if (greeting) return "Salut ! ☀️ Je suis Sun IA. Comment ça va ?";
+          if (greeting) return "Salut" + (savedName ? " " + savedName : "") + " ! ☀️ Je suis Sun IA. Comment ça va ?";
           break;
         case "how":
-          if (how) return "Ça va bien, merci ! Et toi ?";
+          if (how) return "Ça va bien, merci" + (savedName ? ", " + savedName : "") + " ! Et toi ?";
           break;
         case "name":
           if (asksName) return "Je m’appelle Sun IA. Et toi, comment puis-je t’appeler ?";
@@ -192,6 +205,9 @@
             await ready;
             return "Je peux discuter simplement et rechercher des explications dans les cours Python, IA, Discord et Web chargés depuis l’application. Je fonctionne sans API externe.";
           }
+          break;
+        case "smalltalk":
+          if (/\b(quoi de neuf|tu fais quoi|on peut discuter|parlons|tu es disponible|ca dit quoi)\b/.test(text)) return "Je suis là pour discuter avec toi et retrouver des explications dans les cours. Qu’est-ce que tu aimerais raconter ou découvrir ?";
           break;
       }
     }
