@@ -1,29 +1,31 @@
 # Sun IA
 
-Sun IA est une application web progressive (PWA) dont la page d’accueil est une interface de discussion à identité solaire. Elle conserve également les formations, la bibliothèque de cours, les PDF et la Console Python 3.
+Sun IA est une application web progressive (PWA) à identité solaire. Sa page principale contient un assistant local expérimental, les formations, une bibliothèque de cours et la Console Python 3.
 
-## Interface Sun IA
+## Sun Brain — version locale 1
 
-- Interface de chat responsive pour Android, tablette et ordinateur.
-- Création de conversations, navigation dans l’historique et suppression des conversations.
-- Historique enregistré uniquement dans le stockage local du navigateur.
-- Aucune API de génération et aucun moteur d’intelligence artificielle intégrés.
-- Les messages saisis ne sont pas transmis à un serveur et aucune réponse intelligente n’est générée.
+- Un petit réseau neuronal artificiel à propagation avant, avec une couche cachée de 16 neurones, entraîné localement sur des exemples de phrases.
+- Classification de huit intentions de base : salutations, questions simples sur l’état, demande de nom, identité, remerciements, départ, demande d’aide et discussion informelle.
+- Compréhension de quelques abréviations françaises courantes, comme « ccmt », « cv », « bjr » et « slt ».
+- Indexation locale de 19 fichiers pédagogiques en Markdown : cours Python, IA, Discord et Web.
+- Recherche de passages pertinents dans les cours, avec le chemin du document source dans la réponse.
+- Historique des conversations conservé sur l’appareil.
+- Aucun service d’IA externe, aucune clé API et aucun grand modèle de langage.
 
-**État actuel : Sun IA est une interface de discussion, pas encore un assistant IA fonctionnel.** Ajouter un véritable moteur de réponse nécessitera ultérieurement un modèle local ou un service de génération. Cette version n’en contient aucun.
+**Limite importante :** ce n’est pas encore un assistant génératif comparable à ChatGPT, Claude ou Grok. Le réseau neuronal classe des intentions simples ; un moteur distinct recherche des extraits dans les cours. Il ne comprend pas librement toutes les phrases et n’apprend pas encore automatiquement de nouvelles connaissances à partir des conversations. L’ajout d’un nouveau cours à la liste de documents permet de l’indexer, mais n’entraîne pas les poids du réseau neuronal.
+
+Les fichiers principaux sont \`sun-brain.js\` (classification neuronale et recherche documentaire), \`sun-ia.js\` (interface de discussion) et \`sun-ia.css\` (présentation).
 
 ## Formations et bibliothèque
 
-Les contenus pédagogiques sont conservés et restent accessibles depuis la navigation :
+Les contenus pédagogiques restent accessibles depuis l’application :
 
 - Python
 - Intelligence artificielle
 - Discord et création de bots
 - Création de sites Web (HTML, CSS et JavaScript)
 
-Les sources sont organisées dans \`courses/<parcours>/lesson-NN.md\`. Les cours et PDF d’intelligence artificielle sont conservés, même si aucun moteur IA n’est intégré à l’application.
-
-Les leçons publiées doivent comporter des explications accessibles, des exemples commentés, des erreurs fréquentes, des exercices, un mini-défi et des corrigés. Le workflow \`.github/workflows/build-course-pdfs.yml\` génère les PDF associés.
+Les sources sont organisées dans \`courses/<parcours>/lesson-NN.md\`. Les cours et PDF d’intelligence artificielle sont conservés. Les PDF associés sont générés par le workflow \`.github/workflows/build-course-pdfs.yml\`.
 
 ## Console Python 3
 
@@ -31,9 +33,7 @@ La Console Python 3 (\`apps/python-console-3/\`) reste une application indépend
 
 ## Données et confidentialité
 
-Les conversations Sun IA, les favoris, les notes, l’historique de lecture et la progression sont conservés localement dans le navigateur. Il n’y a pas de compte ni de synchronisation entre appareils dans cette version.
-
-Le chat ne contacte aucun serveur pour obtenir des réponses. Le Service Worker met en cache les fichiers de l’application et les documents consultés.
+Les conversations et le prénom éventuellement fourni sont conservés dans le stockage local du navigateur. Le moteur Sun Brain lit les fichiers pédagogiques hébergés avec l’application et le Service Worker les met en cache pour un usage hors connexion après leur téléchargement. Aucun texte de conversation n’est envoyé à une API externe.
 
 ## Installation
 
