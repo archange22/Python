@@ -1260,7 +1260,7 @@
     );
     const evidence = [];
     candidates.forEach(candidate => answerSentences(candidate.section).forEach(sentence => {
-      if (/\\b(poids|biais|activation|perceptron|sortie|entree)\\b/i.test(sentence) &&
+      if (/\b(poids|biais|activation|perceptron|sortie|entree)\b/i.test(sentence) &&
           !evidence.includes(sentence)) evidence.push(sentence);
     }));
     const selected = [];
@@ -1272,9 +1272,9 @@
       if (selected.length < 5 && !selected.includes(sentence)) selected.push(sentence);
     });
     if (!selected.length) return "";
-    return "Un perceptron est un modèle neuronal simple. Pour comprendre son calcul :\\n\\n" +
-      selected.map(sentence => "- " + sentence).join("\\n") +
-      "\\n\\nSource : courses/ia/lesson-06.md";
+    return "Un perceptron est un modèle neuronal simple. Pour comprendre son calcul :\n\n" +
+      selected.map(sentence => "- " + sentence).join("\n") +
+      "\n\nSource : courses/ia/lesson-06.md";
   }
 
   function searchDocs(query) {
@@ -1284,7 +1284,7 @@
     }
     const type = detectQuestionType(query);
     if (type === "explanation" &&
-        /\\b(perceptron|poids|biais|activation)\\b/.test(norm(query))) {
+        /\b(perceptron|poids|biais|activation)\b/.test(norm(query))) {
       const perceptron = composePerceptronExplanation(result);
       if (perceptron) return perceptron;
     }
