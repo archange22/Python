@@ -93,7 +93,7 @@ const QA_CASES = [
   {
     question: "comment preparer les donnees pour une ia",
     sources: ["courses/ia/lesson-02.md"],
-    required: ["jeu de données", "préparer", "données"]
+    required: ["jeu de données", "qualité des données", "nettoyer et transformer"]
   },
   {
     question: "comment fonctionne un reseau de neurones",
@@ -113,7 +113,7 @@ const QA_CASES = [
   {
     question: "comment creer une liste python",
     sources: ["courses/python/lesson-07.md"],
-    required: ["liste", "collection"]
+    required: ["liste", "crochets"]
   },
   {
     question: "comment creer un bot discord",
@@ -145,7 +145,7 @@ const QA_CASES = [
       "courses/web/lesson-03.md",
       "courses/web/lesson-04.md"
     ],
-    required: ["responsive", "écrans", "media query"]
+    required: ["responsive", "écrans", "meta viewport"]
   }
 ];
 
