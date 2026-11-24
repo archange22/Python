@@ -94,13 +94,14 @@
   function welcomeMarkup() {
     return '<section class="sun-welcome">' +
       '<div class="sun-emblem" aria-hidden="true"><span class="sun-emblem-core"></span><span class="sun-emblem-orbit orbit-a"></span><span class="sun-emblem-orbit orbit-b"></span></div>' +
-      '<span class="sun-welcome-kicker">SUN BRAIN · VERSION LOCALE 1.2</span>' +
+      '<span class="sun-welcome-kicker">SUN BRAIN · SYSTÈME NEURONAL 0.0.2</span>' +
       '<h1>Bonjour, je suis<br><span>Sun IA.</span></h1>' +
-      '<p>Je peux tenir une petite conversation et rechercher des explications dans les cours intégrés à cette application.</p>' +
+      '<p>Je peux discuter, reconnaître des sujets et rechercher des réponses dans les cours et le corpus local.</p>' +
       '<div class="sun-suggestions">' +
         '<button type="button" data-sun-action="suggest" data-sun-prompt="Bonjour Sun IA !">Dire bonjour <span>↗</span></button>' +
         '<button type="button" data-sun-action="suggest" data-sun-prompt="Comment ça va ?">Discuter <span>↗</span></button>' +
         '<button type="button" data-sun-action="suggest" data-sun-prompt="Explique-moi le Machine Learning.">Interroger les cours <span>↗</span></button>' +
+        '<a href="./knowledge/pdfs/sun-discussion-global-v0.0.2.pdf" target="_blank" rel="noopener">Ouvrir le corpus PDF <span>↗</span></a>' +
       '</div>' +
       '<div class="sun-demo-warning"><span aria-hidden="true">ⓘ</span><span><strong>Un premier cerveau local, pas encore un grand modèle.</strong> Un petit réseau neuronal classe les intentions. Sun Brain sélectionne des passages documentaires et compose des explications, comparaisons, procédures et exemples avec leurs sources. Aucun service d’IA externe ni API n’est utilisé.</span></div>' +
     '</section>';
