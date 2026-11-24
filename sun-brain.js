@@ -861,7 +861,7 @@
     if (/\b(difference|diff|comparer|compare|comparaison|versus|vs|opposer)\b/.test(text) ||
         /\bentre\b.*\bet\b/.test(text)) return "comparison";
     if (/\b(exemple|illustrer|montre moi|un cas concret|code complet|donne le code)\b/.test(text)) return "example";
-    if (/\b(etapes|etape|procedure|methode|creer|construire|installer|utiliser|preparer|securiser|proteger|adapter|faire|configurer|corriger|resoudre|programmer|developper|coder|ecrire|realiser|rediger|traduire|traduis|organiser|planifier|resumer|depanner|ouvrir|lire|extraire|verifier|demarrer|executer|lancer|ajouter|supprimer|modifier|gerer|reparer|analyser)\b/.test(text)) return "procedure";
+    if (/\b(etapes|etape|procedure|methode|creer|construire|installer|utiliser|preparer|securiser|proteger|adapter|faire|configurer|corriger|resoudre|programmer|developper|coder|ecrire|realiser|rediger|traduire|traduis|organiser|planifier|resumer|depanner|ouvrir|lire|extraire|verifier|demarrer|executer|lancer|ajouter|supprimer|modifier|gerer|reparer|analyser|entrainer|tester|controler|appliquer|installer|brancher|telecharger)\b/.test(text)) return "procedure";
     if (/\b(c est quoi|qu est ce|definition|definis|signifie|que signifie|qui est|que represente)\b/.test(text)) return "definition";
     return "explanation";
   }
