@@ -2,20 +2,23 @@
 
 Sun IA est une application web progressive (PWA) à identité solaire. Sa page principale contient un assistant local expérimental, les formations, une bibliothèque de cours et la Console Python 3.
 
-## Sun Brain — version locale 1.1
+## Sun Brain — version locale 1.2
 
 - Un petit réseau neuronal artificiel à propagation avant, avec une couche cachée de 16 neurones, entraîné localement sur des exemples de phrases ; ses poids sont conservés dans le stockage local après le premier entraînement.
 - Classification de huit intentions de base : salutations, questions simples sur l’état, demande de nom, identité, remerciements, départ, demande d’aide et discussion informelle.
 - Compréhension de quelques abréviations françaises courantes, comme « ccmt », « cv », « bjr » et « slt ».
 - Indexation locale de 19 fichiers pédagogiques en Markdown : cours Python, IA, Discord et Web.
 - Recherche documentaire pondérée (BM25), normalisation de plusieurs abréviations françaises et rapprochement de synonymes techniques.
-- Réponses multi-passages pour les questions qui comparent plusieurs notions, suivi du contexte pour les demandes de précision et indication du fichier source.
+- Analyse du type de demande : définition, explication, comparaison, procédure ou exemple.
+- Composition de réponses à partir de phrases pertinentes extraites de plusieurs sections, avec attribution des fichiers sources ; les comparaisons HTML/CSS/JavaScript et les procédures multi-étapes sont prises en charge.
+- Extraction d'exemples de code issus des cours, présentés avant leur explication.
+- Suivi du contexte pour les demandes de précision et réponse de non-connaissance lorsque les sources sont insuffisantes.
 - Réponse de non-connaissance explicite lorsque les cours ne contiennent pas de passage suffisamment pertinent.
 - Tests de non-régression automatisés dans `tests/sun-brain.test.cjs`, exécutés par GitHub Actions sur les modifications du cerveau et des cours.
 - Historique des conversations conservé sur l’appareil.
 - Aucun service d’IA externe, aucune clé API et aucun grand modèle de langage.
 
-**Limite importante :** ce n’est pas encore un assistant génératif comparable à ChatGPT, Claude ou Grok. Le réseau neuronal classe des intentions simples ; un moteur documentaire distinct classe les passages des cours et construit les réponses à partir de ces passages. Sun Brain peut répondre aux sujets couverts par ses documents, mais ne sait pas encore répondre librement à toute question ni vérifier des faits qui ne figurent pas dans sa base. Il n’apprend pas encore automatiquement de nouvelles connaissances à partir des conversations. L’ajout d’un nouveau cours à la liste de documents permet de l’indexer, mais n’entraîne pas les poids du réseau neuronal.
+**Limite importante :** ce n’est pas encore un assistant génératif comparable à ChatGPT, Claude ou Grok. Le réseau neuronal classe des intentions simples ; le moteur documentaire sélectionne des preuves et compose des réponses à partir de phrases présentes dans les cours. Ce mécanisme est une composition extractive, pas un grand modèle de langage qui rédige librement. Sun Brain ne sait pas encore répondre à toute question ni vérifier des faits absents de ses documents. Il n’apprend pas automatiquement de nouvelles connaissances à partir des conversations. Ajouter un cours à la liste permet de l’indexer, mais n’entraîne pas les poids neuronaux.
 
 Les fichiers principaux sont \`sun-brain.js\` (classification neuronale et recherche documentaire), \`sun-ia.js\` (interface de discussion) et \`sun-ia.css\` (présentation).
 
