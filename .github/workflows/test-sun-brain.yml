@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - "sun-brain.js"
+      - "sun-ia.js"
+      - "sun-ia.css"
+      - "app.js"
+      - "index.html"
+      - "tests/sun-ui.test.cjs"
       - "tests/sun-brain.test.cjs"
       - "courses/**/*.md"
       - "knowledge/**/*.md"
@@ -18,6 +23,11 @@ on:
   pull_request:
     paths:
       - "sun-brain.js"
+      - "sun-ia.js"
+      - "sun-ia.css"
+      - "app.js"
+      - "index.html"
+      - "tests/sun-ui.test.cjs"
       - "tests/sun-brain.test.cjs"
       - "courses/**/*.md"
       - "knowledge/**/*.md"
