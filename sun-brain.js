@@ -15,39 +15,234 @@
     "knowledge/security-and-privacy.md"
   ];
   const data = {
-    greeting: ["bonjour", "salut", "yo", "coucou", "hello", "hey", "bonsoir", "bjr", "slt", "cc"],
-    how: ["ça va", "cv", "comment ça va", "comment tu vas", "comment vas tu", "tu vas bien"],
-    name: ["comment tu t appelles", "c est quoi ton nom", "quel est ton nom", "ton nom c est quoi"],
-    thanks: ["merci", "merci beaucoup", "je te remercie"],
-    bye: ["au revoir", "à bientôt", "bonne nuit", "ciao", "bye"],
-    identity: ["tu es qui", "qui es tu", "tu es quoi", "tu es une ia"],
-    help: ["que sais tu faire", "tu peux faire quoi", "comment peux tu m aider"],
-    smalltalk: ["quoi de neuf", "tu fais quoi", "comment se passe ta journée", "on peut discuter", "parlons un peu", "raconte moi quelque chose", "tu es disponible", "ça dit quoi"]
+    greeting: ["bonjour", "salut", "yo", "coucou", "hello", "hey", "bonsoir", "bjr", "slt", "cc", "salut sun", "bonjour sun", "wesh", "bien le bonjour"],
+    how: ["ça va", "cv", "comment ça va", "comment tu vas", "comment vas tu", "tu vas bien", "comment tu te sens", "ça roule", "tu vas bien sun", "comment allez vous"],
+    name: ["comment tu t appelles", "c est quoi ton nom", "quel est ton nom", "ton nom c est quoi", "comment dois je t appeler", "tu t appelles comment", "quel est ton prénom"],
+    thanks: ["merci", "merci beaucoup", "je te remercie", "c est gentil merci", "merci pour ton aide", "bien reçu merci"],
+    bye: ["au revoir", "à bientôt", "bonne nuit", "ciao", "bye", "à plus tard", "je dois partir", "bonne journée"],
+    identity: ["tu es qui", "qui es tu", "tu es quoi", "tu es une ia", "comment tu fonctionnes", "tu es un robot", "présente toi"],
+    help: ["que sais tu faire", "tu peux faire quoi", "comment peux tu m aider", "quelles sont tes capacités", "aide moi à utiliser sun", "comment poser une question"],
+    smalltalk: ["quoi de neuf", "tu fais quoi", "comment se passe ta journée", "on peut discuter", "parlons un peu", "raconte moi quelque chose", "tu es disponible", "ça dit quoi", "j aimerais discuter", "on parle de quoi"],
+
+    topic_python: [
+      "python programmation variables types conditions boucles fonctions listes dictionnaires",
+      "explique moi le langage python et donne un exemple de code",
+      "comment écrire une fonction avec def et return en python",
+      "comment corriger une erreur dans mon programme python",
+      "je veux apprendre à coder avec python",
+      "à quoi servent les variables et les boucles python",
+      "comment utiliser les listes et les dictionnaires python",
+      "programmation python débutant exercices et algorithmes",
+      "comment exécuter un script python sur android",
+      "quelle est la différence entre for et while en python",
+      "comment créer un programme python avec des conditions",
+      "aide moi à comprendre la syntaxe python"
+    ],
+    topic_ia: [
+      "intelligence artificielle machine learning deep learning réseau de neurones",
+      "comment entraîner un modèle neuronal avec des données",
+      "explique les perceptrons les poids les biais et activation",
+      "comment fonctionne l apprentissage automatique",
+      "classification précision rappel et score f1 pour une ia",
+      "qu est ce qu un dataset et comment préparer les données",
+      "comment fonctionne un réseau de neurones artificiels",
+      "différence entre ia apprentissage automatique et deep learning",
+      "comment faire une inférence avec un modèle entraîné",
+      "algorithme de classification et modèle prédictif",
+      "comment évaluer la qualité d un modèle ia",
+      "je veux comprendre les neurones artificiels"
+    ],
+    topic_discord: [
+      "discord bot discord py discord js serveur commande slash",
+      "comment programmer un bot discord avec python",
+      "comment sécuriser le token secret de mon bot discord",
+      "rôles permissions intents gateway événements discord",
+      "comment créer une commande pour un serveur discord",
+      "comment gérer les erreurs et les journaux d un bot",
+      "développer une application discord et un bot modérateur",
+      "comment vérifier les permissions des rôles discord",
+      "comment héberger un bot discord et le maintenir actif",
+      "comment tester un bot discord avec unittest",
+      "problème de connexion du bot discord à gateway",
+      "je veux créer une communauté avec un bot discord"
+    ],
+    topic_web: [
+      "création de site web html css javascript",
+      "comment construire une page web responsive pour téléphone",
+      "html structure css design et javascript interactions",
+      "comment utiliser fetch async await pour une api",
+      "comment créer un formulaire accessible dans un site",
+      "comment corriger le css et améliorer interface utilisateur",
+      "développement frontend web navigateur html",
+      "comment gérer les événements avec addEventListener",
+      "comment installer une application web progressive pwa",
+      "site internet responsive mobile ordinateur",
+      "comment créer une interface avec javascript dom",
+      "aide moi à développer une application web"
+    ],
+    topic_documents: [
+      "ouvrir un pdf extraire son texte organiser les chapitres",
+      "comment analyser un document et indexer ses informations",
+      "lire un fichier pdf et rechercher dans son contenu",
+      "extraire texte d un pdf et créer une base documentaire",
+      "comment classer des documents par sujet et chapitre",
+      "organiser une bibliothèque de cours hors connexion",
+      "importer un document texte et vérifier ses sources",
+      "comment retrouver une information dans un fichier",
+      "catalogue documentaire et recherche locale",
+      "comment ouvrir un document word et extraire le texte",
+      "comment reconnaître le sujet principal d un document",
+      "indexation de fichiers et recherche par mots clés"
+    ],
+    topic_school: [
+      "comment organiser mon travail scolaire et mes devoirs",
+      "aide moi à comprendre une leçon avec des mots simples",
+      "comment préparer une révision avant un examen",
+      "comment résumer un cours et retenir les idées importantes",
+      "comment mieux organiser mon temps pour étudier",
+      "explique une notion scolaire étape par étape",
+      "comment lire et comprendre un texte de cours",
+      "comment mémoriser une leçon sans tout oublier",
+      "je dois préparer un exposé pour l école",
+      "comment résoudre un exercice scolaire et vérifier ma réponse",
+      "comment planifier mes devoirs de la semaine",
+      "donne une méthode pour apprendre une nouvelle leçon"
+    ],
+    topic_math: [
+      "aide moi à faire un calcul mathématique",
+      "explique les fractions et les opérations",
+      "comment résoudre une équation avec une inconnue",
+      "explique le raisonnement mathématique étape par étape",
+      "comment additionner soustraire multiplier et diviser des nombres",
+      "comment calculer une fraction et simplifier le résultat",
+      "résoudre une équation du premier degré",
+      "pourquoi ce résultat de calcul est il correct",
+      "explique les nombres décimaux et les fractions",
+      "comment vérifier un résultat en mathématiques",
+      "aide moi à comprendre un problème de maths",
+      "calculer un pourcentage et expliquer la méthode"
+    ],
+    topic_science: [
+      "explique une notion de science et la méthode scientifique",
+      "comment observer un phénomène et formuler une hypothèse",
+      "qu est ce qu une expérience scientifique",
+      "comment analyser les résultats d une observation",
+      "explique une notion de physique ou de biologie",
+      "comment faire une démarche scientifique simple",
+      "différence entre observation hypothèse et conclusion",
+      "comment vérifier une idée avec une expérience",
+      "quelles sont les étapes d une recherche scientifique",
+      "explique un phénomène naturel simplement",
+      "comment distinguer un fait d une hypothèse",
+      "aide moi à comprendre un sujet scientifique"
+    ],
+    topic_culture: [
+      "explique un événement historique et sa chronologie",
+      "quand a eu lieu cet événement dans l histoire",
+      "explique une période historique simplement",
+      "parle moi de la géographie et des pays du monde",
+      "où se trouve cette ville ce pays ou cette région",
+      "explique un livre et ses personnages principaux",
+      "comment résumer l histoire d un livre",
+      "présente un événement culturel et son contexte",
+      "explique la chronologie d une histoire",
+      "quels sont les lieux importants de cette région",
+      "aide moi à comprendre un sujet d histoire",
+      "aide moi à comprendre un sujet de géographie"
+    ],
+    topic_language: [
+      "traduis cette phrase du français vers l anglais",
+      "comment traduire un mot dans une autre langue",
+      "aide moi à apprendre du vocabulaire en anglais",
+      "explique la grammaire et la conjugaison française",
+      "quelle est la signification de ce mot",
+      "comment améliorer mon français écrit",
+      "comment apprendre une nouvelle langue",
+      "donne un synonyme et un antonyme de ce mot",
+      "corrige cette phrase en français",
+      "explique une règle de grammaire simplement",
+      "comment prononcer et utiliser cette expression",
+      "aide moi à comprendre une traduction"
+    ],
+    topic_writing: [
+      "aide moi à rédiger un paragraphe cohérent",
+      "comment écrire une introduction et une conclusion",
+      "corrige mon texte et améliore la formulation",
+      "comment construire un paragraphe avec des arguments",
+      "aide moi à faire une rédaction en français",
+      "comment organiser les idées dans un texte",
+      "écris un résumé clair de ce passage",
+      "comment structurer un exposé ou une présentation",
+      "comment développer une argumentation simple",
+      "aide moi à reformuler une phrase",
+      "comment écrire une lettre ou un texte explicatif",
+      "améliorer la ponctuation et l orthographe d un texte"
+    ],
+    topic_daily: [
+      "mon téléphone a un problème comment le dépanner",
+      "comment résoudre un problème simple sur android",
+      "mon application ne fonctionne plus que faire",
+      "comment vérifier les paramètres de mon appareil",
+      "aide moi à comprendre une erreur sur mon téléphone",
+      "comment gérer un problème de connexion internet",
+      "mon navigateur ne charge pas une page",
+      "comment libérer de l espace de stockage sur mon appareil",
+      "comment utiliser une fonctionnalité de mon téléphone",
+      "aide moi à résoudre un problème technique courant",
+      "pourquoi mon application se ferme toute seule",
+      "comment redémarrer et vérifier un appareil"
+    ],
+    topic_general: [
+      "je veux discuter librement d un sujet",
+      "donne moi un avis équilibré sur cette idée",
+      "peux tu m expliquer un sujet du quotidien",
+      "je ne comprends pas bien une situation peux tu clarifier",
+      "aide moi à choisir entre plusieurs possibilités",
+      "parlons d un sujet léger et intéressant",
+      "je suis découragé aide moi à reprendre confiance dans mon travail",
+      "comment répondre poliment dans cette situation",
+      "peux tu développer cette idée et donner un exemple",
+      "explique cette question de culture générale",
+      "aide moi à réfléchir aux avantages et aux limites",
+      "je voudrais simplement parler et poser des questions"
+    ]
   };
+
   function norm(s) {
     return String(s || "").toLowerCase().normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/\bccmt\b/g, "comment").replace(/\bcmt\b/g, "comment")
       .replace(/\bbjr\b/g, "bonjour").replace(/\bslt\b/g, "salut")
       .replace(/\bcv\b/g, "ca va").replace(/\bc\s+ets\b/g, "c est")
+      .replace(/\bj\s+voudrais\b/g, "je voudrais")
+      .replace(/\bsvp\b/g, "s il vous plait")
       .replace(/[^a-z0-9]+/g, " ").trim();
   }
+
   function feats(s) {
-    const t = norm(s).split(/\s+/).filter(Boolean);
-    const out = t.slice();
-    for (let i = 0; i + 1 < t.length; i++) out.push(t[i] + "_" + t[i + 1]);
-    return out;
+    const tokens = norm(s).split(/\s+/).filter(Boolean);
+    const out = [];
+    tokens.forEach((token, i) => {
+      out.push("w:" + token);
+      if (token.length >= 4) {
+        out.push("p:" + token.slice(0, 3), "s:" + token.slice(-3));
+        for (let j = 0; j <= token.length - 3; j++) out.push("c:" + token.slice(j, j + 3));
+      }
+      if (i + 1 < tokens.length) out.push("b:" + token + "_" + tokens[i + 1]);
+    });
+    return Array.from(new Set(out));
   }
+
   const labels = Object.keys(data);
-  const vocab = Array.from(new Set(labels.flatMap(k => data[k].flatMap(feats))));
-  const index = new Map(vocab.map((t, i) => [t, i]));
+  const vocab = Array.from(new Set(labels.flatMap(label => data[label].flatMap(feats))));
+  const index = new Map(vocab.map((feature, i) => [feature, i]));
   const samples = [];
   labels.forEach((label, y) => data[label].forEach(phrase => {
-    const x = new Array(vocab.length).fill(0);
-    feats(phrase).forEach(t => { if (index.has(t)) x[index.get(t)] = 1; });
-    samples.push({ x, y });
+    const active = Array.from(new Set(feats(phrase).filter(feature => index.has(feature)).map(feature => index.get(feature))));
+    samples.push({ active, y });
   }));
-  const MODEL_CACHE_KEY = "sun-ia-neural-model-v1";
+
+  const MODEL_CACHE_KEY = "sun-ia-neural-model-v3";
   const modelSignature = JSON.stringify(data) + "|" + vocab.join("|");
 
   function rand(seed) {
@@ -55,51 +250,81 @@
     return () => ((n = (n * 1664525 + 1013904223) >>> 0) / 4294967296);
   }
 
-  function softmax(a) {
-    const m = Math.max(...a), e = a.map(v => Math.exp(v - m)), sum = e.reduce((x, y) => x + y, 0);
-    return e.map(v => v / sum);
+  function softmax(values) {
+    const maximum = Math.max(...values);
+    const exponentials = values.map(value => Math.exp(value - maximum));
+    const total = exponentials.reduce((sum, value) => sum + value, 0) || 1;
+    return exponentials.map(value => value / total);
   }
 
   function trainNetwork() {
     const random = rand(41721);
-    const hiddenSize = 16;
-    const w1 = Array.from({ length: hiddenSize }, () => Array.from({ length: vocab.length }, () => (random() - .5) * .2));
+    const hiddenSize = 24;
+    const w1 = Array.from({ length: hiddenSize }, () =>
+      Array.from({ length: vocab.length }, () => (random() - 0.5) * 0.16));
     const b1 = new Array(hiddenSize).fill(0);
-    const w2 = Array.from({ length: labels.length }, () => Array.from({ length: hiddenSize }, () => (random() - .5) * .2));
+    const w2 = Array.from({ length: labels.length }, () =>
+      Array.from({ length: hiddenSize }, () => (random() - 0.5) * 0.16));
     const b2 = new Array(labels.length).fill(0);
+    const order = samples.map((_, i) => i);
+    const learningRate = 0.035;
+    const epochs = 280;
 
-    for (let epoch = 0; epoch < 350; epoch++) {
-      samples.forEach(sample => {
-        const h = w1.map((row, j) => Math.tanh(row.reduce((sum, w, i) => sum + w * sample.x[i], b1[j])));
-        const out = softmax(w2.map((row, k) => row.reduce((sum, w, j) => sum + w * h[j], b2[k])));
-        const err = out.map((p, k) => p - (k === sample.y ? 1 : 0));
+    for (let epoch = 0; epoch < epochs; epoch++) {
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      for (const sampleIndex of order) {
+        const sample = samples[sampleIndex];
+        const hiddenValues = w1.map((row, j) => {
+          let sum = b1[j];
+          for (const featureIndex of sample.active) sum += row[featureIndex];
+          return Math.tanh(sum);
+        });
+        const output = softmax(w2.map((row, k) =>
+          row.reduce((sum, weight, j) => sum + weight * hiddenValues[j], b2[k])));
+        const errors = output.map((probability, k) => probability - (k === sample.y ? 1 : 0));
         const back = new Array(hiddenSize).fill(0);
+
+        for (let k = 0; k < labels.length; k++) {
+          for (let j = 0; j < hiddenSize; j++) back[j] += errors[k] * w2[k][j];
+        }
         for (let k = 0; k < labels.length; k++) {
           for (let j = 0; j < hiddenSize; j++) {
-            back[j] += err[k] * w2[k][j];
-            w2[k][j] -= .055 * err[k] * h[j];
+            w2[k][j] -= learningRate * (errors[k] * hiddenValues[j] + 0.00008 * w2[k][j]);
           }
-          b2[k] -= .055 * err[k];
+          b2[k] -= learningRate * errors[k];
         }
         for (let j = 0; j < hiddenSize; j++) {
-          const d = back[j] * (1 - h[j] * h[j]);
-          for (let i = 0; i < vocab.length; i++) w1[j][i] -= .055 * d * sample.x[i];
-          b1[j] -= .055 * d;
+          const gradient = back[j] * (1 - hiddenValues[j] * hiddenValues[j]);
+          for (const featureIndex of sample.active) {
+            w1[j][featureIndex] -= learningRate * (gradient + 0.00008 * w1[j][featureIndex]);
+          }
+          b1[j] -= learningRate * gradient;
         }
-      });
+      }
     }
     return { hidden: hiddenSize, w1, b1, w2, b2 };
+  }
+
+  function validNetwork(saved) {
+    return !!(saved && saved.version === 3 && saved.signature === modelSignature &&
+      saved.hidden === 24 && Array.isArray(saved.w1) && saved.w1.length === 24 &&
+      saved.w1.every(row => Array.isArray(row) && row.length === vocab.length) &&
+      Array.isArray(saved.b1) && saved.b1.length === 24 &&
+      Array.isArray(saved.w2) && saved.w2.length === labels.length &&
+      saved.w2.every(row => Array.isArray(row) && row.length === 24) &&
+      Array.isArray(saved.b2) && saved.b2.length === labels.length);
   }
 
   function loadNetwork() {
     try {
       const saved = JSON.parse(localStorage.getItem(MODEL_CACHE_KEY) || "null");
-      if (saved && saved.version === 1 && saved.signature === modelSignature &&
-          Array.isArray(saved.w1) && Array.isArray(saved.w2) &&
-          saved.w1.length === 16 && saved.w2.length === labels.length) return saved;
+      if (validNetwork(saved)) return saved;
     } catch (_) {}
     const trained = trainNetwork();
-    const model = { version: 1, signature: modelSignature, ...trained };
+    const model = { version: 3, signature: modelSignature, ...trained };
     try { localStorage.setItem(MODEL_CACHE_KEY, JSON.stringify(model)); } catch (_) {}
     return model;
   }
@@ -110,14 +335,93 @@
   const b1 = network.b1;
   const w2 = network.w2;
   const b2 = network.b2;
+
   function classify(s) {
-    const x = new Array(vocab.length).fill(0);
-    feats(s).forEach(t => { if (index.has(t)) x[index.get(t)] = 1; });
-    if (!x.some(Boolean)) return { intent: null, confidence: 0 };
-    const h = w1.map((row, j) => Math.tanh(row.reduce((sum, w, i) => sum + w * x[i], b1[j])));
-    const out = softmax(w2.map((row, k) => row.reduce((sum, w, j) => sum + w * h[j], b2[k])));
-    const best = out.indexOf(Math.max(...out));
-    return { intent: labels[best], confidence: out[best] };
+    const active = Array.from(new Set(feats(s).filter(feature => index.has(feature)).map(feature => index.get(feature))));
+    if (!active.length) return { intent: null, confidence: 0, margin: 0 };
+    const hiddenValues = w1.map((row, j) => {
+      let sum = b1[j];
+      for (const featureIndex of active) sum += row[featureIndex];
+      return Math.tanh(sum);
+    });
+    const output = softmax(w2.map((row, k) =>
+      row.reduce((sum, weight, j) => sum + weight * hiddenValues[j], b2[k])));
+    const sorted = output.map((confidence, labelIndex) => ({ confidence, label: labels[labelIndex] }))
+      .sort((a, b) => b.confidence - a.confidence);
+    const best = sorted[0];
+    return {
+      intent: best.label,
+      confidence: best.confidence,
+      margin: best.confidence - (sorted[1]?.confidence || 0),
+      kind: best.label.startsWith("topic_") ? "topic" : "conversation"
+    };
+  }
+
+  const SUBJECTS = {
+    topic_python: { id: "python", label: "Python", paths: ["courses/python/", "knowledge/python-practice.md"] },
+    topic_ia: { id: "ia", label: "Intelligence artificielle", paths: ["courses/ia/", "knowledge/ia-foundations.md"] },
+    topic_discord: { id: "discord", label: "Discord", paths: ["courses/discord/", "knowledge/discord-development.md"] },
+    topic_web: { id: "web", label: "Développement Web", paths: ["courses/web/", "knowledge/web-practices.md"] },
+    topic_documents: { id: "documents", label: "Documents et PDF", paths: ["knowledge/pdfs/", "knowledge/imported/"] },
+    topic_school: { id: "school", label: "Études et apprentissage", paths: ["knowledge/imported/"] },
+    topic_math: { id: "math", label: "Mathématiques", paths: ["knowledge/imported/"] },
+    topic_science: { id: "science", label: "Sciences", paths: ["knowledge/imported/"] },
+    topic_culture: { id: "culture", label: "Histoire, géographie et culture", paths: ["knowledge/imported/"] },
+    topic_language: { id: "language", label: "Langues et français", paths: ["knowledge/imported/"] },
+    topic_writing: { id: "writing", label: "Rédaction et expression", paths: ["knowledge/imported/"] },
+    topic_daily: { id: "daily", label: "Dépannage du quotidien", paths: ["knowledge/imported/"] },
+    topic_general: { id: "general", label: "Discussion générale", paths: ["knowledge/imported/"] }
+  };
+
+  function detectTopicHint(query) {
+    const text = norm(query);
+    const tokens = new Set(text.split(" ").filter(Boolean));
+    const has = (...values) => values.some(value => tokens.has(value));
+    const includes = (...values) => values.some(value => text.includes(value));
+    const hints = [
+      ["topic_python", () => has("python", "def", "return", "variable", "variables", "boucle", "boucles", "liste", "dictionnaire", "venv", "pip", "virtualenv") || includes("environnement virtuel", "environnements virtuels")],
+      ["topic_ia", () => includes("intelligence artificielle", "reseau neuronal", "machine learning", "deep learning", "perceptron") || has("ia", "neurone", "neurones")],
+      ["topic_discord", () => has("discord", "bot", "bots", "gateway") || includes("serveur discord")],
+      ["topic_web", () => has("html", "css", "javascript", "responsive", "frontend") || includes("site web", "navigateur web")],
+      ["topic_documents", () => has("pdf", "document", "documents", "fichier", "extraction", "indexation", "chapitre", "chapitres") || includes("bibliotheque documentaire")],
+      ["topic_math", () => has("fraction", "fractions", "equation", "equations", "calcul", "mathematique", "pourcentage", "numerateur", "denominateur")],
+      ["topic_science", () => has("science", "scientifique", "experience", "hypothese", "observation", "biologie", "physique")],
+      ["topic_culture", () => has("histoire", "historique", "geographie", "chronologie", "livre", "personnage") || includes("pays du monde")],
+      ["topic_language", () => has("traduire", "traduis", "traduction", "anglais", "francais", "grammaire", "conjugaison", "vocabulaire", "langue", "langues")],
+      ["topic_writing", () => has("rediger", "redaction", "paragraphe", "orthographe", "ponctuation", "argumentation")],
+      ["topic_daily", () => has("telephone", "android", "depannage", "stockage") || includes("connexion internet", "application mobile")],
+      ["topic_school", () => has("scolaire", "devoir", "devoirs", "examen", "revision", "reviser", "memorisation", "etudier", "etude", "etudes")],
+      ["topic_general", () => includes("discussion libre", "discuter", "echanger", "culture generale", "avis equilibre", "parler simplement")]
+    ];
+    const match = hints.find(([, matches]) => matches());
+    return match ? SUBJECTS[match[0]] : null;
+  }
+
+  function subjectFromPath(path, heading) {
+    if (path.startsWith("courses/python/") || path === "knowledge/python-practice.md") return { id: "python", label: "Python" };
+    if (path.startsWith("courses/ia/") || path === "knowledge/ia-foundations.md") return { id: "ia", label: "Intelligence artificielle" };
+    if (path.startsWith("courses/discord/") || path === "knowledge/discord-development.md") return { id: "discord", label: "Discord" };
+    if (path.startsWith("courses/web/") || path === "knowledge/web-practices.md") return { id: "web", label: "Développement Web" };
+    if (path.startsWith("knowledge/pdfs/")) return { id: "documents", label: "Documents et PDF" };
+    if (path.startsWith("knowledge/imported/") || path.startsWith("knowledge/discussion-global")) {
+      const title = norm(heading || "");
+      const mappings = [
+        ["documents", /documents pdf|guide pdf|pdf et indexation|indexation|extraction et organisation des chapitres|disponibilite hors connexion/],
+        ["math", /calculs et fractions|equations et raisonnement mathematique/],
+        ["science", /sciences et methode d observation/],
+        ["culture", /histoire et chronologie|geographie et lieux du monde|lecture et comprehension d un livre/],
+        ["language", /francais familier|traduction et apprentissage des langues/],
+        ["writing", /redaction et construction d un paragraphe/],
+        ["school", /organisation du travail scolaire|expliquer une notion simplement|definir un mot|resumer un texte|revision et memorisation/],
+        ["daily", /telephone et depannage simple/],
+        ["general", /discussion libre|donner un avis|emotions ordinaires|demander de l aide|relancer une discussion|clarifier une question/]
+      ];
+      for (const [id, pattern] of mappings) {
+        if (pattern.test(title)) return Object.values(SUBJECTS).find(subject => subject.id === id) || null;
+      }
+      return { id: "general", label: "Discussion générale" };
+    }
+    return null;
   }
   let sections = [];
   let searchIndex = [];
@@ -134,18 +438,21 @@
   function split(md, path) {
     const lines = md.split(/\r?\n/);
     const title = (lines.find(x => /^#\s/.test(x)) || path).replace(/^#\s*/, "");
-    let heading = title, buffer = [], out = [], started = false;
+    let heading = title, chapterHeading = title, buffer = [], out = [], started = false;
     function flush() {
       const body = clean(buffer.join("\n"));
-      if (started && body.length > 35) out.push({ title, heading, body, path });
+      if (started && body.length > 35) {
+        out.push({ title, heading, chapterHeading, body, path });
+      }
       buffer = [];
     }
     lines.forEach((line, i) => {
-      const m = line.match(/^#{2,4}\s+(.+)/);
+      const m = line.match(/^(#{2,4})\s+(.+)/);
       if (m) {
         if (started) flush();
         else buffer = [];
-        heading = m[1];
+        heading = m[2];
+        if (m[1] === "##") chapterHeading = m[2];
         started = true;
       } else if (started && i > 0 && !/^#\s/.test(line)) {
         buffer.push(line);
@@ -201,12 +508,34 @@
   function recognizeTopic(query) {
     const result = retrieveDocs(query);
     if (!result || !result.best) return null;
+    const neural = classify(query);
+    const documentSubject = subjectFromPath(result.best.section.path, result.best.section.chapterHeading || result.best.section.heading);
+    const lexicalSubject = detectTopicHint(query);
+    const predictedSubject = lexicalSubject || (neural.kind === "topic" && neural.confidence >= 0.2
+      ? SUBJECTS[neural.intent] || null
+      : null);
+    const subject = lexicalSubject || documentSubject || (predictedSubject
+      ? { id: predictedSubject.id, label: predictedSubject.label }
+      : null);
+    const confidence = Math.max(0, Math.min(0.99,
+      0.28 + result.coverage * 0.48 +
+      (documentSubject ? 0.12 : 0) +
+      (predictedSubject && documentSubject && predictedSubject.id === documentSubject.id
+        ? neural.confidence * 0.1 : 0)
+    ));
     return {
       title: result.best.section.title,
       heading: result.best.section.heading,
       source: result.best.section.path,
+      subject: subject ? subject.label : "Sujet documentaire",
+      subjectId: subject ? subject.id : "unknown",
+      questionType: detectQuestionType(query),
+      confidence: Number(confidence.toFixed(2)),
       score: result.best.score,
-      coverage: result.best.coverage
+      coverage: result.coverage,
+      relatedHeadings: result.alternatives.map(item => item.section.heading).slice(0, 3),
+      neuralPrediction: neural.intent,
+      neuralConfidence: Number(neural.confidence.toFixed(3))
     };
   }
   const STOP_QUERY_WORDS = new Set([
@@ -216,7 +545,7 @@
     "qui", "que", "quoi", "quel", "quelle", "quels", "quelles", "comment",
     "pourquoi", "explique", "expliquer", "donne", "donner", "montre", "montrer",
     "faire", "fait", "fais", "cest", "estce", "peux", "peut", "on", "il", "elle",
-    "entre", "difference", "fonctionne", "fonctionner", "une", "les", "leurs",
+    "entre", "vers", "difference", "fonctionne", "fonctionner", "une", "les", "leurs",
     "je", "tu", "ils", "elles", "aide", "y", "comme"
   ]);
 
@@ -259,7 +588,53 @@
     page: ["html", "web"],
     creer: ["creation", "construire"],
     cree: ["creation", "construire", "creer"],
-    creation: ["creer", "construire"]
+    creation: ["creer", "construire"],
+    fonction: ["def", "return", "parametre", "fonctionnalite"],
+    fonctions: ["fonction", "def", "return"],
+    parametre: ["parametres", "argument", "fonction"],
+    arguments: ["argument", "parametre", "fonction"],
+    dictionnaire: ["dict", "cle", "valeur", "get"],
+    dictionnaires: ["dictionnaire", "dict", "cle", "valeur"],
+    apprentissage: ["machine", "learning", "entrainement", "modele"],
+    entrainer: ["entrainement", "apprentissage", "donnees", "modele"],
+    entrainement: ["entrainer", "apprentissage", "modele", "poids"],
+    pdf: ["document", "texte", "extraction", "chapitre"],
+    document: ["fichier", "pdf", "contenu", "texte"],
+    documents: ["document", "fichier", "pdf"],
+    extraire: ["extraction", "texte", "contenu"],
+    extraction: ["extraire", "texte", "pdf"],
+    chapitre: ["chapitres", "section", "sujet"],
+    chapitres: ["chapitre", "sections", "sujets"],
+    interface: ["ui", "design", "css", "ergonomie"],
+    ui: ["interface", "design", "ergonomie"],
+    ergonomie: ["interface", "accessibilite", "navigation"],
+    responsive: ["mobile", "ecran", "adaptation", "css"],
+    mobile: ["telephone", "responsive", "android"],
+    securiser: ["proteger", "secret", "token", "permission"],
+    securite: ["protection", "validation", "injection"],
+    api: ["fetch", "json", "requete", "http"],
+    evenement: ["event", "listener", "addEventListener", "clic"],
+    evenements: ["evenement", "event", "listener"],
+    neurones: ["neurone", "reseau", "perceptron"],
+    perceptron: ["neurone", "poids", "biais", "activation"],
+    poids: ["parametre", "neurone", "modele"],
+    biais: ["neurone", "perceptron", "poids"],
+    organiser: ["organisation", "organise", "planifier", "scolaire"],
+    organisation: ["organiser", "planifier", "scolaire"],
+    devoir: ["devoirs", "scolaire", "revision"],
+    devoirs: ["devoir", "scolaire", "revision"],
+    reviser: ["revision", "memoriser", "memorisation", "examen"],
+    revision: ["reviser", "memoriser", "memorisation", "devoirs", "examen"],
+    examen: ["revision", "evaluation", "controle", "epreuve"],
+    etudier: ["etude", "revision", "scolaire"],
+    fraction: ["fractions", "calcul", "numerateur", "denominateur"],
+    fractions: ["fraction", "calcul", "numerateur", "denominateur"],
+    traduire: ["traduction", "langue", "anglais", "francais"],
+    traduis: ["traduction", "traduire", "langue", "anglais", "francais"],
+    rediger: ["redaction", "paragraphe", "texte", "ecrire"],
+    telephone: ["mobile", "android", "appareil", "depannage"],
+    chronologie: ["histoire", "historique", "evenement", "date"],
+    hypothese: ["observation", "experience", "science", "scientifique"]
   };
 
   function canonicalToken(token) {
@@ -334,6 +709,12 @@
     const queryData = getQueryTerms(query);
     if (!queryData.base.length) return null;
 
+    const neural = classify(query);
+    const lexicalSubject = detectTopicHint(query);
+    const predictedSubject = lexicalSubject || (neural.kind === "topic" && neural.confidence >= 0.2
+      ? SUBJECTS[neural.intent] || null
+      : null);
+    const subjectStrength = lexicalSubject ? 1 : neural.confidence;
     const ranked = searchIndex.map(item => {
       let score = 0;
       const matchedTokens = [];
@@ -343,7 +724,10 @@
         const titleTf = item.titleCounts.get(token) || 0;
         const headingTf = item.headingCounts.get(token) || 0;
         const bodyTf = item.bodyCounts.get(token) || 0;
-        if (titleTf || headingTf || bodyTf) matchedTokens.push(token);
+        const synonymHit = (QUERY_SYNONYMS[token] || []).some(synonym =>
+          item.allTokens.has(canonicalToken(synonym))
+        );
+        if (titleTf || headingTf || bodyTf || synonymHit) matchedTokens.push(token);
         score += 2.1 * bm25(titleTf, item.titleTokens.length, 8, idf);
         score += 3.0 * bm25(headingTf, item.headingTokens.length, 8, idf);
         score += 1.0 * bm25(bodyTf, item.bodyLength, averageSectionLength, idf);
@@ -353,8 +737,14 @@
         if (weight >= 1 || item.allTokens.has(token)) return;
         const df = documentFrequency.get(token) || 0;
         const idf = Math.log(1 + (searchIndex.length - df + 0.5) / (df + 0.5));
-        const tf = item.bodyCounts.get(token) || 0;
-        if (tf) score += 0.55 * weight * bm25(tf, item.bodyLength, averageSectionLength, idf);
+        const titleTf = item.titleCounts.get(token) || 0;
+        const headingTf = item.headingCounts.get(token) || 0;
+        const bodyTf = item.bodyCounts.get(token) || 0;
+        score += 0.55 * weight * (
+          2.1 * bm25(titleTf, item.titleTokens.length, 8, idf) +
+          3.0 * bm25(headingTf, item.headingTokens.length, 8, idf) +
+          0.75 * bm25(bodyTf, item.bodyLength, averageSectionLength, idf)
+        );
       });
 
       const coverage = matchedTokens.length / queryData.base.length;
@@ -367,20 +757,50 @@
       }
       if (coverage === 1) score += 1.2;
       else if (coverage >= 0.66) score += 0.45;
+      const sectionSubject = subjectFromPath(item.section.path, item.section.chapterHeading || item.section.heading);
+      const sectionSubjectMatch = predictedSubject && sectionSubject &&
+        sectionSubject.id === predictedSubject.id;
+      const specificPathMatch = predictedSubject && predictedSubject.paths
+        .filter(prefix => prefix !== "knowledge/imported/")
+        .some(prefix => item.section.path === prefix || item.section.path.startsWith(prefix));
+      if (sectionSubjectMatch) {
+        score += 2.8 * subjectStrength;
+      } else if (specificPathMatch) {
+        score += 0.75 * subjectStrength;
+      } else if (predictedSubject && predictedSubject.paths.includes("knowledge/imported/") &&
+          item.section.path.startsWith("knowledge/imported/")) {
+        score -= (lexicalSubject ? 1.1 : 0.35) * subjectStrength;
+      } else if (predictedSubject && predictedSubject.paths.includes("knowledge/imported/") &&
+          item.section.path.startsWith("courses/")) {
+        score -= (lexicalSubject ? 1.8 : 0.8) * subjectStrength;
+      }
       return { section: item.section, score, coverage, matchedTokens };
     }).sort((a, b) => b.score - a.score);
 
     let best = ranked[0];
+    let topicRoutedCandidate = false;
     if (queryData.base.length >= 3 && best) {
       const completeMatch = ranked.find(item =>
         item.coverage === 1 && item.score >= best.score * 0.55
       );
       if (completeMatch) best = completeMatch;
     }
+    if (predictedSubject && predictedSubject.paths.includes("knowledge/imported/")) {
+      const subjectCandidate = ranked.find(item => {
+        const sectionSubject = subjectFromPath(item.section.path,
+          (item.section.chapterHeading || item.section.heading) + " " + item.section.heading + " " + item.section.title);
+        return sectionSubject && sectionSubject.id === predictedSubject.id &&
+          item.coverage >= 0.2 && item.score >= 0.5 && item.matchedTokens.length >= 1;
+      });
+      if (subjectCandidate) {
+        best = subjectCandidate;
+        topicRoutedCandidate = true;
+      }
+    }
     const second = ranked.find(item => item !== best) || null;
-    if (!best || best.score < 0.85 || best.coverage < 0.34) return null;
-    if (queryData.base.length >= 3 && best.coverage < 0.5) return null;
-    if (second && second.score >= best.score * 0.98 &&
+    if (!best || best.score < 0.85 || best.coverage < 0.2) return null;
+    if (queryData.base.length >= 3 && best.coverage < 0.5 && !topicRoutedCandidate) return null;
+    if (!topicRoutedCandidate && second && second.score >= best.score * 0.98 &&
         second.coverage > best.coverage && best.coverage < 0.6) return null;
 
     const covered = new Set(best.matchedTokens);
@@ -425,7 +845,8 @@
   function buildContextQuery(message, history) {
     const current = norm(message);
     const wordCount = getQueryTerms(current).base.length;
-    const followUp = /\b(exemple|un exemple|pourquoi|comment faire|et ensuite|et apres|la suite|plus simple|plus simplement|detaille|developpe|continue|resume|autre exemple)\b/.test(current);
+    const followUp = /\b(exemple|un exemple|pourquoi|comment faire|et ensuite|et apres|la suite|plus simple|plus simplement|detaille|developpe|continue|resume|autre exemple|et ca|avec ca|celui ci|celle ci|lequel|laquelle|et pour|et si|dans ce cas)\b/.test(current) ||
+      /^(et|donc|alors|mais|avec|sans|pour|ca|cela)\b/.test(current);
     if (!Array.isArray(history) || (!followUp && wordCount > 3)) return message;
 
     const previousUser = history.slice(0, -1).reverse().find(item =>
@@ -437,12 +858,11 @@
 
   function detectQuestionType(query) {
     const text = norm(query);
-    if (/\b(difference|diff|comparer|compare|comparaison|versus|vs)\b/.test(text) ||
+    if (/\b(difference|diff|comparer|compare|comparaison|versus|vs|opposer)\b/.test(text) ||
         /\bentre\b.*\bet\b/.test(text)) return "comparison";
-    if (/\b(exemple|illustrer|montre moi|un cas concret)\b/.test(text)) return "example";
-    if (/\b(comment|etapes|etape|procedure|methode|creer|construire|installer|utiliser|preparer|securiser|proteger|adapter|faire)\b/.test(text) &&
-        !/\b(fonctionne|fonctionner|marche|signifie|est ce que)\b/.test(text)) return "procedure";
-    if (/\b(c est quoi|qu est ce|definition|definis|signifie|que signifie)\b/.test(text)) return "definition";
+    if (/\b(exemple|illustrer|montre moi|un cas concret|code complet|donne le code)\b/.test(text)) return "example";
+    if (/\b(etapes|etape|procedure|methode|creer|construire|installer|utiliser|preparer|securiser|proteger|adapter|faire|configurer|corriger|resoudre|programmer|developper|coder|ecrire|realiser|rediger|traduire|traduis|organiser|planifier|resumer|depanner|ouvrir|lire|extraire|verifier|demarrer|executer|lancer|ajouter|supprimer|modifier|gerer|reparer|analyser|entrainer|tester|controler|appliquer|installer|brancher|telecharger)\b/.test(text)) return "procedure";
+    if (/\b(c est quoi|qu est ce|definition|definis|signifie|que signifie|qui est|que represente)\b/.test(text)) return "definition";
     return "explanation";
   }
 
@@ -916,12 +1336,40 @@
     return answer;
   }
 
+  function composePerceptronExplanation(result) {
+    const candidates = (result.candidates || [result.best]).filter(item =>
+      item.section.path === "courses/ia/lesson-06.md"
+    );
+    const evidence = [];
+    candidates.forEach(candidate => answerSentences(candidate.section).forEach(sentence => {
+      if (/\b(poids|biais|activation|perceptron|sortie|entree)\b/i.test(sentence) &&
+          !evidence.includes(sentence)) evidence.push(sentence);
+    }));
+    const selected = [];
+    ["poids", "biais", "activation"].forEach(term => {
+      const sentence = evidence.find(value => norm(value).includes(term));
+      if (sentence && !selected.includes(sentence)) selected.push(sentence);
+    });
+    evidence.forEach(sentence => {
+      if (selected.length < 5 && !selected.includes(sentence)) selected.push(sentence);
+    });
+    if (!selected.length) return "";
+    return "Un perceptron est un modèle neuronal simple. Pour comprendre son calcul :\n\n" +
+      selected.map(sentence => "- " + sentence).join("\n") +
+      "\n\nSource : courses/ia/lesson-06.md";
+  }
+
   function searchDocs(query) {
     const result = retrieveDocs(query);
     if (!result) {
       return "Je n’ai pas trouvé de passage suffisamment fiable dans les cours pour répondre à cette question. Tu peux préciser le sujet ou poser une question plus ciblée. Je préfère signaler cette limite plutôt que d’inventer une réponse.";
     }
     const type = detectQuestionType(query);
+    if (type === "explanation" &&
+        /\b(perceptron|poids|biais|activation)\b/.test(norm(query))) {
+      const perceptron = composePerceptronExplanation(result);
+      if (perceptron) return perceptron;
+    }
     if (type === "comparison") {
       const comparison = composeComparison(query);
       if (comparison) return comparison;
@@ -1003,6 +1451,29 @@
     searchDocuments: query => retrieveDocs(query),
     recognizeTopic,
     status,
-    modelInfo: { version: "0.0.2", type: "small-feedforward-neural-intent-classifier", hiddenNeurons: hidden, intents: labels.length, trainingExamples: samples.length }
+    analyzeQuestion: query => {
+      const topic = recognizeTopic(query);
+      const prediction = classify(query);
+      return {
+        subject: topic ? topic.subject : "Sujet non confirmé",
+        subjectId: topic ? topic.subjectId : null,
+        questionType: detectQuestionType(query),
+        confidence: topic ? topic.confidence : 0,
+        source: topic ? topic.source : null,
+        neuralClass: prediction.intent,
+        neuralConfidence: prediction.confidence
+      };
+    },
+    modelInfo: {
+      version: "0.0.3",
+      type: "local-feedforward-neural-message-and-topic-classifier",
+      hiddenNeurons: hidden,
+      intents: labels.length,
+      topicClasses: Object.keys(SUBJECTS).length,
+      trainingExamples: samples.length,
+      inputFeatures: vocab.length,
+      epochs: 280,
+      trainedLocally: true
+    }
   };
 })();

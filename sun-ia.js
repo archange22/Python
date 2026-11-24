@@ -5,6 +5,8 @@
   const rootSelector = "#appView";
   let sidebarOpen = false;
   let processing = false;
+  let composerDraft = "";
+  let historyFilter = "";
 
   function safeRead() {
     try {
@@ -72,9 +74,25 @@
     } catch (_) { return ""; }
   }
 
+  function formatTime(timestamp) {
+    if (!timestamp) return "";
+    try {
+      return new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" }).format(new Date(timestamp));
+    } catch (_) { return ""; }
+  }
+
+  function normalizeHistoryText(value) {
+    return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  }
+
   function historyMarkup() {
     if (!state.chats.length) return '<p class="sun-history-empty">Tes conversations apparaîtront ici.</p>';
-    return state.chats.map(chat =>
+    const query = normalizeHistoryText(historyFilter);
+    const visibleChats = query
+      ? state.chats.filter(chat => normalizeHistoryText(chat.title).includes(query))
+      : state.chats;
+    if (!visibleChats.length) return '<p class="sun-history-empty">Aucune conversation ne correspond à cette recherche.</p>';
+    return visibleChats.map(chat =>
       '<div class="sun-history-row">' +
         '<button class="sun-history-item ' + (chat.id === state.activeId ? "is-active" : "") + '" type="button" data-sun-action="select-chat" data-chat-id="' + escapeHtml(chat.id) + '">' +
           '<span class="sun-history-glyph" aria-hidden="true">◌</span>' +
@@ -83,6 +101,11 @@
         '<button class="sun-history-delete" type="button" data-sun-action="delete-chat" data-chat-id="' + escapeHtml(chat.id) + '" aria-label="Supprimer cette conversation" title="Supprimer">×</button>' +
       '</div>'
     ).join("");
+  }
+
+  function renderHistory() {
+    const list = document.querySelector(".sun-history-list");
+    if (list) list.innerHTML = historyMarkup();
   }
 
   function brainStatusText() {
@@ -206,41 +229,76 @@
     }
   }
 
+  async function copyMessage(control) {
+    const content = control.dataset.messageContent || "";
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(content);
+      } else {
+        const helper = document.createElement("textarea");
+        helper.value = content;
+        helper.setAttribute("readonly", "");
+        helper.style.position = "fixed";
+        helper.style.opacity = "0";
+        document.body.appendChild(helper);
+        helper.select();
+        const copied = document.execCommand("copy");
+        helper.remove();
+        if (!copied) throw new Error("Copie non disponible");
+      }
+      const previous = control.textContent;
+      control.textContent = "Réponse copiée";
+      window.setTimeout(() => { control.textContent = previous; }, 1600);
+    } catch (error) {
+      control.textContent = "Copie indisponible";
+      window.setTimeout(() => { control.textContent = "Copier la réponse"; }, 1600);
+    }
+  }
+
   function welcomeMarkup() {
     return '<section class="sun-welcome">' +
       '<div class="sun-emblem" aria-hidden="true"><span class="sun-emblem-core"></span><span class="sun-emblem-orbit orbit-a"></span><span class="sun-emblem-orbit orbit-b"></span></div>' +
-      '<span class="sun-welcome-kicker">SUN BRAIN · SYSTÈME NEURONAL 0.0.2</span>' +
+      '<span class="sun-welcome-kicker">SUN BRAIN · RÉSEAU NEURONAL 0.0.3</span>' +
       '<h1>Bonjour, je suis<br><span>Sun IA.</span></h1>' +
-      '<p>Pose une question sur Python, l’IA, Discord ou le Web. Sun recherche les passages utiles dans sa bibliothèque locale et indique les documents utilisés.</p>' +
+      '<p>Pose une question, demande une explication ou poursuis un sujet. Sun analyse le type de demande, repère le domaine et recherche des passages dans sa bibliothèque locale.</p>' +
       '<div class="sun-welcome-stats" aria-label="Fonctionnement de Sun">' +
-        '<div><strong id="sunWelcomeDocumentCount">…</strong><span>documents dans l’index</span></div>' +
-        '<div><strong>Sans API</strong><span>traitement documentaire local</span></div>' +
-        '<div><strong>Sources</strong><span>références dans les réponses</span></div>' +
+        '<div><strong id="sunWelcomeDocumentCount">…</strong><span>documents indexés</span></div>' +
+        '<div><strong>13 sujets</strong><span>Techniques, scolaires et culturels</span></div>' +
+        '<div><strong>Local</strong><span>sources documentaires citées</span></div>' +
       '</div>' +
       '<div class="sun-suggestions">' +
         '<button type="button" data-sun-action="suggest" data-sun-prompt="Explique-moi les fonctions Python avec un exemple."><span aria-hidden="true">⌘</span> Exemple Python <span>↗</span></button>' +
         '<button type="button" data-sun-action="suggest" data-sun-prompt="Explique les réseaux de neurones simplement."><span aria-hidden="true">◈</span> Comprendre l’IA <span>↗</span></button>' +
         '<button type="button" data-sun-action="suggest" data-sun-prompt="Comment créer un bot Discord sécurisé ?"><span aria-hidden="true">◉</span> Bot Discord <span>↗</span></button>' +
+        '<button type="button" data-sun-action="suggest" data-sun-prompt="Quelle est la différence entre HTML, CSS et JavaScript ?"><span aria-hidden="true">⌘</span> Développement Web <span>↗</span></button>' +
+        '<button type="button" data-sun-action="suggest" data-sun-prompt="Comment ouvrir un PDF, extraire son texte et organiser ses chapitres ?"><span aria-hidden="true">▤</span> Documents et PDF <span>↗</span></button>' +
         '<a href="#bibliotheque"><span aria-hidden="true">▤</span> Parcourir les cours et PDF <span>↗</span></a>' +
       '</div>' +
-      '<div class="sun-demo-warning"><span aria-hidden="true">ⓘ</span><span><strong>Un assistant documentaire local.</strong> Sun utilise un petit réseau neuronal pour classer des intentions et un moteur de recherche pour retrouver des preuves dans les documents intégrés. Ce n’est pas un grand modèle génératif : lorsque les sources ne suffisent pas, il doit le signaler.</span></div>' +
+      '<div class="sun-demo-warning"><span aria-hidden="true">ⓘ</span><span><strong>Comment Sun répond.</strong> Le réseau neuronal classe les intentions et propose un domaine. Le moteur documentaire vérifie ensuite les passages disponibles et cite les fichiers utilisés. Sun ne dispose pas d’un grand modèle de langage : il ne doit pas inventer une réponse lorsque les documents sont insuffisants.</span></div>' +
     '</section>';
   }
 
   function messageMarkup(message) {
     const assistant = message.role === "assistant";
+    const meta = assistant && message.meta && message.meta.subject
+      ? '<div class="sun-topic-meta"><span class="sun-topic-chip">Sujet repéré · ' + escapeHtml(message.meta.subject) + '</span><span>Analyse locale</span></div>'
+      : "";
+    const actions = assistant
+      ? '<div class="sun-message-actions"><button type="button" data-sun-action="copy-message" data-message-content="' + escapeHtml(message.content) + '" aria-label="Copier la réponse de Sun">Copier la réponse</button></div>'
+      : "";
     return '<article class="sun-message ' + (assistant ? "sun-message-assistant" : "sun-message-user") + '">' +
       '<div class="sun-message-avatar" aria-hidden="true">' + (assistant ? "☼" : "T") + '</div>' +
-      '<div class="sun-message-body"><span class="sun-message-label">' + (assistant ? "Sun IA" : "Toi") + '</span><div class="sun-message-text">' + (assistant ? richMessageContent(message.content) : "<p>" + escapeHtml(message.content).replace(/\n/g, "<br>") + "</p>") + '</div></div>' +
+      '<div class="sun-message-body"><div class="sun-message-heading"><span class="sun-message-label">' + (assistant ? "Sun IA" : "Toi") + '</span><time>' + escapeHtml(formatTime(message.createdAt)) + '</time></div>' +
+      meta + '<div class="sun-message-text">' + (assistant ? richMessageContent(message.content) : "<p>" + escapeHtml(message.content).replace(/\n/g, "<br>") + "</p>") + '</div>' + actions + '</div>' +
     '</article>';
   }
 
   function conversationMarkup(chat) {
     if (!chat || !chat.messages.length) return welcomeMarkup();
-    return '<section class="sun-thread" aria-label="Conversation">' +
+    return '<section class="sun-thread" aria-label="Conversation" aria-live="polite">' +
       chat.messages.map(messageMarkup).join("") +
-      (chat.pending ? '<article class="sun-message sun-message-assistant sun-message-pending"><div class="sun-message-avatar" aria-hidden="true">☼</div><div class="sun-message-body"><span class="sun-message-label">Sun IA</span><div class="sun-message-text">Je consulte mes cours…</div></div></article>' : "") +
-      '<div class="sun-local-notice"><span class="sun-local-notice-icon" aria-hidden="true">☼</span><div><strong>Recherche documentaire sur cet appareil</strong><p>Les messages de discussion ne sont pas ajoutés au corpus et ne servent pas à entraîner le réseau. Sun répond à partir des documents disponibles et peut reconnaître qu’une information manque.</p></div></div>' +
+      (chat.pending ? '<article class="sun-message sun-message-assistant sun-message-pending" aria-live="polite"><div class="sun-message-avatar" aria-hidden="true">☼</div><div class="sun-message-body"><span class="sun-message-label">Sun IA · recherche</span><div class="sun-thinking" aria-label="Sun recherche dans ses documents"><i></i><i></i><i></i></div></div></article>' : "") +
+      '<div class="sun-local-notice"><span class="sun-local-notice-icon" aria-hidden="true">☼</span><div><strong>Traitement sur cet appareil</strong><p>Les messages restent dans l’historique local. Ils ne sont pas ajoutés au corpus et ne servent pas à entraîner le réseau. Les réponses documentaires affichent les fichiers consultés.</p></div></div>' +
     '</section>';
   }
 
@@ -257,7 +315,7 @@
             '<button class="sun-sidebar-close" type="button" data-sun-action="close-sidebar" aria-label="Fermer le menu">×</button>' +
           '</div>' +
           '<button class="sun-new-chat" type="button" data-sun-action="new-chat"><span aria-hidden="true">＋</span> Nouveau chat</button>' +
-          '<div class="sun-side-section"><span class="sun-side-label">ESPACE DE DISCUSSION</span><div class="sun-history-list">' + historyMarkup() + '</div></div>' +
+          '<div class="sun-side-section"><div class="sun-history-title"><span class="sun-side-label">ESPACE DE DISCUSSION</span><span class="sun-history-count">' + state.chats.length + '</span></div><label class="sun-history-search-wrap"><span class="sun-sr-only">Rechercher une conversation</span><input id="sunHistorySearch" type="search" maxlength="80" placeholder="Rechercher dans l’historique…" value="' + escapeHtml(historyFilter) + '"></label><div class="sun-history-list">' + historyMarkup() + '</div></div>' +
           '<div class="sun-side-bottom">' +
             '<span class="sun-side-label">APPRENDRE</span>' +
             '<a href="#formations"><span aria-hidden="true">▦</span> Formations</a>' +
@@ -274,15 +332,15 @@
               '<button class="sun-menu-button" type="button" data-sun-action="toggle-sidebar" aria-label="Ouvrir la navigation">☰</button>' +
               '<div><strong>Sun IA</strong><span>Sun Brain · conversation et cours locaux</span></div>' +
             '</div>' +
-            '<div class="sun-main-actions"><span class="sun-mode-pill"><i></i> Assistant documentaire local · 0.0.2</span><button class="sun-header-new" type="button" data-sun-action="new-chat">＋ <span>Nouveau chat</span></button></div>' +
+            '<div class="sun-main-actions"><span class="sun-mode-pill"><i></i> Sun Brain · local · 0.0.3</span><button class="sun-header-new" type="button" data-sun-action="new-chat">＋ <span>Nouveau chat</span></button></div>' +
           '</header>' +
           '<section class="sun-conversation-area" id="sunConversationArea">' + conversationMarkup(chat) + '</section>' +
           '<footer class="sun-composer-wrap">' +
             '<div class="sun-composer-box">' +
               '<form id="sunComposer" autocomplete="off">' +
                 '<label class="sun-sr-only" for="sunPrompt">Écrire un message</label>' +
-                '<textarea id="sunPrompt" name="message" rows="1" maxlength="8000" placeholder="Écris ton message à Sun IA…" aria-label="Écrire un message"></textarea>' +
-                '<div class="sun-composer-tools"><span>Entrée pour envoyer · Maj + Entrée pour une nouvelle ligne</span><button class="sun-send-button" type="submit" aria-label="Envoyer le message" disabled>↑</button></div>' +
+                '<textarea id="sunPrompt" name="message" rows="1" maxlength="8000" placeholder="Pose une question ou précise le sujet à étudier…" aria-label="Écrire un message">' + escapeHtml(composerDraft) + '</textarea>' +
+                '<div class="sun-composer-tools"><span>Entrée pour envoyer · Maj + Entrée pour une nouvelle ligne</span><span id="sunPromptCount" class="sun-prompt-count">0 / 8000</span><button class="sun-send-button" type="submit" aria-label="Envoyer le message" disabled>↑</button></div>' +
               '</form>' +
             '</div>' +
             '<p class="sun-composer-disclaimer">Aucune API payante · pas d’apprentissage à partir des conversations privées · réponses limitées aux documents indexés.</p>' +
@@ -309,6 +367,8 @@
     const button = document.querySelector(".sun-send-button");
     if (!input || !button) return;
     button.disabled = !input.value.trim() || processing;
+    const counter = document.querySelector("#sunPromptCount");
+    if (counter) counter.textContent = input.value.length + " / 8000";
     input.style.height = "auto";
     input.style.height = Math.min(input.scrollHeight, 180) + "px";
   }
@@ -328,6 +388,7 @@
 
     const chatId = chat.id;
     chat.messages.push({ role: "user", content, createdAt: Date.now() });
+    composerDraft = "";
     if (chat.messages.length === 1) {
       chat.title = content.length > 38 ? content.slice(0, 38).trim() + "…" : content;
     }
@@ -339,9 +400,12 @@
     render();
 
     let answer;
+    let topicMeta = null;
     try {
       if (!window.SunBrain) throw new Error("Sun Brain n’est pas chargé.");
       answer = await window.SunBrain.reply(content, chat.messages.slice(-8));
+      const analysis = window.SunBrain.analyzeQuestion(content);
+      if (analysis && analysis.source && analysis.subjectId) topicMeta = { subject: analysis.subject };
     } catch (error) {
       answer = "Je rencontre un problème dans mon module local. Vérifie que les fichiers Sun Brain sont bien chargés, puis réessaie.";
       console.error(error);
@@ -350,7 +414,7 @@
     const target = state.chats.find(item => item.id === chatId);
     if (target) {
       target.pending = false;
-      target.messages.push({ role: "assistant", content: answer, createdAt: Date.now() });
+      target.messages.push({ role: "assistant", content: answer, meta: topicMeta, createdAt: Date.now() });
       target.updatedAt = Date.now();
       state.chats = [target].concat(state.chats.filter(item => item.id !== target.id)).slice(0, 60);
     }
@@ -367,6 +431,8 @@
 
     if (action === "copy-code") {
       copyCode(control);
+    } else if (action === "copy-message") {
+      copyMessage(control);
     } else if (action === "new-chat") {
       createChat();
     } else if (action === "select-chat") {
@@ -403,7 +469,14 @@
   });
 
   document.addEventListener("input", event => {
-    if (event.target && event.target.id === "sunPrompt") updateSendButton();
+    if (event.target && event.target.id === "sunPrompt") {
+      composerDraft = event.target.value;
+      updateSendButton();
+    }
+    if (event.target && event.target.id === "sunHistorySearch") {
+      historyFilter = event.target.value;
+      renderHistory();
+    }
   });
 
   document.addEventListener("keydown", event => {

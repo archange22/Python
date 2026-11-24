@@ -2,14 +2,14 @@
 
 Sun IA est une application web progressive (PWA) à identité solaire. Sa page principale contient un assistant local expérimental, les formations, une bibliothèque de cours et la Console Python 3.
 
-## Sun Brain — assistant documentaire local 0.0.2
+## Sun Brain — assistant documentaire local 0.0.3
 
-- Un petit réseau neuronal artificiel à propagation avant, avec une couche cachée de 16 neurones, entraîné localement sur des exemples de phrases ; ses poids sont conservés dans le stockage local après le premier entraînement.
-- Classification de huit intentions de base : salutations, questions simples sur l’état, demande de nom, identité, remerciements, départ, demande d’aide et discussion informelle.
-- Compréhension de quelques abréviations françaises courantes, comme « ccmt », « cv », « bjr » et « slt ».
+- Un réseau neuronal artificiel local à propagation avant, avec 24 neurones cachés, entraîné sur 224 formulations françaises réparties entre huit intentions de conversation et treize familles de sujets ; ses poids sont conservés localement après le premier entraînement.
+- Classification neuronale de huit intentions sociales et de treize familles de sujets : Python, IA, Discord, Web, documents/PDF, études, mathématiques, sciences, culture, langues, rédaction, dépannage et discussion générale.
+- Analyse de mots, bigrammes, préfixes, suffixes et trigrammes de caractères pour mieux reconnaître les variantes d’écriture, les abréviations et les formulations proches.
 - Indexation locale du noyau documentaire de 32 fichiers Markdown : 23 leçons de cours, quatre fiches d'exercices et cinq fiches documentaires. Le catalogue ajoute en plus les documents approuvés, dont le corpus de discussion extrait du PDF.
-- Recherche documentaire pondérée (BM25), normalisation de plusieurs abréviations françaises et rapprochement de synonymes techniques.
-- Analyse du type de demande : définition, explication, comparaison, procédure ou exemple.
+- Recherche documentaire pondérée (BM25), normalisation de plusieurs abréviations françaises, rapprochement de synonymes techniques et léger signal de routage issu de la classification neuronale.
+- Analyse du type de demande : définition, explication, comparaison, procédure ou exemple ; contexte enrichi pour les demandes de suivi courtes.
 - Composition de réponses à partir de phrases pertinentes extraites de plusieurs sections, avec attribution des fichiers sources ; les comparaisons HTML/CSS/JavaScript et les procédures multi-étapes sont prises en charge.
 - Extraction d'exemples de code issus des cours, présentés avant leur explication.
 - Suivi du contexte pour les demandes de précision et réponse de non-connaissance lorsque les sources sont insuffisantes.
@@ -18,7 +18,7 @@ Sun IA est une application web progressive (PWA) à identité solaire. Sa page p
 - Historique des conversations conservé sur l’appareil.
 - Aucun service d’IA externe, aucune clé API et aucun grand modèle de langage.
 
-**Limite importante :** ce n’est pas encore un assistant génératif comparable à ChatGPT, Claude ou Grok. Le réseau neuronal classe des intentions simples ; le moteur documentaire sélectionne des preuves et compose des réponses à partir de phrases présentes dans les cours. Ce mécanisme est une composition extractive, pas un grand modèle de langage qui rédige librement. Sun Brain ne sait pas encore répondre à toute question ni vérifier des faits absents de ses documents. Il n’apprend pas automatiquement de nouvelles connaissances à partir des conversations. Ajouter un cours à la liste permet de l’indexer, mais n’entraîne pas les poids neuronaux.
+**Limite importante :** ce n’est pas encore un assistant génératif comparable à ChatGPT, Claude ou Grok. Le réseau neuronal reconnaît des intentions et propose treize familles de sujets, puis la recherche documentaire sélectionne des preuves et compose des réponses à partir des passages disponibles. Cette architecture améliore le repérage du sujet, mais ne produit pas une compréhension générale du monde ni une rédaction libre de type grand modèle de langage. Sun ne peut pas garantir une réponse sur un fait absent de ses documents. Il n’apprend pas automatiquement de nouvelles connaissances à partir des conversations. Ajouter un cours à l’index améliore les documents consultables, mais ne met pas à jour les poids neuronaux.
 
 Les fichiers principaux sont \`sun-brain.js\` (classification neuronale et recherche documentaire), \`sun-ia.js\` (interface de discussion) et \`sun-ia.css\` (présentation).
 
@@ -27,8 +27,8 @@ Les fichiers principaux sont \`sun-brain.js\` (classification neuronale et reche
 - Corpus original de conversation française : 36 chapitres, 216 situations et 432 formulations de réponse possibles.
 - Thèmes : salutations, français familier, présentation, discussion générale, demandes d'aide, école, rédaction, langues, mathématiques, Python, Web, IA, Discord, sciences, culture, sécurité, dépannage, actualité et gestion des limites.
 - Le corpus original est généré de manière déterministe à partir de 36 thèmes documentaires et de six situations par thème. Le PDF produit est relu page par page avec pypdf ; les chapitres, le texte extrait et les pages sources sont ensuite inscrits au catalogue local après contrôles.
-- Sun Brain peut charger jusqu'à 100 documents Markdown supplémentaires marqués `approved: true` dans `knowledge/catalog.json`, sous le chemin sécurisé `knowledge/imported/`. Il expose aussi `recognizeTopic(query)` pour retrouver le sujet, le chapitre et la source la plus pertinente.
-- Le Service Worker v21 met en cache les 23 leçons, le catalogue, les textes approuvés et leurs PDF locaux afin de pouvoir les rouvrir hors connexion après leur téléchargement.
+- Sun Brain peut charger jusqu'à 100 documents Markdown supplémentaires marqués `approved: true` dans `knowledge/catalog.json`, sous le chemin sécurisé `knowledge/imported/`. Il expose `recognizeTopic(query)` et `analyzeQuestion(query)` pour retrouver le domaine, le chapitre, le type de demande, le niveau de correspondance et les sources pertinentes.
+- Le Service Worker v22 met en cache les 23 leçons, le catalogue, les textes approuvés et leurs PDF locaux afin de pouvoir les rouvrir hors connexion après leur téléchargement.
 - Le catalogue indique le PDF et le texte extraits lorsqu'ils ont été générés et publiés par le workflow de construction.
 
 ### Importer un autre PDF
@@ -48,7 +48,7 @@ python scripts/ingest_pdf_knowledge.py mon-document.pdf \
 
 L'import crée d'abord un aperçu dans `knowledge/staging/`, dossier ignoré par Git. `--approve` confirme la vérification manuelle, mais ne publie rien à lui seul. Pour copier le fichier, son texte extrait et sa référence dans le dépôt public, il faut aussi indiquer explicitement `--publish-public`. N'utilise cette option que pour un document dont la redistribution est autorisée ; les documents privés doivent rester hors du dépôt public. Les PDF scannés ou constitués d'images sont refusés et nécessitent un OCR séparé qui n'est pas encore intégré. Le contrôle automatique des marqueurs sensibles ne garantit pas qu'un document ne contient aucune donnée personnelle : une lecture humaine reste obligatoire.
 
-**Limite :** le réseau neuronal de Sun classe encore huit grandes intentions ; il ne devient pas un grand modèle de langage génératif. Le corpus et l'import PDF renforcent sa recherche documentaire et donnent plusieurs formulations de réponse, mais un sujet absent des documents nécessite une source supplémentaire ou une recherche réelle séparée.
+**Limite :** le réseau neuronal classe huit intentions de conversation et treize familles de sujets ; il ne devient pas un grand modèle de langage génératif. Le corpus et l'import PDF renforcent la recherche documentaire, mais un sujet absent des documents nécessite une source supplémentaire ou une recherche externe réellement disponible.
 
 ## Formations et bibliothèque
 

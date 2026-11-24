@@ -70,6 +70,7 @@ async function localFetch(input) {
         version: 1,
         documents: [
           { id: "approved-test", approved: true, path: "knowledge/imported/test-approved.md" },
+          { id: "discussion-global-v0.0.2", approved: true, path: "knowledge/imported/discussion-global-v0.0.2.md" },
           { id: "pending-test", approved: false, path: "knowledge/imported/test-pending.md" },
           { id: "unsafe-test", approved: true, path: "../private.md" }
         ]
@@ -238,8 +239,8 @@ const QA_CASES = [
 
 test("Sun Brain charge tous les documents pédagogiques prévus", () => {
   const status = brain.status();
-  assert.equal(status.documents, DOCUMENTS.length + 1);
-  assert.equal(status.total, DOCUMENTS.length + 1);
+  assert.equal(status.documents, DOCUMENTS.length + 2);
+  assert.equal(status.total, DOCUMENTS.length + 2);
   assert.equal(status.failed, 0);
   assert.ok(status.sections >= 250, "Le découpage des cours doit produire suffisamment de passages.");
 });
@@ -309,10 +310,11 @@ test("Sun Brain conserve le contexte pour une demande de précision", async () =
 });
 
 test("Les documents sont lus localement et les poids du réseau sont réutilisés", () => {
-  assert.equal(requestedPaths.length, DOCUMENTS.length + 2);
+  assert.equal(requestedPaths.length, DOCUMENTS.length + 3);
   assert.ok(requestedPaths.every(request => request.startsWith("./")));
   assert.ok(requestedPaths.includes("./knowledge/catalog.json"));
   assert.ok(requestedPaths.includes("./knowledge/imported/test-approved.md"));
+  assert.ok(requestedPaths.includes("./knowledge/imported/discussion-global-v0.0.2.md"));
   assert.ok(!requestedPaths.includes("./knowledge/imported/test-pending.md"));
   assert.ok(!requestedPaths.includes("./../private.md"));
   const writesBeforeReload = storageWrites;
@@ -378,8 +380,11 @@ test("Sun Brain indexe les cinq nouvelles fiches documentaires locales", () => {
 test("Sun Brain reconnaît un sujet dans un document PDF importé et approuvé", () => {
   const topic = brain.recognizeTopic("comment ouvrir un pdf extraire le texte organiser les chapitres et indexer hors connexion");
   assert.ok(topic, "Le moteur doit reconnaître le sujet du document importé.");
-  assert.equal(topic.source, "knowledge/imported/test-approved.md");
-  assert.match(topic.heading, /Extraction et organisation des chapitres/i);
+  assert.ok(
+    ["knowledge/imported/test-approved.md", "knowledge/imported/discussion-global-v0.0.2.md"].includes(topic.source),
+    "Le sujet doit être retrouvé dans une source locale approuvée."
+  );
+  assert.match(topic.heading, /Documents PDF et lecture|Extraction et organisation des chapitres/i);
 });
 
 test("Les documents non approuvés ou aux chemins non sûrs sont ignorés", () => {
@@ -405,4 +410,94 @@ test("Les huit nouvelles leçons sont bien indexées par Sun Brain", () => {
     assert.ok(result && result.best, "Leçon introuvable : " + source);
     assert.equal(result.best.section.path, source);
   });
+});
+
+test("Le réseau neuronal v3 reconnaît les catégories de sujets en plus des intentions sociales", () => {
+  const info = brain.modelInfo;
+  assert.equal(info.version, "0.0.3");
+  assert.equal(info.hiddenNeurons, 24);
+  assert.equal(info.topicClasses, 13);
+  assert.ok(info.trainingExamples >= 220, "Le modèle doit disposer d'un jeu d'entraînement élargi.");
+  assert.ok(info.inputFeatures > 100, "Les mots, préfixes, suffixes et trigrammes doivent enrichir les entrées.");
+  assert.equal(brain.classifyIntent("bonjour sun").intent, "greeting");
+  assert.equal(brain.classifyIntent("bonjour sun").kind, "conversation");
+});
+
+test("L'analyse sémantique identifie correctement les sujets et le type de demande", () => {
+  const cases = [
+    ["je veux programmer une boucle python avec for et while", "python", "procedure"],
+    ["explique le perceptron et le biais d un neurone artificiel", "ia", "explanation"],
+    ["comment sécuriser le token de mon bot discord", "discord", "procedure"],
+    ["quelle différence entre html css et javascript", "web", "comparison"],
+    ["comment ouvrir un pdf et extraire ses chapitres", "documents", "procedure"],
+    ["comment organiser mes devoirs et réviser pour un examen", "school", "procedure"],
+    ["explique les fractions et les opérations mathématiques", "math", "explanation"],
+    ["traduis cette phrase du français vers l anglais", "language", "procedure"],
+    ["explique une expérience scientifique et une hypothèse", "science", "explanation"],
+    ["raconte un événement historique et sa chronologie", "culture", "explanation"],
+    ["aide moi à rédiger un paragraphe argumentatif", "writing", "procedure"],
+    ["mon téléphone android ne fonctionne plus comment le dépanner", "daily", "procedure"]
+  ];
+  const allowedSources = {
+    python: ["courses/python/", "knowledge/python-practice.md"],
+    ia: ["courses/ia/", "knowledge/ia-foundations.md"],
+    discord: ["courses/discord/", "knowledge/discord-development.md"],
+    web: ["courses/web/", "knowledge/web-practices.md"],
+    documents: ["knowledge/imported/", "knowledge/pdfs/"],
+    school: ["knowledge/imported/"],
+    math: ["knowledge/imported/"],
+    science: ["knowledge/imported/"],
+    culture: ["knowledge/imported/"],
+    language: ["knowledge/imported/"],
+    writing: ["knowledge/imported/"],
+    daily: ["knowledge/imported/"],
+    general: ["knowledge/imported/"]
+  };
+  cases.forEach(([question, expectedSubject, expectedType]) => {
+    const analysis = brain.analyzeQuestion(question);
+    assert.equal(analysis.subjectId, expectedSubject, "Sujet mal identifié pour : " + question);
+    assert.equal(analysis.questionType, expectedType, "Type de demande incorrect pour : " + question);
+    assert.ok(analysis.confidence > 0 && analysis.confidence <= 0.99);
+    assert.ok(analysis.source, "L'analyse doit s'appuyer sur un document.");
+    assert.ok(allowedSources[expectedSubject].some(prefix =>
+      analysis.source === prefix || analysis.source.startsWith(prefix)
+    ), "La source doit correspondre au sujet " + expectedSubject + " : " + analysis.source);
+  });
+});
+
+test("L'analyse ne transforme pas un sujet absent du corpus en connaissance prétendument reconnue", () => {
+  const analysis = brain.analyzeQuestion("quelle est la température exacte des volcans sur mars");
+  assert.equal(analysis.subjectId, null);
+  assert.equal(analysis.source, null);
+  assert.equal(analysis.confidence, 0);
+});
+
+test("Le classificateur neuronal distingue les formulations hors jeu d'entraînement dans les treize familles", () => {
+  const cases = [
+    ["comment écrire une fonction python avec def et return", "topic_python"],
+    ["comment entraîner un réseau de neurones artificiels avec des données", "topic_ia"],
+    ["comment programmer un bot discord et protéger son token", "topic_discord"],
+    ["comment construire un site responsive en html css et javascript", "topic_web"],
+    ["comment extraire le texte d un pdf et indexer son contenu", "topic_documents"],
+    ["comment planifier mes devoirs et organiser mes révisions scolaires", "topic_school"],
+    ["comment calculer et simplifier des fractions mathématiques", "topic_math"],
+    ["comment mener une expérience scientifique et tester une hypothèse", "topic_science"],
+    ["explique la chronologie d un événement historique", "topic_culture"],
+    ["comment traduire une phrase et apprendre du vocabulaire anglais", "topic_language"],
+    ["comment rédiger un paragraphe clair et corriger le texte", "topic_writing"],
+    ["comment dépanner mon téléphone android", "topic_daily"],
+    ["je voudrais discuter librement d un sujet et échanger", "topic_general"]
+  ];
+  cases.forEach(([question, expected]) => {
+    const prediction = brain.classifyIntent(question);
+    assert.equal(prediction.intent, expected,
+      "Le réseau doit classer ce sujet : " + question + " ; reçu " + prediction.intent +
+      " (" + prediction.confidence.toFixed(3) + ")");
+    assert.equal(prediction.kind, "topic");
+  });
+});
+
+test("Le type de question distingue expliquer un fonctionnement et demander une action", () => {
+  assert.equal(brain.analyzeQuestion("comment fonctionne un neurone artificiel").questionType, "explanation");
+  assert.equal(brain.analyzeQuestion("mon téléphone ne fonctionne plus, comment le dépanner").questionType, "procedure");
 });
