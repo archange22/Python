@@ -386,16 +386,159 @@
     return previousUser.content + " " + message;
   }
 
-  function makeExcerpt(section, limit) {
-    let excerpt = section.body
+  function detectQuestionType(query) {
+    const text = norm(query);
+    if (/\b(difference|diff|comparer|compare|comparaison|versus|vs)\b/.test(text) ||
+        /\bentre\b.*\bet\b/.test(text)) return "comparison";
+    if (/\b(exemple|illustrer|montre moi|un cas concret)\b/.test(text)) return "example";
+    if (/\b(comment|etapes|etape|procedure|methode|creer|construire|installer|utiliser|preparer|securiser|proteger)\b/.test(text)) return "procedure";
+    if (/\b(c est quoi|qu est ce|definition|definis|signifie|que signifie)\b/.test(text)) return "definition";
+    return "explanation";
+  }
+
+  function answerSentences(section) {
+    const text = String(section.body || "")
       .replace(/~~~[\w-]*\n?/g, "")
       .replace(/\x60{3}[\w-]*\n?/g, "")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
-    if (excerpt.length <= limit) return excerpt;
-    const boundary = excerpt.lastIndexOf(". ", limit);
-    const cut = boundary > Math.floor(limit * 0.55) ? boundary + 1 : limit;
-    return excerpt.slice(0, cut).trim() + "…";
+      .replace(/\r/g, "");
+    const output = [];
+    text.split(/\n+/).forEach(line => {
+      const cleaned = line.trim().replace(/^(?:[-*]\s+|\d+[.)]\s+)/, "").trim();
+      if (!cleaned || cleaned.length < 18) return;
+      if (/^(?:~~~|import\s|from\s+\w+\s+import|<\/?[a-z][^>]*>)/.test(cleaned)) return;
+      const pieces = cleaned.match(/[^.!?]+[.!?]?/g) || [cleaned];
+      pieces.forEach(piece => {
+        const sentence = piece.trim();
+        if (sentence.length >= 22 && !output.includes(sentence)) output.push(sentence);
+      });
+    });
+    return output;
+  }
+
+  function sentenceRelevance(sentence, queryData) {
+    const tokens = new Set(tokenizeField(sentence));
+    let score = 0;
+    let matched = 0;
+    queryData.base.forEach(token => {
+      if (tokens.has(token)) {
+        score += 2;
+        matched += 1;
+      } else if ((QUERY_SYNONYMS[token] || []).some(synonym => tokens.has(canonicalToken(synonym)))) {
+        score += 0.7;
+      }
+    });
+    if (/\b(est|sont|designe|signifie|permet|sert|consiste|utilise|recoit|produit)\b/i.test(sentence)) score += 0.5;
+    return { score, matched };
+  }
+
+  function collectEvidence(query, result, limit) {
+    const queryData = getQueryTerms(query);
+    const candidates = result.candidates || [result.best].concat(result.alternatives || []);
+    const evidence = [];
+    const seen = new Set();
+    candidates.forEach((candidate, candidateIndex) => {
+      answerSentences(candidate.section).forEach((sentence, sentenceIndex) => {
+        const relevance = sentenceRelevance(sentence, queryData);
+        if (relevance.score < 1.5 || relevance.matched === 0) return;
+        const key = norm(sentence);
+        if (seen.has(key)) return;
+        seen.add(key);
+        const headingTokens = tokenizeField(candidate.section.title + " " + candidate.section.heading);
+        const headingBoost = queryData.base.some(token => headingTokens.includes(token)) ? 1.2 : 0;
+        evidence.push({
+          sentence,
+          section: candidate.section,
+          score: relevance.score + headingBoost + (sentenceIndex === 0 ? 0.35 : 0) + Math.max(0, 0.45 - candidateIndex * 0.025),
+          matched: relevance.matched
+        });
+      });
+    });
+    return evidence.sort((a, b) => b.score - a.score).slice(0, limit || 6);
+  }
+
+  function findConceptEvidence(concept) {
+    const token = canonicalToken(concept);
+    const ranked = searchIndex.map(item => {
+      const score = (item.headingCounts.get(token) || 0) * 9 +
+        (item.titleCounts.get(token) || 0) * 4 +
+        Math.min(item.bodyCounts.get(token) || 0, 3) * 0.65;
+      return { item, score };
+    }).filter(entry => entry.score > 0).sort((a, b) => b.score - a.score);
+    if (!ranked.length) return null;
+    const selected = ranked[0].item;
+    const sentences = answerSentences(selected.section);
+    const chosen = sentences.filter(sentence =>
+      new Set(tokenizeField(sentence)).has(token)
+    ).slice(0, 2);
+    if (chosen.length < 2) {
+      sentences.slice(0, 2).forEach(sentence => {
+        if (!chosen.includes(sentence)) chosen.push(sentence);
+      });
+    }
+    return { section: selected.section, sentences: chosen.slice(0, 2) };
+  }
+
+  function displayConceptName(token) {
+    const labels = {
+      html: "HTML", css: "CSS", javascript: "JavaScript",
+      python: "Python", discord: "Discord", ia: "IA",
+      machine: "Machine Learning", learning: "Machine Learning",
+      reseau: "Réseau de neurones", neurone: "Réseau de neurones",
+      for: "for", while: "while"
+    };
+    return labels[token] || token.charAt(0).toUpperCase() + token.slice(1);
+  }
+
+  function composeComparison(query) {
+    const concepts = getQueryTerms(query).base;
+    if (concepts.length < 2 || concepts.length > 5) return null;
+    const entries = [];
+    concepts.forEach(concept => {
+      const evidence = findConceptEvidence(concept);
+      if (evidence && evidence.sentences.length) entries.push({ concept, evidence });
+    });
+    if (entries.length < 2) return null;
+
+    let answer = "Ces notions sont liées, mais elles n’ont pas le même rôle :\n\n";
+    entries.forEach(entry => {
+      answer += displayConceptName(entry.concept) + " : " + entry.evidence.sentences.join(" ") + "\n";
+      answer += "Source : " + entry.evidence.section.path + "\n\n";
+    });
+    if (["html", "css", "javascript"].every(token => concepts.includes(token))) {
+      answer += "En résumé : HTML organise le contenu, CSS règle son apparence et JavaScript ajoute les interactions.";
+    } else {
+      answer += "En résumé : chaque notion répond à un besoin différent ; on les choisit selon la tâche à accomplir.";
+    }
+    return answer.trim();
+  }
+
+  function composeEvidence(query, result, evidence, type) {
+    if (!evidence.length) {
+      return "J’ai retrouvé un passage dans les cours, mais je n’ai pas assez d’éléments pour en construire une réponse fiable. Reformule la question ou précise le point que tu veux comprendre.";
+    }
+    const chosen = [];
+    evidence.forEach(item => {
+      if (chosen.some(existing => norm(existing.sentence) === norm(item.sentence))) return;
+      chosen.push(item);
+      if (chosen.length >= (type === "definition" ? 3 : 4)) return;
+    });
+
+    let answer = type === "definition"
+      ? "En clair : " + chosen[0].sentence
+      : type === "example"
+        ? "Voici l’idée illustrée par les cours : " + chosen[0].sentence
+        : "Voici l’explication que je peux construire à partir des cours : " + chosen[0].sentence;
+
+    if (chosen.length > 1) {
+      answer += "\n\nPour compléter :\n";
+      chosen.slice(1).forEach(item => { answer += "- " + item.sentence + "\n"; });
+    }
+    if (type === "example") {
+      const example = chosen.find(item => /\b(exemple|par exemple|analogie|imagine)\b/i.test(item.sentence));
+      if (example && !answer.includes(example.sentence)) answer += "\nExemple : " + example.sentence;
+    }
+    answer += "\n\nSources : " + Array.from(new Set(chosen.map(item => item.section.path))).join(" ; ");
+    return answer;
   }
 
   function searchDocs(query) {
@@ -403,23 +546,12 @@
     if (!result) {
       return "Je n’ai pas trouvé de passage suffisamment fiable dans les cours pour répondre à cette question. Tu peux préciser le sujet ou poser une question plus ciblée. Je préfère signaler cette limite plutôt que d’inventer une réponse.";
     }
-
-    const sectionsToAnswer = [result.best].concat(result.alternatives || []);
-    const unique = [];
-    const seen = new Set();
-    sectionsToAnswer.forEach(item => {
-      const key = item.section.path + "|" + item.section.heading;
-      if (!seen.has(key)) { seen.add(key); unique.push(item.section); }
-    });
-    let answer = "Voici ce que j’ai trouvé dans les cours de l’application :\n\n";
-    unique.forEach((section, index) => {
-      if (index) answer += "\n\n";
-      answer += section.title + "\n";
-      answer += "Partie : " + section.heading + "\n\n";
-      answer += makeExcerpt(section, unique.length > 1 ? 900 : 1100);
-      answer += "\nSource : " + section.path;
-    });
-    return answer;
+    const type = detectQuestionType(query);
+    if (type === "comparison") {
+      const comparison = composeComparison(query);
+      if (comparison) return comparison;
+    }
+    return composeEvidence(query, result, collectEvidence(query, result, 8), type);
   }
   function extractName(s) {
     const m = norm(s).match(/(?:je m appelle|moi c est|mon nom est|appelle moi|je suis)\s+([a-z]{2,22})/);
