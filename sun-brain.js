@@ -657,7 +657,10 @@
       return "J’ai retrouvé un passage dans les cours, mais je n’ai pas assez d’éléments pour en construire une réponse fiable. Reformule la question ou précise le point que tu veux comprendre.";
     }
     const chosen = [];
-    const direct = findDirectEvidence(query, type);
+    const codeExample = type === "example" ? extractCodeExample(result) : "";
+    const direct = findDirectEvidence(query, type).filter(item =>
+      type !== "example" || !/^(?:avant|quelle valeur|reponds|tu dois|essaie)/i.test(norm(item.sentence))
+    );
     const first = direct[0] || evidence[0];
     if (first) chosen.push(first);
     const maxItems = type === "definition" ? 2 : 3;
@@ -679,14 +682,23 @@
       answer += "\n\nPour compléter :\n";
       chosen.slice(1).forEach(item => { answer += "- " + item.sentence + "\n"; });
     }
+    if (type === "example" && codeExample) {
+      const sourceCandidate = (result.candidates || [result.best]).find(candidate =>
+        String(candidate.section.body || "").includes("[[CODE_BLOCK]]" + codeExample.slice(0, 18))
+      );
+      const explanationEvidence = findDirectEvidence(query, "explanation").find(item =>
+        /\b(tant que|repete un bloc|condition reste vraie|compteur|boucle)\b/i.test(item.sentence) &&
+        !/^(?:avant|quelle valeur|reponds)/i.test(norm(item.sentence))
+      );
+      let codeFirst = "Exemple en Python :\n\n" + codeExample;
+      if (explanationEvidence) codeFirst += "\n\nExplication : " + explanationEvidence.sentence;
+      const sourcePaths = [sourceCandidate?.section.path, explanationEvidence?.section.path].filter(Boolean);
+      codeFirst += "\n\nSource : " + Array.from(new Set(sourcePaths)).join(" ; ");
+      return codeFirst;
+    }
     if (type === "example") {
-      const codeExample = extractCodeExample(result);
-      if (codeExample) {
-        answer += "\n\nExemple de code :\n" + codeExample;
-      } else {
-        const example = chosen.find(item => /\b(exemple|par exemple|analogie|imagine)\b/i.test(item.sentence));
-        if (example && !answer.includes(example.sentence)) answer += "\nExemple : " + example.sentence;
-      }
+      const example = chosen.find(item => /\b(exemple|par exemple|analogie|imagine)\b/i.test(item.sentence));
+      if (example && !answer.includes(example.sentence)) answer += "\nExemple : " + example.sentence;
     }
     answer += "\n\nSources : " + Array.from(new Set(chosen.map(item => item.section.path))).join(" ; ");
     return answer;
