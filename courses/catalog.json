@@ -59,6 +59,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/ia/lesson-05.md",
           "pdf": "./pdf/courses/ia-05.pdf"
+        },
+        {
+          "id": "ia06",
+          "title": "Réseaux de neurones : du neurone artificiel au perceptron",
+          "description": "Comprendre entrées, poids, biais, activations, couches, entraînement et inférence, puis programmer un perceptron pédagogique en Python standard.",
+          "level": "Débutant",
+          "duration": "Leçon 06 · 115 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/ia/lesson-06.md",
+          "pdf": "./pdf/courses/ia-06.pdf"
         }
       ]
     },
@@ -119,6 +130,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/discord/lesson-05.md",
           "pdf": "./pdf/courses/discord-05.pdf"
+        },
+        {
+          "id": "discord06",
+          "title": "Fiabiliser un bot avec les erreurs, les journaux et les tests",
+          "description": "Gérer les erreurs de commandes, limiter les répétitions, journaliser sans exposer de secrets, tester avec unittest et préparer un hébergement sécurisé.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 06 · 115 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/discord/lesson-06.md",
+          "pdf": "./pdf/courses/discord-06.pdf"
         }
       ]
     },
@@ -179,6 +201,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/web/lesson-05.md",
           "pdf": "./pdf/courses/web-05.pdf"
+        },
+        {
+          "id": "web06",
+          "title": "JavaScript asynchrone et API avec fetch",
+          "description": "Comprendre les Promises, async/await, HTTP, fetch et JSON, afficher des données, gérer les erreurs et protéger les secrets côté navigateur.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 06 · 115 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/web/lesson-06.md",
+          "pdf": "./pdf/courses/web-06.pdf"
         }
       ]
     },
@@ -228,6 +261,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/python/lesson-08.md",
           "pdf": "./pdf/courses/python-08.pdf"
+        },
+        {
+          "id": "python09",
+          "title": "Les dictionnaires : organiser des données avec des clés",
+          "description": "Créer, lire, modifier et parcourir des dictionnaires, gérer les clés absentes, combiner listes et dictionnaires et réaliser un inventaire en Python.",
+          "level": "Débutant",
+          "duration": "Leçon 09 · 100 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/python/lesson-09.md",
+          "pdf": "./pdf/courses/python-09.pdf"
         }
       ]
     }
