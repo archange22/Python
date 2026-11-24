@@ -71,7 +71,7 @@ Enfin, une erreur de configuration apparaît lorsqu'une variable d'environnement
 
 Avant de corriger, identifie la catégorie. Le message de la dernière ligne du traceback aide à comprendre le type d'erreur. Ne publie pas un traceback complet dans un salon public : il peut contenir des chemins ou des informations internes.
 
-## 3. Utiliser try et except avec précision
+### 3. Utiliser try et except avec précision
 
 try exécute un bloc qui peut échouer. except intercepte une exception précise. Il ne faut pas masquer toutes les erreurs sans savoir ce qui s'est passé.
 
@@ -197,7 +197,7 @@ Un bon journal indique ce qui s'est passé, à quel moment et dans quelle partie
 
 Ne transforme pas les journaux en surveillance générale des membres. Collecte le minimum nécessaire, limite l'accès et définis une durée de conservation adaptée.
 
-## 7. Séparer la logique Discord du calcul
+### 7. Séparer la logique Discord du calcul
 
 Une fonction qui calcule un résultat ne devrait pas dépendre de Discord si ce n'est pas nécessaire. Cette séparation permet de tester le calcul sans ouvrir de connexion.
 
@@ -257,7 +257,7 @@ Un test unitaire vérifie une petite partie isolée. Un test d'intégration vér
 
 Un test réussi ne prouve pas l'absence de tout défaut. Il prouve seulement que les cas testés se comportent comme prévu.
 
-## 9. Tester le bot dans un serveur privé
+### 9. Tester le bot dans un serveur privé
 
 Crée un serveur de test ou utilise un environnement où les membres savent qu'un bot est en cours de développement. N'expérimente pas une nouvelle commande de modération sur une communauté réelle.
 
