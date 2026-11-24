@@ -406,7 +406,7 @@
       const cleaned = line.trim().replace(/^(?:[-*]\s+|\d+[.)]\s+)/, "").trim();
       if (!cleaned || cleaned.length < 18 || cleaned.startsWith("|") || cleaned === "[[CODE_BLOCK]]") return;
       const normalizedLine = norm(cleaned);
-      if (/^(?:explique|definis|definir|ecris|reponds|repondre|complete|exercice|correction|objectif|a la fin|prochaine etape|avant la lecon|tu sauras|tu vas|essaie de|imagine que tu veuilles|quelle valeur|si tu ne peux pas|il faut|reponds aux questions|repere|identifie)\b/.test(normalizedLine)) return;
+      if (/^(?:explique|expliquer|definis|definir|definition|ecris|reponds|repondre|complete|exercice|correction|objectif|a la fin|prochaine etape|avant la lecon|tu sauras|tu vas|essaie de|imagine que tu veuilles|quelle valeur|si tu ne peux pas|il faut|reponds aux questions|repere|identifie|dans cette lecon|a retenir)\b/.test(normalizedLine)) return;
       if (/^(?:if|elif|else|for|while|print|return|raise|import|from|class|def|const|let|var)\b|^[a-z_][\w.]*\s*=\s*|^[{}()[\]]+$/.test(cleaned)) return;
       const pieces = cleaned.match(/[^.!?]+[.!?]?/g) || [cleaned];
       pieces.forEach(piece => {
@@ -453,7 +453,9 @@
         const relevance = sentenceRelevance(sentence, queryData);
         if (relevance.score < 1.5 || relevance.matched === 0) return;
         const minimumCoverage = Math.min(2, queryData.base.length);
-        if (relevance.matched + contextMatches < minimumCoverage) return;
+        if (relevance.matched + Math.min(contextMatches, 1) < minimumCoverage) return;
+        if (queryData.base.length > 1 && relevance.matched === 1 && contextMatches === 0) return;
+        if (queryData.base.includes("neurone") && !queryData.base.some(token => token === "reseau" || token === "neurone") ) return;
 
         const key = norm(sentence);
         if (seen.has(key)) return;
@@ -463,7 +465,8 @@
         const titleMatches = queryData.base.filter(token => titleTokens.has(token)).length;
         const preferredBoost = section.path.startsWith(preferredPrefix) ? 1.2 : 0;
         const headingBoost = headingMatches * 3.6 + titleMatches * 1.8;
-        const definitionBoost = /\b(est|sont|désigne|signifie|permet|sert|consiste|correspond à|représente)\b/i.test(sentence) ? 1.0 : 0;
+        let definitionBoost = /\b(est une|est un|sont des|désigne|signifie|correspond à|se définit)\b/i.test(sentence) ? 2.2 : 0;
+        if (/\b(condition imbriquée|exemple|exercice|leçon|prochaine étape)\b/i.test(sentence)) definitionBoost -= 0.8;
         const score = relevance.score + headingBoost + preferredBoost + definitionBoost + (sentenceIndex === 0 ? 0.25 : 0);
         evidence.push({ sentence, section, score, matched: relevance.matched });
       });
@@ -546,10 +549,14 @@
       return "J’ai retrouvé un passage dans les cours, mais je n’ai pas assez d’éléments pour en construire une réponse fiable. Reformule la question ou précise le point que tu veux comprendre.";
     }
     const chosen = [];
+    const maxItems = type === "definition" ? 2 : 3;
     evidence.forEach(item => {
       if (chosen.some(existing => norm(existing.sentence) === norm(item.sentence))) return;
+      if (chosen.length && item.score < chosen[0].score * 0.48) return;
+      if (chosen.length && item.section.path !== chosen[0].section.path &&
+          !item.section.path.split("/").slice(0, 2).join("/").startsWith(chosen[0].section.path.split("/").slice(0, 2).join("/"))) return;
       chosen.push(item);
-      if (chosen.length >= (type === "definition" ? 3 : 4)) return;
+      if (chosen.length >= maxItems) return;
     });
 
     let answer = type === "definition"
