@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-23",
+  "updatedAt": "2026-11-24",
   "subjects": [
     {
       "id": "ia",
@@ -48,6 +48,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/ia/lesson-04.md",
           "pdf": "./pdf/courses/ia-04.pdf"
+        },
+        {
+          "id": "ia05",
+          "title": "Construire un premier modèle de Machine Learning",
+          "description": "Construire en Python standard un classifieur éducatif par plus proche centroïde, distinguer entraînement et inférence, évaluer ses limites et ses biais.",
+          "level": "Débutant",
+          "duration": "Leçon 05 · 110 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/ia/lesson-05.md",
+          "pdf": "./pdf/courses/ia-05.pdf"
         }
       ]
     },
@@ -97,6 +108,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/discord/lesson-04.md",
           "pdf": "./pdf/courses/discord-04.pdf"
+        },
+        {
+          "id": "discord05",
+          "title": "Rôles, permissions et contrôles d'accès",
+          "description": "Vérifier les permissions des membres et du bot, comprendre les restrictions de salon et la hiérarchie, appliquer le moindre privilège et tester les refus.",
+          "level": "Débutant",
+          "duration": "Leçon 05 · 100 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/discord/lesson-05.md",
+          "pdf": "./pdf/courses/discord-05.pdf"
         }
       ]
     },
@@ -146,6 +168,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/web/lesson-04.md",
           "pdf": "./pdf/courses/web-04.pdf"
+        },
+        {
+          "id": "web05",
+          "title": "JavaScript : variables, fonctions et événements",
+          "description": "Relier JavaScript à HTML, utiliser const et let, écrire des fonctions, sélectionner le DOM, réagir aux clics et valider une saisie sans injection HTML.",
+          "level": "Débutant",
+          "duration": "Leçon 05 · 100 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/web/lesson-05.md",
+          "pdf": "./pdf/courses/web-05.pdf"
         }
       ]
     },
@@ -184,6 +217,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/python/lesson-07.md",
           "pdf": "./pdf/courses/python-07.pdf"
+        },
+        {
+          "id": "python08",
+          "title": "Les fonctions, organiser et réutiliser son code",
+          "description": "Définir et appeler des fonctions, transmettre des paramètres, renvoyer des résultats, comprendre la portée et structurer un calculateur de budget.",
+          "level": "Débutant",
+          "duration": "Leçon 08 · 90 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/python/lesson-08.md",
+          "pdf": "./pdf/courses/python-08.pdf"
         }
       ]
     }
