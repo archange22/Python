@@ -263,7 +263,7 @@
       '<p>Pose une question, demande une explication ou poursuis un sujet. Sun analyse le type de demande, repère le domaine et recherche des passages dans sa bibliothèque locale.</p>' +
       '<div class="sun-welcome-stats" aria-label="Fonctionnement de Sun">' +
         '<div><strong id="sunWelcomeDocumentCount">…</strong><span>documents indexés</span></div>' +
-        '<div><strong>5 domaines</strong><span>Python · IA · Discord · Web · PDF</span></div>' +
+        '<div><strong>13 sujets</strong><span>Techniques, scolaires et culturels</span></div>' +
         '<div><strong>Local</strong><span>sources documentaires citées</span></div>' +
       '</div>' +
       '<div class="sun-suggestions">' +
