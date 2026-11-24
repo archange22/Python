@@ -228,3 +228,38 @@ test("Les documents sont lus localement et les poids du réseau sont réutilisé
   assert.ok(secondBrain);
   assert.equal(storageWrites, writesBeforeReload, "Le modèle neuronal déjà sauvegardé doit être rechargé sans nouvel entraînement.");
 });
+
+
+test("Une question de définition commence par la définition du concept", async () => {
+  const answer = await brain.reply("c est quoi une condition en python", []);
+  assert.match(
+    answer,
+    /En clair : Une condition est une question à laquelle Python répond par vrai ou faux/
+  );
+  assert.doesNotMatch(answer, /and signifie « et »/);
+});
+
+test("Une réponse de comparaison distingue HTML, CSS et JavaScript", async () => {
+  const answer = await brain.reply("quelle est la difference entre html css javascript", []);
+  assert.match(answer, /HTML organise le contenu/);
+  assert.match(answer, /CSS règle son apparence/);
+  assert.match(answer, /JavaScript ajoute les interactions/);
+});
+
+test("Un exemple de code est présenté avant son explication", async () => {
+  const answer = await brain.reply("donne un exemple de boucle while python", []);
+  const codeLabel = answer.indexOf("Exemple en Python");
+  const whileLine = answer.indexOf("while compteur <= 5");
+  const explanation = answer.indexOf("Explication :");
+  assert.ok(codeLabel >= 0, "La réponse doit annoncer l'exemple.");
+  assert.ok(whileLine > codeLabel, "Le code doit apparaître après son titre.");
+  assert.ok(explanation > whileLine, "L'explication doit suivre le code.");
+  assert.match(answer, /Source : courses\/python\/lesson-06\.md/);
+});
+
+test("Les procédures restent centrées sur les étapes utiles", async () => {
+  const answer = await brain.reply("comment creer une liste python", []);
+  assert.match(answer, /Comprendre et créer une liste/);
+  assert.doesNotMatch(answer, /start=1/);
+  assert.doesNotMatch(answer, /mini-projet/i);
+});
