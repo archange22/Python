@@ -382,7 +382,7 @@
     if (path.startsWith("knowledge/imported/") || path.startsWith("knowledge/discussion-global")) {
       const title = norm(heading || "");
       const mappings = [
-        ["documents", /documents pdf|extraction et organisation des chapitres|disponibilite hors connexion/],
+        ["documents", /documents pdf|guide pdf|pdf et indexation|indexation|extraction et organisation des chapitres|disponibilite hors connexion/],
         ["math", /calculs et fractions|equations et raisonnement mathematique/],
         ["science", /sciences et methode d observation/],
         ["culture", /histoire et chronologie|geographie et lieux du monde|lecture et comprehension d un livre/],
