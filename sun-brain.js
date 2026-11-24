@@ -343,12 +343,33 @@
   function recognizeTopic(query) {
     const result = retrieveDocs(query);
     if (!result || !result.best) return null;
+    const neural = classify(query);
+    const documentSubject = subjectFromPath(result.best.section.path);
+    const predictedSubject = neural.kind === "topic" && neural.confidence >= 0.2
+      ? SUBJECTS[neural.intent] || null
+      : null;
+    const subject = documentSubject || (predictedSubject
+      ? { id: predictedSubject.id, label: predictedSubject.label }
+      : null);
+    const confidence = Math.max(0, Math.min(0.99,
+      0.28 + result.coverage * 0.48 +
+      (documentSubject ? 0.12 : 0) +
+      (predictedSubject && documentSubject && predictedSubject.id === documentSubject.id
+        ? neural.confidence * 0.1 : 0)
+    ));
     return {
       title: result.best.section.title,
       heading: result.best.section.heading,
       source: result.best.section.path,
+      subject: subject ? subject.label : "Sujet documentaire",
+      subjectId: subject ? subject.id : "unknown",
+      questionType: detectQuestionType(query),
+      confidence: Number(confidence.toFixed(2)),
       score: result.best.score,
-      coverage: result.best.coverage
+      coverage: result.coverage,
+      relatedHeadings: result.alternatives.map(item => item.section.heading).slice(0, 3),
+      neuralPrediction: neural.intent,
+      neuralConfidence: Number(neural.confidence.toFixed(3))
     };
   }
   const STOP_QUERY_WORDS = new Set([
@@ -401,7 +422,37 @@
     page: ["html", "web"],
     creer: ["creation", "construire"],
     cree: ["creation", "construire", "creer"],
-    creation: ["creer", "construire"]
+    creation: ["creer", "construire"],
+    fonction: ["def", "return", "parametre", "fonctionnalite"],
+    fonctions: ["fonction", "def", "return"],
+    parametre: ["parametres", "argument", "fonction"],
+    arguments: ["argument", "parametre", "fonction"],
+    dictionnaire: ["dict", "cle", "valeur", "get"],
+    dictionnaires: ["dictionnaire", "dict", "cle", "valeur"],
+    apprentissage: ["machine", "learning", "entrainement", "modele"],
+    entrainer: ["entrainement", "apprentissage", "donnees", "modele"],
+    entrainement: ["entrainer", "apprentissage", "modele", "poids"],
+    pdf: ["document", "texte", "extraction", "chapitre"],
+    document: ["fichier", "pdf", "contenu", "texte"],
+    documents: ["document", "fichier", "pdf"],
+    extraire: ["extraction", "texte", "contenu"],
+    extraction: ["extraire", "texte", "pdf"],
+    chapitre: ["chapitres", "section", "sujet"],
+    chapitres: ["chapitre", "sections", "sujets"],
+    interface: ["ui", "design", "css", "ergonomie"],
+    ui: ["interface", "design", "ergonomie"],
+    ergonomie: ["interface", "accessibilite", "navigation"],
+    responsive: ["mobile", "ecran", "adaptation", "css"],
+    mobile: ["telephone", "responsive", "android"],
+    securiser: ["proteger", "secret", "token", "permission"],
+    securite: ["protection", "validation", "injection"],
+    api: ["fetch", "json", "requete", "http"],
+    evenement: ["event", "listener", "addEventListener", "clic"],
+    evenements: ["evenement", "event", "listener"],
+    neurones: ["neurone", "reseau", "perceptron"],
+    perceptron: ["neurone", "poids", "biais", "activation"],
+    poids: ["parametre", "neurone", "modele"],
+    biais: ["neurone", "perceptron", "poids"]
   };
 
   function canonicalToken(token) {
@@ -476,6 +527,10 @@
     const queryData = getQueryTerms(query);
     if (!queryData.base.length) return null;
 
+    const neural = classify(query);
+    const predictedSubject = neural.kind === "topic" && neural.confidence >= 0.2
+      ? SUBJECTS[neural.intent] || null
+      : null;
     const ranked = searchIndex.map(item => {
       let score = 0;
       const matchedTokens = [];
@@ -509,6 +564,9 @@
       }
       if (coverage === 1) score += 1.2;
       else if (coverage >= 0.66) score += 0.45;
+      if (predictedSubject && predictedSubject.paths.some(prefix =>
+        item.section.path === prefix || item.section.path.startsWith(prefix)
+      )) score += 0.55 * neural.confidence;
       return { section: item.section, score, coverage, matchedTokens };
     }).sort((a, b) => b.score - a.score);
 
@@ -567,7 +625,8 @@
   function buildContextQuery(message, history) {
     const current = norm(message);
     const wordCount = getQueryTerms(current).base.length;
-    const followUp = /\b(exemple|un exemple|pourquoi|comment faire|et ensuite|et apres|la suite|plus simple|plus simplement|detaille|developpe|continue|resume|autre exemple)\b/.test(current);
+    const followUp = /\b(exemple|un exemple|pourquoi|comment faire|et ensuite|et apres|la suite|plus simple|plus simplement|detaille|developpe|continue|resume|autre exemple|et ca|avec ca|celui ci|celle ci|lequel|laquelle|et pour|et si|dans ce cas)\b/.test(current) ||
+      /^(et|donc|alors|mais|avec|sans|pour|ca|cela)\b/.test(current);
     if (!Array.isArray(history) || (!followUp && wordCount > 3)) return message;
 
     const previousUser = history.slice(0, -1).reverse().find(item =>
@@ -579,12 +638,12 @@
 
   function detectQuestionType(query) {
     const text = norm(query);
-    if (/\b(difference|diff|comparer|compare|comparaison|versus|vs)\b/.test(text) ||
+    if (/\b(difference|diff|comparer|compare|comparaison|versus|vs|opposer)\b/.test(text) ||
         /\bentre\b.*\bet\b/.test(text)) return "comparison";
-    if (/\b(exemple|illustrer|montre moi|un cas concret)\b/.test(text)) return "example";
-    if (/\b(comment|etapes|etape|procedure|methode|creer|construire|installer|utiliser|preparer|securiser|proteger|adapter|faire)\b/.test(text) &&
-        !/\b(fonctionne|fonctionner|marche|signifie|est ce que)\b/.test(text)) return "procedure";
-    if (/\b(c est quoi|qu est ce|definition|definis|signifie|que signifie)\b/.test(text)) return "definition";
+    if (/\b(exemple|illustrer|montre moi|un cas concret|code complet|donne le code)\b/.test(text)) return "example";
+    if (/\b(comment|etapes|etape|procedure|methode|creer|construire|installer|utiliser|preparer|securiser|proteger|adapter|faire|configurer|corriger|resoudre)\b/.test(text) &&
+        !/\b(fonctionne|fonctionner|marche|signifie|est ce que|pourquoi)\b/.test(text)) return "procedure";
+    if (/\b(c est quoi|qu est ce|definition|definis|signifie|que signifie|qui est|que represente)\b/.test(text)) return "definition";
     return "explanation";
   }
 
@@ -1145,6 +1204,29 @@
     searchDocuments: query => retrieveDocs(query),
     recognizeTopic,
     status,
-    modelInfo: { version: "0.0.2", type: "small-feedforward-neural-intent-classifier", hiddenNeurons: hidden, intents: labels.length, trainingExamples: samples.length }
+    analyzeQuestion: query => {
+      const topic = recognizeTopic(query);
+      const prediction = classify(query);
+      return {
+        subject: topic ? topic.subject : "Sujet non confirmé",
+        subjectId: topic ? topic.subjectId : null,
+        questionType: detectQuestionType(query),
+        confidence: topic ? topic.confidence : 0,
+        source: topic ? topic.source : null,
+        neuralClass: prediction.intent,
+        neuralConfidence: prediction.confidence
+      };
+    },
+    modelInfo: {
+      version: "0.0.3",
+      type: "local-feedforward-neural-message-and-topic-classifier",
+      hiddenNeurons: hidden,
+      intents: labels.length,
+      topicClasses: Object.keys(SUBJECTS).length,
+      trainingExamples: samples.length,
+      inputFeatures: vocab.length,
+      epochs: 280,
+      trainedLocally: true
+    }
   };
 })();
