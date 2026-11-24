@@ -5,7 +5,7 @@ Sun IA est une application web progressive (PWA) à identité solaire. Sa page p
 ## Sun Brain — assistant documentaire local 0.0.3
 
 - Un réseau neuronal artificiel local à propagation avant, avec 24 neurones cachés, entraîné sur 128 formulations françaises réparties entre huit intentions de conversation et treize familles de sujets ; ses poids sont conservés localement après le premier entraînement.
-- Classification neuronale de huit intentions sociales et de cinq domaines : Python, intelligence artificielle, Discord, développement Web, documents et PDF.
+- Classification neuronale de huit intentions sociales et de treize familles de sujets : Python, IA, Discord, Web, documents/PDF, études, mathématiques, sciences, culture, langues, rédaction, dépannage et discussion générale.
 - Analyse de mots, bigrammes, préfixes, suffixes et trigrammes de caractères pour mieux reconnaître les variantes d’écriture, les abréviations et les formulations proches.
 - Indexation locale du noyau documentaire de 32 fichiers Markdown : 23 leçons de cours, quatre fiches d'exercices et cinq fiches documentaires. Le catalogue ajoute en plus les documents approuvés, dont le corpus de discussion extrait du PDF.
 - Recherche documentaire pondérée (BM25), normalisation de plusieurs abréviations françaises, rapprochement de synonymes techniques et léger signal de routage issu de la classification neuronale.
