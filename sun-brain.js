@@ -582,8 +582,11 @@
     return answer.trim();
   }
 
-  function extractCodeExample(result) {
-    const candidates = result.candidates || [result.best];
+  function extractCodeExample(result, preferredPrefix) {
+    const available = result.candidates || [result.best];
+    const candidates = preferredPrefix
+      ? available.filter(candidate => candidate.section.path.startsWith(preferredPrefix))
+      : available;
     for (const candidate of candidates) {
       const body = String(candidate.section.body || "");
       const pieces = body.split("[[CODE_BLOCK]]");
@@ -662,7 +665,32 @@
       answer += step.summary + "\n";
       answer += "Source : " + step.section.path + "\n\n";
     });
-    answer += "Suis ces étapes dans l’ordre et vérifie le résultat après chaque étape.";
+    const functionCode = focus.create && /\bpython\b/.test(queryText)
+      ? extractCodeExample(result, basePathPrefix)
+      : "";
+    if (functionCode) {
+      const codeSource = (result.candidates || [result.best]).find(candidate =>
+        candidate.section.path.startsWith(basePathPrefix) &&
+        String(candidate.section.body || "").includes(functionCode.split("\n")[0])
+      );
+      answer += "\n\nExemple en Python :\n\n```python\n" + functionCode + "\n```";
+      if (codeSource) answer += "\nSource : " + codeSource.section.path;
+    }
+
+    if (/\b(permission|permissions|role|roles|droit|droits)\b/.test(queryText)) {
+      const leastPrivilege = searchIndex.find(item =>
+        item.section.path === "courses/discord/lesson-05.md" &&
+        /moindre privilege/.test(norm(item.section.heading))
+      );
+      const principle = leastPrivilege &&
+        answerSentences(leastPrivilege.section).find(sentence => /moindre privilege/.test(norm(sentence)));
+      if (principle) {
+        answer += "\n\nRègle de sécurité : " + principle +
+          "\nSource : " + leastPrivilege.section.path;
+      }
+    }
+
+    answer += "\n\nSuis ces étapes dans l’ordre et vérifie le résultat après chaque étape.";
     return answer.trim();
   }
 
@@ -749,6 +777,16 @@
         ? "Voici l’idée illustrée par les cours : " + chosen[0].sentence
         : "Voici l’explication que je peux construire à partir des cours : " + chosen[0].sentence;
 
+    const resultHeading = result.best && result.best.section.heading;
+    const queryTerms = getQueryTerms(query).base;
+    const headingTokens = resultHeading ? tokenizeField(resultHeading) : [];
+    const matchedHeadingTerms = queryTerms.filter(token =>
+      token.length >= 4 && headingTokens.includes(token)
+    );
+    if (type === "explanation" && matchedHeadingTerms.length) {
+      answer = "Partie du cours : " + resultHeading + "\n\n" + answer;
+    }
+
     if (chosen.length > 1) {
       answer += "\n\nPour compléter :\n";
       chosen.slice(1).forEach(item => { answer += "- " + item.sentence + "\n"; });
@@ -771,7 +809,11 @@
       const example = chosen.find(item => /\b(exemple|par exemple|analogie|imagine)\b/i.test(item.sentence));
       if (example && !answer.includes(example.sentence)) answer += "\nExemple : " + example.sentence;
     }
-    answer += "\n\nSources : " + Array.from(new Set(chosen.map(item => item.section.path))).join(" ; ");
+    const citedPaths = chosen.map(item => item.section.path);
+    if (type === "explanation" && matchedHeadingTerms.length && result.best?.section.path) {
+      citedPaths.push(result.best.section.path);
+    }
+    answer += "\n\nSources : " + Array.from(new Set(citedPaths)).join(" ; ");
     return answer;
   }
 
