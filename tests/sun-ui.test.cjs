@@ -53,6 +53,16 @@ test("Les réponses affichent le code, les sources et échappent le contenu", ()
 });
 
 test("Le Service Worker utilise le cache actualisé", () => {
-  assert.match(sw, /academique-shell-v21/);
+  assert.match(sw, /academique-shell-v22/);
   assert.match(sw, /knowledge\/catalog\.json/);
+});
+test("L'interface Sun 0.0.3 propose une recherche d'historique et des actions sur les réponses", () => {
+  assert.match(ui, /sunHistorySearch/);
+  assert.match(ui, /copy-message/);
+  assert.match(ui, /Copier la réponse/);
+  assert.match(ui, /composerDraft/);
+  assert.match(ui, /analyzeQuestion/);
+  assert.match(css, /sun-history-search-wrap/);
+  assert.match(css, /sun-message-actions/);
+  assert.match(css, /sun-thinking-pulse/);
 });
