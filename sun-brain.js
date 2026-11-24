@@ -611,24 +611,44 @@
     return answer.trim();
   }
 
+  function findDirectEvidence(query) {
+    const queryData = getQueryTerms(query);
+    const candidates = [];
+    searchIndex.forEach(indexed => {
+      const section = indexed.section;
+      const headingTokens = new Set(indexed.headingTokens);
+      const titleTokens = new Set(indexed.titleTokens);
+      const contextMatches = queryData.base.filter(token => headingTokens.has(token) || titleTokens.has(token)).length;
+      answerSentences(section).forEach(sentence => {
+        const relevance = sentenceRelevance(sentence, queryData);
+        if (relevance.matched === 0) return;
+        const minimumCoverage = Math.min(2, queryData.base.length);
+        if (relevance.matched + Math.min(contextMatches, 1) < minimumCoverage) return;
+        const headingMatches = queryData.base.filter(token => headingTokens.has(token)).length;
+        const titleMatches = queryData.base.filter(token => titleTokens.has(token)).length;
+        const definitionBoost = /\b(est un|est une|sont des|désigne|signifie|correspond à|se définit)\b/i.test(sentence) ? 5 : 0;
+        const score = relevance.score + headingMatches * 3.5 + titleMatches * 1.8 + definitionBoost;
+        candidates.push({ sentence, section, score, matched: relevance.matched });
+      });
+    });
+    return candidates.sort((a, b) => b.score - a.score).slice(0, 12);
+  }
+
   function composeEvidence(query, result, evidence, type) {
     if (!evidence.length) {
       return "J’ai retrouvé un passage dans les cours, mais je n’ai pas assez d’éléments pour en construire une réponse fiable. Reformule la question ou précise le point que tu veux comprendre.";
     }
     const chosen = [];
-    const definingEvidence = type === "definition"
-      ? evidence.find(item => /\b(est un|est une|sont des|désigne|signifie|correspond à|se définit)\b/i.test(item.sentence))
-      : null;
-    const orderedEvidence = definingEvidence
-      ? [definingEvidence].concat(evidence.filter(item => item !== definingEvidence))
-      : evidence;
+    const direct = findDirectEvidence(query);
+    const first = direct[0] || evidence[0];
+    if (first) chosen.push(first);
     const maxItems = type === "definition" ? 2 : 3;
-    orderedEvidence.forEach(item => {
+    evidence.forEach(item => {
+      if (chosen.length >= maxItems) return;
       if (chosen.some(existing => norm(existing.sentence) === norm(item.sentence))) return;
       if (chosen.length && item.score < chosen[0].score * 0.58) return;
       if (chosen.length && item.section.path !== chosen[0].section.path) return;
       chosen.push(item);
-      if (chosen.length >= maxItems) return;
     });
 
     let answer = type === "definition"
