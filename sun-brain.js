@@ -517,7 +517,7 @@
     "qui", "que", "quoi", "quel", "quelle", "quels", "quelles", "comment",
     "pourquoi", "explique", "expliquer", "donne", "donner", "montre", "montrer",
     "faire", "fait", "fais", "cest", "estce", "peux", "peut", "on", "il", "elle",
-    "entre", "difference", "fonctionne", "fonctionner", "une", "les", "leurs",
+    "entre", "vers", "difference", "fonctionne", "fonctionner", "une", "les", "leurs",
     "je", "tu", "ils", "elles", "aide", "y", "comme"
   ]);
 
@@ -602,6 +602,7 @@
     fraction: ["fractions", "calcul", "numerateur", "denominateur"],
     fractions: ["fraction", "calcul", "numerateur", "denominateur"],
     traduire: ["traduction", "langue", "anglais", "francais"],
+    traduis: ["traduction", "traduire", "langue", "anglais", "francais"],
     rediger: ["redaction", "paragraphe", "texte", "ecrire"],
     telephone: ["mobile", "android", "appareil", "depannage"],
     chronologie: ["histoire", "historique", "evenement", "date"],
@@ -803,7 +804,7 @@
     if (/\b(difference|diff|comparer|compare|comparaison|versus|vs|opposer)\b/.test(text) ||
         /\bentre\b.*\bet\b/.test(text)) return "comparison";
     if (/\b(exemple|illustrer|montre moi|un cas concret|code complet|donne le code)\b/.test(text)) return "example";
-    if (/\b(comment|etapes|etape|procedure|methode|creer|construire|installer|utiliser|preparer|securiser|proteger|adapter|faire|configurer|corriger|resoudre|programmer|developper|coder|ecrire|realiser)\b/.test(text) &&
+    if (/\b(comment|etapes|etape|procedure|methode|creer|construire|installer|utiliser|preparer|securiser|proteger|adapter|faire|configurer|corriger|resoudre|programmer|developper|coder|ecrire|realiser|rediger|traduire|organiser|planifier|resumer|depanner)\b/.test(text) &&
         !/\b(fonctionne|fonctionner|marche|signifie|est ce que|pourquoi)\b/.test(text)) return "procedure";
     if (/\b(c est quoi|qu est ce|definition|definis|signifie|que signifie|qui est|que represente)\b/.test(text)) return "definition";
     return "explanation";
