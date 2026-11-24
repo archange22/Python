@@ -496,3 +496,8 @@ test("Le classificateur neuronal distingue les formulations hors jeu d'entraîne
     assert.equal(prediction.kind, "topic");
   });
 });
+
+test("Le type de question distingue expliquer un fonctionnement et demander une action", () => {
+  assert.equal(brain.analyzeQuestion("comment fonctionne un neurone artificiel").questionType, "explanation");
+  assert.equal(brain.analyzeQuestion("mon téléphone ne fonctionne plus, comment le dépanner").questionType, "procedure");
+});
