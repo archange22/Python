@@ -133,17 +133,17 @@ const QA_CASES = [
   },
   {
     question: "explique le machine learning",
-    sources: ["courses/ia/lesson-03.md", "courses/ia/lesson-01.md"],
+    sources: ["courses/ia/lesson-03.md", "courses/ia/lesson-01.md", "courses/ia/lesson-05.md"],
     required: ["apprentissage automatique", "exemples"]
   },
   {
     question: "comment preparer les donnees pour une ia",
-    sources: ["courses/ia/lesson-02.md"],
+    sources: ["courses/ia/lesson-02.md", "courses/ia/lesson-05.md"],
     required: ["jeu de données", "qualité des données", "nettoyer et transformer"]
   },
   {
     question: "comment fonctionne un reseau de neurones",
-    sources: ["courses/ia/lesson-01.md", "courses/ia/lesson-03.md"],
+    sources: ["courses/ia/lesson-01.md", "courses/ia/lesson-03.md", "courses/ia/lesson-06.md"],
     required: ["réseaux de neurones", "couches de calcul"]
   },
   {
@@ -180,7 +180,8 @@ const QA_CASES = [
     sources: [
       "courses/web/lesson-01.md",
       "courses/web/lesson-02.md",
-      "courses/web/lesson-03.md"
+      "courses/web/lesson-03.md",
+      "courses/web/lesson-05.md"
     ],
     required: ["html", "css", "javascript"]
   },
@@ -195,7 +196,7 @@ const QA_CASES = [
   },
   {
     question: "comment entrainer un modele simple avec le plus proche centroide",
-    sources: ["courses/ia/lesson-05.md"],
+    sources: ["courses/ia/lesson-05.md", "courses/ia/lesson-03.md"],
     required: ["plus proche centroïde", "entraîner", "inférence"]
   },
   {
@@ -220,12 +221,12 @@ const QA_CASES = [
   },
   {
     question: "comment tester et gérer les erreurs d'un bot discord",
-    sources: ["courses/discord/lesson-06.md"],
+    sources: ["courses/discord/lesson-06.md", "courses/discord/lesson-05.md"],
     required: ["erreurs", "unittest", "journal"]
   },
   {
     question: "comment utiliser javascript et addEventListener pour un clic",
-    sources: ["courses/web/lesson-05.md"],
+    sources: ["courses/web/lesson-05.md", "courses/web/lesson-01.md"],
     required: ["javascript", "événement", "addEventListener"]
   },
   {
