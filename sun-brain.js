@@ -321,8 +321,14 @@
       return { section: item.section, score, coverage, matchedTokens };
     }).sort((a, b) => b.score - a.score);
 
-    const best = ranked[0];
-    const second = ranked[1] || null;
+    let best = ranked[0];
+    if (queryData.base.length >= 3 && best) {
+      const completeMatch = ranked.find(item =>
+        item.coverage === 1 && item.score >= best.score * 0.55
+      );
+      if (completeMatch) best = completeMatch;
+    }
+    const second = ranked.find(item => item !== best) || null;
     if (!best || best.score < 0.85 || best.coverage < 0.34) return null;
     if (queryData.base.length >= 3 && best.coverage < 0.5) return null;
     if (second && second.score >= best.score * 0.98 &&
