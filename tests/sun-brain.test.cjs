@@ -54,6 +54,39 @@ async function localFetch(input) {
     return { ok: false, status: 400, text: async () => "" };
   }
 
+  if (request === "./knowledge/catalog.json") {
+    return {
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({
+        version: 1,
+        documents: [
+          { id: "approved-test", approved: true, path: "knowledge/imported/test-approved.md" },
+          { id: "pending-test", approved: false, path: "knowledge/imported/test-pending.md" },
+          { id: "unsafe-test", approved: true, path: "../private.md" }
+        ]
+      })
+    };
+  }
+
+  if (request === "./knowledge/imported/test-approved.md") {
+    return {
+      ok: true,
+      status: 200,
+      text: async () => [
+        "# Guide PDF et indexation",
+        "",
+        "## Extraction et organisation des chapitres",
+        "",
+        "Ouvrir un PDF textuel, extraire son texte, organiser les informations par chapitres et sujets, vérifier la qualité de l'extraction, puis ajouter les connaissances approuvées au moteur de recherche local.",
+        "",
+        "## Disponibilité hors connexion",
+        "",
+        "Le texte validé et le PDF associé sont conservés dans les caches locaux pour être consultés sans réseau."
+      ].join("\n")
+    };
+  }
+
   const relative = request.slice(2);
   const filePath = path.resolve(ROOT, relative);
   if (!filePath.startsWith(ROOT + path.sep) || !fs.existsSync(filePath)) {
@@ -156,7 +189,8 @@ const QA_CASES = [
 
 test("Sun Brain charge tous les documents pédagogiques prévus", () => {
   const status = brain.status();
-  assert.equal(status.documents, DOCUMENTS.length);
+  assert.equal(status.documents, DOCUMENTS.length + 1);
+  assert.equal(status.total, DOCUMENTS.length + 1);
   assert.equal(status.failed, 0);
   assert.ok(status.sections >= 250, "Le découpage des cours doit produire suffisamment de passages.");
 });
@@ -226,8 +260,12 @@ test("Sun Brain conserve le contexte pour une demande de précision", async () =
 });
 
 test("Les documents sont lus localement et les poids du réseau sont réutilisés", () => {
-  assert.equal(requestedPaths.length, DOCUMENTS.length);
+  assert.equal(requestedPaths.length, DOCUMENTS.length + 2);
   assert.ok(requestedPaths.every(request => request.startsWith("./")));
+  assert.ok(requestedPaths.includes("./knowledge/catalog.json"));
+  assert.ok(requestedPaths.includes("./knowledge/imported/test-approved.md"));
+  assert.ok(!requestedPaths.includes("./knowledge/imported/test-pending.md"));
+  assert.ok(!requestedPaths.includes("./../private.md"));
   const writesBeforeReload = storageWrites;
   const secondBrain = createBrain();
   assert.ok(secondBrain);
@@ -285,4 +323,18 @@ test("Sun Brain indexe les cinq nouvelles fiches documentaires locales", () => {
     assert.equal(result.best.section.path, expectedPath);
     assert.ok(result.best.section.body.length > 35);
   });
+});
+
+
+test("Sun Brain reconnaît un sujet dans un document PDF importé et approuvé", () => {
+  const topic = brain.recognizeTopic("comment ouvrir un pdf extraire le texte organiser les chapitres et indexer hors connexion");
+  assert.ok(topic, "Le moteur doit reconnaître le sujet du document importé.");
+  assert.equal(topic.source, "knowledge/imported/test-approved.md");
+  assert.match(topic.heading, /Extraction et organisation des chapitres/i);
+});
+
+test("Les documents non approuvés ou aux chemins non sûrs sont ignorés", () => {
+  assert.ok(!requestedPaths.includes("./knowledge/imported/test-pending.md"));
+  assert.ok(!requestedPaths.includes("./../private.md"));
+  assert.equal(typeof brain.recognizeTopic, "function");
 });

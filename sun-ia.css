@@ -413,7 +413,7 @@ body.sun-chat-mode .bottom-nav { display: none !important; }
   gap: 8px;
   margin-top: 24px;
 }
-.sun-suggestions button {
+.sun-suggestions button,\n.sun-suggestions a {
   display: inline-flex;
   min-height: 39px;
   align-items: center;
@@ -427,8 +427,8 @@ body.sun-chat-mode .bottom-nav { display: none !important; }
   font-weight: 750;
   transition: .18s ease;
 }
-.sun-suggestions button span { color: var(--accent); font-size: 13px; }
-.sun-suggestions button:hover {
+.sun-suggestions button span,\n.sun-suggestions a span { color: var(--accent); font-size: 13px; }
+.sun-suggestions button:hover,\n.sun-suggestions a:hover {
   transform: translateY(-2px);
   border-color: rgba(229, 154, 61, .55);
   color: var(--accent);

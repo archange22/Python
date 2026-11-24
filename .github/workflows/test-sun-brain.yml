@@ -8,6 +8,10 @@ on:
       - "tests/sun-brain.test.cjs"
       - "courses/**/*.md"
       - "knowledge/**/*.md"
+      - "knowledge/**/*.json"
+      - "scripts/**/*.py"
+      - "tests/test_pdf_ingestion.py"
+      - ".github/workflows/build-course-pdfs.yml"
       - "sw.js"
       - "pdf/lecon-0[234].md"
       - ".github/workflows/test-sun-brain.yml"
@@ -17,6 +21,11 @@ on:
       - "tests/sun-brain.test.cjs"
       - "courses/**/*.md"
       - "knowledge/**/*.md"
+      - "knowledge/**/*.json"
+      - "knowledge/sources/**/*.b64"
+      - "scripts/**/*.py"
+      - "tests/test_pdf_ingestion.py"
+      - ".github/workflows/build-course-pdfs.yml"
       - "sw.js"
       - "pdf/lecon-0[234].md"
       - ".github/workflows/test-sun-brain.yml"
@@ -35,5 +44,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install PDF build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+          python -m pip install beautifulsoup4 weasyprint pypdf
+      - name: Build and verify Sun discussion PDF 0.0.2
+        run: python scripts/build_sun_discussion_pdf.py
+      - name: Run PDF ingestion tests
+        run: python -m unittest discover -s tests -p "test_pdf_ingestion.py"
       - name: Run Sun Brain question-answering tests
         run: node --test tests/sun-brain.test.cjs

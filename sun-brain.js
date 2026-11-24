@@ -154,15 +154,61 @@
     flush();
     return out;
   }
-  const ready = Promise.all(paths.map(async path => {
+  let totalDocuments = paths.length;
+
+  async function approvedDocumentPaths() {
     try {
-      const response = await fetch("./" + path, { credentials: "same-origin" });
-      if (!response.ok) throw new Error("HTTP " + response.status);
-      loaded++;
-      return split(await response.text(), path);
-    } catch (_) { failed++; return []; }
-  })).then(groups => { sections = groups.flat(); buildSearchIndex(); return status(); });
-  function status() { return { documents: loaded, total: paths.length, sections: sections.length, failed }; }
+      const response = await fetch("./knowledge/catalog.json", { credentials: "same-origin" });
+      if (!response.ok) return [];
+      const catalog = JSON.parse(await response.text());
+      if (!catalog || !Array.isArray(catalog.documents)) return [];
+      return catalog.documents
+        .filter(entry => entry && entry.approved === true &&
+          typeof entry.path === "string" &&
+          /^knowledge\/imported\/[a-z0-9][a-z0-9.-]*\.md$/i.test(entry.path) &&
+          !entry.path.includes(".."))
+        .slice(0, 50)
+        .map(entry => entry.path);
+    } catch (_) {
+      return [];
+    }
+  }
+
+  const ready = (async () => {
+    const importedPaths = await approvedDocumentPaths();
+    const allPaths = Array.from(new Set(paths.concat(importedPaths)));
+    totalDocuments = allPaths.length;
+    const groups = await Promise.all(allPaths.map(async path => {
+      try {
+        const response = await fetch("./" + path, { credentials: "same-origin" });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        loaded++;
+        return split(await response.text(), path);
+      } catch (_) {
+        failed++;
+        return [];
+      }
+    }));
+    sections = groups.flat();
+    buildSearchIndex();
+    return status();
+  })();
+
+  function status() {
+    return { documents: loaded, total: totalDocuments, sections: sections.length, failed };
+  }
+
+  function recognizeTopic(query) {
+    const result = retrieveDocs(query);
+    if (!result || !result.best) return null;
+    return {
+      title: result.best.section.title,
+      heading: result.best.section.heading,
+      source: result.best.section.path,
+      score: result.best.score,
+      coverage: result.best.coverage
+    };
+  }
   const STOP_QUERY_WORDS = new Set([
     "a", "au", "aux", "avec", "ce", "ces", "cette", "dans", "de", "des", "du",
     "en", "est", "et", "la", "le", "les", "un", "une", "pour", "par", "sur",
@@ -814,7 +860,8 @@
     reply,
     classifyIntent: classify,
     searchDocuments: query => retrieveDocs(query),
+    recognizeTopic,
     status,
-    modelInfo: { type: "small-feedforward-neural-intent-classifier", hiddenNeurons: hidden, intents: labels.length, trainingExamples: samples.length }
+    modelInfo: { version: "0.0.2", type: "small-feedforward-neural-intent-classifier", hiddenNeurons: hidden, intents: labels.length, trainingExamples: samples.length }
   };
 })();

@@ -2,7 +2,7 @@
 
 Sun IA est une application web progressive (PWA) à identité solaire. Sa page principale contient un assistant local expérimental, les formations, une bibliothèque de cours et la Console Python 3.
 
-## Sun Brain — version locale 1.2
+## Sun Brain — système neuronal 0.0.2
 
 - Un petit réseau neuronal artificiel à propagation avant, avec une couche cachée de 16 neurones, entraîné localement sur des exemples de phrases ; ses poids sont conservés dans le stockage local après le premier entraînement.
 - Classification de huit intentions de base : salutations, questions simples sur l’état, demande de nom, identité, remerciements, départ, demande d’aide et discussion informelle.
@@ -21,6 +21,34 @@ Sun IA est une application web progressive (PWA) à identité solaire. Sa page p
 **Limite importante :** ce n’est pas encore un assistant génératif comparable à ChatGPT, Claude ou Grok. Le réseau neuronal classe des intentions simples ; le moteur documentaire sélectionne des preuves et compose des réponses à partir de phrases présentes dans les cours. Ce mécanisme est une composition extractive, pas un grand modèle de langage qui rédige librement. Sun Brain ne sait pas encore répondre à toute question ni vérifier des faits absents de ses documents. Il n’apprend pas automatiquement de nouvelles connaissances à partir des conversations. Ajouter un cours à la liste permet de l’indexer, mais n’entraîne pas les poids neuronaux.
 
 Les fichiers principaux sont \`sun-brain.js\` (classification neuronale et recherche documentaire), \`sun-ia.js\` (interface de discussion) et \`sun-ia.css\` (présentation).
+
+### Corpus de discussion et import PDF 0.0.2
+
+- Corpus original de conversation française : 36 chapitres, 216 situations et 432 formulations de réponse possibles.
+- Thèmes : salutations, français familier, présentation, discussion générale, demandes d'aide, école, rédaction, langues, mathématiques, Python, Web, IA, Discord, sciences, culture, sécurité, dépannage, actualité et gestion des limites.
+- Le corpus est généré depuis une source compressée contrôlée par SHA-256, puis rendu en PDF et relu page par page avec pypdf. Son texte extrait est classé par chapitres et ajouté au catalogue local.
+- Sun Brain peut charger jusqu'à 100 documents Markdown supplémentaires marqués `approved: true` dans `knowledge/catalog.json`, sous le chemin sécurisé `knowledge/imported/`. Il expose aussi `recognizeTopic(query)` pour retrouver le sujet, le chapitre et la source la plus pertinente.
+- Le Service Worker v20 met en cache le catalogue, les textes approuvés et leurs PDF locaux afin de pouvoir les rouvrir hors connexion après leur téléchargement.
+- Un lien dans l'accueil de Sun ouvre le PDF du corpus 0.0.2.
+
+### Importer un autre PDF
+
+Le moteur d'importation local accepte les PDF contenant une véritable couche texte. Il limite les fichiers à 30 Mo et 500 pages, extrait et normalise le texte, regroupe les passages sous les titres de chapitres, indique les pages sources et bloque l'indexation lorsqu'il repère des marqueurs d'e-mail, de téléphone ou de secrets. Sans validation, il ne produit qu'un aperçu dans `knowledge/staging/`.
+
+Exemple après vérification manuelle de l'aperçu et de la licence :
+
+```bash
+python scripts/ingest_pdf_knowledge.py mon-document.pdf \
+  --title "Guide de programmation" \
+  --topic "Python et programmation" \
+  --source "Auteur ou éditeur du document" \
+  --license "Licence ou autorisation de redistribution" \
+  --approve
+```
+
+L'option `--approve` est nécessaire pour ajouter le texte extrait à `knowledge/catalog.json`. Les PDF scannés ou constitués d'images nécessitent un OCR distinct ; ils sont refusés par l'extracteur actuel au lieu d'être indexés avec un texte incomplet. Aucun OCR, moteur de recherche Internet en direct, API externe ni apprentissage sur les conversations privées n'est ajouté.
+
+**Limite :** le réseau neuronal de Sun classe encore huit grandes intentions ; il ne devient pas un grand modèle de langage génératif. Le corpus et l'import PDF renforcent sa recherche documentaire et donnent plusieurs formulations de réponse, mais un sujet absent des documents nécessite une source supplémentaire ou une recherche réelle séparée.
 
 ## Formations et bibliothèque
 
