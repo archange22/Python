@@ -108,10 +108,10 @@ self.addEventListener("fetch", (event) => {
       const assets = [];
       approved.slice(0, 50).forEach((item) => {
         if (typeof item.path === "string" &&
-            /^knowledge\\/imported\\/[a-z0-9][a-z0-9.-]*\\.md$/i.test(item.path) &&
+            /^knowledge\/imported\/[a-z0-9][a-z0-9.-]*\.md$/i.test(item.path) &&
             !item.path.includes("..")) assets.push({ path: item.path, cache: STATIC_CACHE });
         if (typeof item.pdf === "string" &&
-            /^knowledge\\/pdfs\\/[a-z0-9][a-z0-9.-]*\\.pdf$/i.test(item.pdf) &&
+            /^knowledge\/pdfs\/[a-z0-9][a-z0-9.-]*\.pdf$/i.test(item.pdf) &&
             !item.pdf.includes("..")) assets.push({ path: item.pdf, cache: PDF_CACHE });
       });
 
