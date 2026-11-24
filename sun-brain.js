@@ -548,7 +548,7 @@
   function composeProcedure(query, result) {
     const queryData = getQueryTerms(query);
     const basePathPrefix = result.best.section.path.split("/").slice(0, 2).join("/") + "/";
-    const excludedHeading = /\b(objectifs?|exercices?|corrections?|fiche de revision|validation|sommaire|ressources|mini defi)\b/i;
+    const excludedHeading = /\b(objectifs?|exercices?|corrections?|fiche de revision|validation|sommaire|ressources|mini defi|mini projet)\b/i;
     const actionHeading = /\b(preparer|preparation|creer|creation|configurer|securiser|proteger|utiliser|boucle|conditions?|liste|token|intents|lancer|adapter|responsive|nettoyer|transformer|qualite|separer|entrainement|test|donnees|jeu de donnees)\b/i;
     const queryText = norm(query);
     const focus = {
@@ -632,11 +632,15 @@
         const subjectBeforeVerb = verbIndex > 0 && queryData.base.some(token =>
           normalizedSentence.slice(0, verbIndex).split(/\s+/).includes(token)
         );
-        const definitionBoost = type === "definition" && subjectBeforeVerb ? 8 : 0;
+        const startsWithTopic = queryData.base.some(token =>
+          new RegExp("^(?:(?:un|une|le|la|l|les|des|du)\\s+)?" + token + "\\b").test(normalizedSentence)
+        );
+        const definitionBoost = type === "definition" && subjectBeforeVerb && startsWithTopic ? 14 : 0;
+        const narrowDefinitionPenalty = /\b(imbriquee|particulier|exemple)\b/.test(normalizedSentence) ? 1.5 : 0;
         const explanatoryBoost = type !== "definition" && /\b(utilise|apprend|ajuste|fonctionne|permet|recoit|produit|calcule|transmet)\b/.test(normalizedSentence) ? 3.5 : 0;
         const exampleBoost = type === "example" && /\b(exemple|par exemple|while|for|utilise)\b/.test(normalizedSentence) ? 4 : 0;
         const score = relevance.score + headingMatches * 3.5 + titleMatches * 1.8 +
-          definitionBoost + explanatoryBoost + exampleBoost;
+          definitionBoost + explanatoryBoost + exampleBoost - narrowDefinitionPenalty;
         candidates.push({ sentence, section, score, matched: relevance.matched });
       });
     });
