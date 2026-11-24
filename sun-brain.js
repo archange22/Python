@@ -590,7 +590,22 @@
     neurones: ["neurone", "reseau", "perceptron"],
     perceptron: ["neurone", "poids", "biais", "activation"],
     poids: ["parametre", "neurone", "modele"],
-    biais: ["neurone", "perceptron", "poids"]
+    biais: ["neurone", "perceptron", "poids"],
+    organiser: ["organisation", "organise", "planifier", "travail", "scolaire"],
+    organisation: ["organiser", "planifier", "travail", "scolaire"],
+    devoir: ["devoirs", "exercice", "exercices", "travail"],
+    devoirs: ["devoir", "exercice", "exercices", "travail"],
+    reviser: ["revision", "memoriser", "memorisation", "apprendre"],
+    revision: ["reviser", "memoriser", "memorisation", "apprendre"],
+    examen: ["revision", "evaluation", "controle", "etudier"],
+    etudier: ["etude", "apprentissage", "revision", "scolaire"],
+    fraction: ["fractions", "calcul", "numerateur", "denominateur"],
+    fractions: ["fraction", "calcul", "numerateur", "denominateur"],
+    traduire: ["traduction", "langue", "anglais", "francais"],
+    rediger: ["redaction", "paragraphe", "texte", "ecrire"],
+    telephone: ["mobile", "android", "appareil", "depannage"],
+    chronologie: ["histoire", "historique", "evenement", "date"],
+    hypothese: ["observation", "experience", "science", "scientifique"]
   };
 
   function canonicalToken(token) {
@@ -678,7 +693,10 @@
         const titleTf = item.titleCounts.get(token) || 0;
         const headingTf = item.headingCounts.get(token) || 0;
         const bodyTf = item.bodyCounts.get(token) || 0;
-        if (titleTf || headingTf || bodyTf) matchedTokens.push(token);
+        const synonymHit = (QUERY_SYNONYMS[token] || []).some(synonym =>
+          item.allTokens.has(canonicalToken(synonym))
+        );
+        if (titleTf || headingTf || bodyTf || synonymHit) matchedTokens.push(token);
         score += 2.1 * bm25(titleTf, item.titleTokens.length, 8, idf);
         score += 3.0 * bm25(headingTf, item.headingTokens.length, 8, idf);
         score += 1.0 * bm25(bodyTf, item.bodyLength, averageSectionLength, idf);
@@ -688,8 +706,14 @@
         if (weight >= 1 || item.allTokens.has(token)) return;
         const df = documentFrequency.get(token) || 0;
         const idf = Math.log(1 + (searchIndex.length - df + 0.5) / (df + 0.5));
-        const tf = item.bodyCounts.get(token) || 0;
-        if (tf) score += 0.55 * weight * bm25(tf, item.bodyLength, averageSectionLength, idf);
+        const titleTf = item.titleCounts.get(token) || 0;
+        const headingTf = item.headingCounts.get(token) || 0;
+        const bodyTf = item.bodyCounts.get(token) || 0;
+        score += 0.55 * weight * (
+          2.1 * bm25(titleTf, item.titleTokens.length, 8, idf) +
+          3.0 * bm25(headingTf, item.headingTokens.length, 8, idf) +
+          0.75 * bm25(bodyTf, item.bodyLength, averageSectionLength, idf)
+        );
       });
 
       const coverage = matchedTokens.length / queryData.base.length;
