@@ -158,6 +158,7 @@
     "qui", "que", "quoi", "quel", "quelle", "quels", "quelles", "comment",
     "pourquoi", "explique", "expliquer", "donne", "donner", "montre", "montrer",
     "faire", "fait", "fais", "cest", "estce", "peux", "peut", "on", "il", "elle",
+    "entre", "difference", "fonctionne", "fonctionner", "une", "les", "leurs",
     "je", "tu", "ils", "elles", "aide", "y", "comme"
   ]);
 
@@ -165,6 +166,13 @@
     ia: ["intelligence", "artificielle"],
     intelligence: ["ia", "artificielle"],
     artificielle: ["ia", "intelligence"],
+    preparer: ["preparation", "donnees", "jeu"],
+    prepare: ["preparation", "donnees", "jeu"],
+    preparation: ["preparer", "donnees", "dataset", "jeu"],
+    reseaux: ["reseau", "neurones", "deep"],
+    reseau: ["reseaux", "neurone", "deep"],
+    neuronal: ["neurone", "reseau", "reseaux"],
+    neuronaux: ["neurone", "reseau", "reseaux"],
     machine: ["learning", "apprentissage", "automatique"],
     learning: ["machine", "apprentissage", "automatique"],
     apprentissage: ["machine", "learning"],
@@ -199,15 +207,17 @@
   function canonicalToken(token) {
     let value = token;
     if (value === "donnees" || value === "donnee") return "donnees";
+    if (value.length > 5 && value.endsWith("x")) value = value.slice(0, -1);
     if (value.length > 5 && value.endsWith("s")) value = value.slice(0, -1);
     return value;
   }
 
   function getQueryTerms(query) {
     const raw = norm(query).split(/\s+/).filter(Boolean).map(canonicalToken);
-    const base = Array.from(new Set(raw.filter(token =>
+    let base = Array.from(new Set(raw.filter(token =>
       !STOP_QUERY_WORDS.has(token) && token.length > 1
     )));
+    if (base.length > 1 && base.includes("ia")) base = base.filter(token => token !== "ia");
     const weighted = new Map();
     base.forEach(token => {
       weighted.set(token, Math.max(weighted.get(token) || 0, 1));
@@ -349,7 +359,7 @@
 
     const section = result.best.section;
     let answer = "Voici ce que j’ai trouvé dans les cours de l’application :\n\n";
-    answer += "**" + section.title + "**\n";
+    answer += section.title + "\n";
     answer += "Partie : " + section.heading + "\n\n";
     answer += makeExcerpt(section, 980);
     answer += "\n\nSource : " + section.path;
