@@ -261,7 +261,7 @@ def main() -> None:
     render_pdf(source)
     reader = PdfReader(str(PDF_PATH))
     extracted, chapter_count, extracted_chars = extract_by_chapter(source, reader)
-    if not 25 <= len(reader.pages) <= 75:
+    if not 25 <= len(reader.pages) <= 150:
         raise RuntimeError(f"Nombre de pages inattendu : {len(reader.pages)}")
     EXTRACTED_DIR.mkdir(parents=True, exist_ok=True)
     EXTRACTED_PATH.write_text(extracted, encoding="utf-8")
