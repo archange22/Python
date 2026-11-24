@@ -406,3 +406,38 @@ test("Les huit nouvelles leçons sont bien indexées par Sun Brain", () => {
     assert.equal(result.best.section.path, source);
   });
 });
+
+test("Le réseau neuronal v3 reconnaît les catégories de sujets en plus des intentions sociales", () => {
+  const info = brain.modelInfo;
+  assert.equal(info.version, "0.0.3");
+  assert.equal(info.hiddenNeurons, 24);
+  assert.equal(info.topicClasses, 5);
+  assert.ok(info.trainingExamples >= 120, "Le modèle doit disposer d'un jeu d'entraînement élargi.");
+  assert.ok(info.inputFeatures > 100, "Les mots, préfixes, suffixes et trigrammes doivent enrichir les entrées.");
+  assert.equal(brain.classifyIntent("bonjour sun").intent, "greeting");
+  assert.equal(brain.classifyIntent("bonjour sun").kind, "conversation");
+});
+
+test("L'analyse sémantique identifie correctement les sujets et le type de demande", () => {
+  const cases = [
+    ["je veux programmer une boucle python avec for et while", "python", "procedure"],
+    ["explique le perceptron et le biais d un neurone artificiel", "ia", "explanation"],
+    ["comment sécuriser le token de mon bot discord", "discord", "procedure"],
+    ["quelle différence entre html css et javascript", "web", "comparison"],
+    ["comment ouvrir un pdf et extraire ses chapitres", "documents", "procedure"]
+  ];
+  cases.forEach(([question, expectedSubject, expectedType]) => {
+    const analysis = brain.analyzeQuestion(question);
+    assert.equal(analysis.subjectId, expectedSubject, "Sujet mal identifié pour : " + question);
+    assert.equal(analysis.questionType, expectedType, "Type de demande incorrect pour : " + question);
+    assert.ok(analysis.confidence > 0 && analysis.confidence <= 0.99);
+    assert.ok(analysis.source, "L'analyse doit s'appuyer sur un document.");
+  });
+});
+
+test("L'analyse ne transforme pas un sujet absent du corpus en connaissance prétendument reconnue", () => {
+  const analysis = brain.analyzeQuestion("quelle est la température exacte des volcans sur mars");
+  assert.equal(analysis.subjectId, null);
+  assert.equal(analysis.source, null);
+  assert.equal(analysis.confidence, 0);
+});
