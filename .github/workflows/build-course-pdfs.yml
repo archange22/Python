@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - "courses/**/*.md"
+      - "knowledge/sources/discussion-global-v0.0.2.md.bz2.b64"
+      - "knowledge/catalog.json"
+      - "scripts/build_sun_discussion_pdf.py"
+      - "scripts/ingest_pdf_knowledge.py"
       - "courses/catalog.json"
       - "pdf/lecon-0[234].md"
       - "scripts/build_course_pdfs.py"
@@ -38,11 +42,14 @@ jobs:
       - name: Build all 10–20 page course PDFs
         run: .venv/bin/python scripts/build_course_pdfs.py
 
+      - name: Build and verify Sun discussion corpus PDF 0.0.2
+        run: .venv/bin/python scripts/build_sun_discussion_pdf.py
+
       - name: Commit generated PDFs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add pdf/courses/*.pdf
+          git add pdf/courses/*.pdf knowledge/discussion-global-v0.0.2.md knowledge/pdfs/sun-discussion-global-v0.0.2.pdf knowledge/imported/discussion-global-v0.0.2.md knowledge/catalog.json
           if git diff --cached --quiet; then
             echo "No PDF changes."
           else
