@@ -373,6 +373,27 @@
     topic_general: { id: "general", label: "Discussion générale", paths: ["knowledge/imported/"] }
   };
 
+  function detectTopicHint(query) {
+    const text = norm(query);
+    const hints = [
+      ["topic_python", /\\bpython\\b|\\b(def|return|variable|variables|boucle|boucles|liste|dictionnaire)\\b/],
+      ["topic_ia", /intelligence artificielle|\\bia\\b|\\bneurone(s)?\\b|reseau neuronal|machine learning|deep learning|perceptron/],
+      ["topic_discord", /\\bdiscord\\b|\\bbot(s)?\\b|\\bgateway\\b|\\bserveur discord\\b/],
+      ["topic_web", /\\bhtml\\b|\\bcss\\b|javascript|site web|responsive|frontend|navigateur web/],
+      ["topic_documents", /\\bpdf\\b|document(s)?|fichier|extraction|indexation|chapitre(s)?|bibliotheque documentaire/],
+      ["topic_math", /fraction(s)?|equation(s)?|calcul|mathematique|pourcentage|numerateur|denominateur/],
+      ["topic_science", /science|scientifique|experience|hypothese|observation|biologie|physique/],
+      ["topic_culture", /histoire|historique|geographie|chronologie|livre|personnage|pays du monde/],
+      ["topic_language", /traduire|traduis|traduction|anglais|francais|grammaire|conjugaison|vocabulaire|langue(s)?/],
+      ["topic_writing", /rediger|redaction|paragraphe|orthographe|ponctuation|argumentation/],
+      ["topic_daily", /telephone|android|depannage|connexion internet|stockage|application mobile/],
+      ["topic_school", /scolaire|devoir(s)?|examen|revision|reviser|memorisation|etudier|etude(s)?/],
+      ["topic_general", /discussion libre|discuter|echanger|culture generale|avis equilibre|parler simplement/]
+    ];
+    const match = hints.find(([key, pattern]) => pattern.test(text));
+    return match ? SUBJECTS[match[0]] : null;
+  }
+
   function subjectFromPath(path, heading) {
     if (path.startsWith("courses/python/") || path === "knowledge/python-practice.md") return { id: "python", label: "Python" };
     if (path.startsWith("courses/ia/") || path === "knowledge/ia-foundations.md") return { id: "ia", label: "Intelligence artificielle" };
@@ -483,10 +504,11 @@
     if (!result || !result.best) return null;
     const neural = classify(query);
     const documentSubject = subjectFromPath(result.best.section.path, result.best.section.heading);
-    const predictedSubject = neural.kind === "topic" && neural.confidence >= 0.2
+    const lexicalSubject = detectTopicHint(query);
+    const predictedSubject = lexicalSubject || (neural.kind === "topic" && neural.confidence >= 0.2
       ? SUBJECTS[neural.intent] || null
-      : null;
-    const subject = documentSubject || (predictedSubject
+      : null);
+    const subject = lexicalSubject || documentSubject || (predictedSubject
       ? { id: predictedSubject.id, label: predictedSubject.label }
       : null);
     const confidence = Math.max(0, Math.min(0.99,
@@ -682,9 +704,11 @@
     if (!queryData.base.length) return null;
 
     const neural = classify(query);
-    const predictedSubject = neural.kind === "topic" && neural.confidence >= 0.2
+    const lexicalSubject = detectTopicHint(query);
+    const predictedSubject = lexicalSubject || (neural.kind === "topic" && neural.confidence >= 0.2
       ? SUBJECTS[neural.intent] || null
-      : null;
+      : null);
+    const subjectStrength = lexicalSubject ? 1 : neural.confidence;
     const ranked = searchIndex.map(item => {
       let score = 0;
       const matchedTokens = [];
@@ -731,11 +755,11 @@
         item.section.path === prefix || item.section.path.startsWith(prefix)
       );
       if (matchesPredictedSubject) {
-        score += 0.75 * neural.confidence;
+        score += (lexicalSubject ? 2.4 : 0.75) * subjectStrength;
       } else if (predictedSubject &&
           predictedSubject.paths.includes("knowledge/imported/") &&
           item.section.path.startsWith("courses/")) {
-        score -= 0.8 * neural.confidence;
+        score -= (lexicalSubject ? 1.8 : 0.8) * subjectStrength;
       }
       return { section: item.section, score, coverage, matchedTokens };
     }).sort((a, b) => b.score - a.score);
