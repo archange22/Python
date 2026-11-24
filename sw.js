@@ -1,4 +1,4 @@
-const STATIC_CACHE = "academique-shell-v19";
+const STATIC_CACHE = "academique-shell-v20";
 const PDF_CACHE = "academique-pdf-v2";
 const APP_FILES = [
   "./",
@@ -14,6 +14,7 @@ const APP_FILES = [
   "./pdf/lecon-01-content.md.gz.b64",
   "./pdf/reader.html",
   "./courses/catalog.json",
+  "./knowledge/catalog.json",
   "./pdf/lecon-01.md",
   "./pdf/lecon-02.md",
   "./pdf/lecon-03.md",
@@ -86,6 +87,52 @@ self.addEventListener("fetch", (event) => {
         { status: 200, headers: { "Content-Type": "application/json; charset=utf-8" } }
       )))
     );
+    return;
+  }
+
+  if (url.pathname.endsWith("/knowledge/catalog.json")) {
+    const update = fetch(request).then(async (response) => {
+      if (!response.ok) return response;
+      const catalogCopy = response.clone();
+      await caches.open(STATIC_CACHE).then((cache) => cache.put(request, catalogCopy));
+
+      let catalog;
+      try {
+        catalog = await response.clone().json();
+      } catch (_) {
+        return response;
+      }
+      const approved = Array.isArray(catalog.documents)
+        ? catalog.documents.filter((item) => item && item.approved === true)
+        : [];
+      const assets = [];
+      approved.slice(0, 50).forEach((item) => {
+        if (typeof item.path === "string" &&
+            /^knowledge\\/imported\\/[a-z0-9][a-z0-9.-]*\\.md$/i.test(item.path) &&
+            !item.path.includes("..")) assets.push({ path: item.path, cache: STATIC_CACHE });
+        if (typeof item.pdf === "string" &&
+            /^knowledge\\/pdfs\\/[a-z0-9][a-z0-9.-]*\\.pdf$/i.test(item.pdf) &&
+            !item.pdf.includes("..")) assets.push({ path: item.pdf, cache: PDF_CACHE });
+      });
+
+      await Promise.all(assets.map(async (asset) => {
+        const target = new URL("./" + asset.path, self.location.href);
+        if (target.origin !== self.location.origin) return;
+        try {
+          const stored = await fetch(target.href, { credentials: "same-origin" });
+          if (!stored.ok) return;
+          await caches.open(asset.cache).then((cache) => cache.put(target.href, stored.clone()));
+        } catch (_) {
+          // L'application reste utilisable même si un document supplémentaire est absent.
+        }
+      }));
+      return response;
+    });
+    event.waitUntil(update.then(() => undefined).catch(() => undefined));
+    event.respondWith(update.catch(() => caches.match(request).then((cached) => cached || new Response(
+      '{"version":1,"documents":[]}',
+      { status: 200, headers: { "Content-Type": "application/json; charset=utf-8" } }
+    ))));
     return;
   }
 
