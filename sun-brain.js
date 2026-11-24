@@ -93,6 +93,118 @@
       "comment ouvrir un document word et extraire le texte",
       "comment reconnaître le sujet principal d un document",
       "indexation de fichiers et recherche par mots clés"
+    ],
+    topic_school: [
+      "comment organiser mon travail scolaire et mes devoirs",
+      "aide moi à comprendre une leçon avec des mots simples",
+      "comment préparer une révision avant un examen",
+      "comment résumer un cours et retenir les idées importantes",
+      "comment mieux organiser mon temps pour étudier",
+      "explique une notion scolaire étape par étape",
+      "comment lire et comprendre un texte de cours",
+      "comment mémoriser une leçon sans tout oublier",
+      "je dois préparer un exposé pour l école",
+      "comment résoudre un exercice scolaire et vérifier ma réponse",
+      "comment planifier mes devoirs de la semaine",
+      "donne une méthode pour apprendre une nouvelle leçon"
+    ],
+    topic_math: [
+      "aide moi à faire un calcul mathématique",
+      "explique les fractions et les opérations",
+      "comment résoudre une équation avec une inconnue",
+      "explique le raisonnement mathématique étape par étape",
+      "comment additionner soustraire multiplier et diviser des nombres",
+      "comment calculer une fraction et simplifier le résultat",
+      "résoudre une équation du premier degré",
+      "pourquoi ce résultat de calcul est il correct",
+      "explique les nombres décimaux et les fractions",
+      "comment vérifier un résultat en mathématiques",
+      "aide moi à comprendre un problème de maths",
+      "calculer un pourcentage et expliquer la méthode"
+    ],
+    topic_science: [
+      "explique une notion de science et la méthode scientifique",
+      "comment observer un phénomène et formuler une hypothèse",
+      "qu est ce qu une expérience scientifique",
+      "comment analyser les résultats d une observation",
+      "explique une notion de physique ou de biologie",
+      "comment faire une démarche scientifique simple",
+      "différence entre observation hypothèse et conclusion",
+      "comment vérifier une idée avec une expérience",
+      "quelles sont les étapes d une recherche scientifique",
+      "explique un phénomène naturel simplement",
+      "comment distinguer un fait d une hypothèse",
+      "aide moi à comprendre un sujet scientifique"
+    ],
+    topic_culture: [
+      "explique un événement historique et sa chronologie",
+      "quand a eu lieu cet événement dans l histoire",
+      "explique une période historique simplement",
+      "parle moi de la géographie et des pays du monde",
+      "où se trouve cette ville ce pays ou cette région",
+      "explique un livre et ses personnages principaux",
+      "comment résumer l histoire d un livre",
+      "présente un événement culturel et son contexte",
+      "explique la chronologie d une histoire",
+      "quels sont les lieux importants de cette région",
+      "aide moi à comprendre un sujet d histoire",
+      "aide moi à comprendre un sujet de géographie"
+    ],
+    topic_language: [
+      "traduis cette phrase du français vers l anglais",
+      "comment traduire un mot dans une autre langue",
+      "aide moi à apprendre du vocabulaire en anglais",
+      "explique la grammaire et la conjugaison française",
+      "quelle est la signification de ce mot",
+      "comment améliorer mon français écrit",
+      "comment apprendre une nouvelle langue",
+      "donne un synonyme et un antonyme de ce mot",
+      "corrige cette phrase en français",
+      "explique une règle de grammaire simplement",
+      "comment prononcer et utiliser cette expression",
+      "aide moi à comprendre une traduction"
+    ],
+    topic_writing: [
+      "aide moi à rédiger un paragraphe cohérent",
+      "comment écrire une introduction et une conclusion",
+      "corrige mon texte et améliore la formulation",
+      "comment construire un paragraphe avec des arguments",
+      "aide moi à faire une rédaction en français",
+      "comment organiser les idées dans un texte",
+      "écris un résumé clair de ce passage",
+      "comment structurer un exposé ou une présentation",
+      "comment développer une argumentation simple",
+      "aide moi à reformuler une phrase",
+      "comment écrire une lettre ou un texte explicatif",
+      "améliorer la ponctuation et l orthographe d un texte"
+    ],
+    topic_daily: [
+      "mon téléphone a un problème comment le dépanner",
+      "comment résoudre un problème simple sur android",
+      "mon application ne fonctionne plus que faire",
+      "comment vérifier les paramètres de mon appareil",
+      "aide moi à comprendre une erreur sur mon téléphone",
+      "comment gérer un problème de connexion internet",
+      "mon navigateur ne charge pas une page",
+      "comment libérer de l espace de stockage sur mon appareil",
+      "comment utiliser une fonctionnalité de mon téléphone",
+      "aide moi à résoudre un problème technique courant",
+      "pourquoi mon application se ferme toute seule",
+      "comment redémarrer et vérifier un appareil"
+    ],
+    topic_general: [
+      "je veux discuter librement d un sujet",
+      "donne moi un avis équilibré sur cette idée",
+      "peux tu m expliquer un sujet du quotidien",
+      "je ne comprends pas bien une situation peux tu clarifier",
+      "aide moi à choisir entre plusieurs possibilités",
+      "parlons d un sujet léger et intéressant",
+      "je suis découragé aide moi à reprendre confiance dans mon travail",
+      "comment répondre poliment dans cette situation",
+      "peux tu développer cette idée et donner un exemple",
+      "explique cette question de culture générale",
+      "aide moi à réfléchir aux avantages et aux limites",
+      "je voudrais simplement parler et poser des questions"
     ]
   };
 
@@ -250,15 +362,40 @@
     topic_ia: { id: "ia", label: "Intelligence artificielle", paths: ["courses/ia/", "knowledge/ia-foundations.md"] },
     topic_discord: { id: "discord", label: "Discord", paths: ["courses/discord/", "knowledge/discord-development.md"] },
     topic_web: { id: "web", label: "Développement Web", paths: ["courses/web/", "knowledge/web-practices.md"] },
-    topic_documents: { id: "documents", label: "Documents et PDF", paths: ["knowledge/imported/", "knowledge/discussion-global", "knowledge/pdfs/"] }
+    topic_documents: { id: "documents", label: "Documents et PDF", paths: ["knowledge/pdfs/", "knowledge/imported/"] },
+    topic_school: { id: "school", label: "Études et apprentissage", paths: ["knowledge/imported/"] },
+    topic_math: { id: "math", label: "Mathématiques", paths: ["knowledge/imported/"] },
+    topic_science: { id: "science", label: "Sciences", paths: ["knowledge/imported/"] },
+    topic_culture: { id: "culture", label: "Histoire, géographie et culture", paths: ["knowledge/imported/"] },
+    topic_language: { id: "language", label: "Langues et français", paths: ["knowledge/imported/"] },
+    topic_writing: { id: "writing", label: "Rédaction et expression", paths: ["knowledge/imported/"] },
+    topic_daily: { id: "daily", label: "Dépannage du quotidien", paths: ["knowledge/imported/"] },
+    topic_general: { id: "general", label: "Discussion générale", paths: ["knowledge/imported/"] }
   };
 
-  function subjectFromPath(path) {
+  function subjectFromPath(path, heading) {
     if (path.startsWith("courses/python/") || path === "knowledge/python-practice.md") return { id: "python", label: "Python" };
     if (path.startsWith("courses/ia/") || path === "knowledge/ia-foundations.md") return { id: "ia", label: "Intelligence artificielle" };
     if (path.startsWith("courses/discord/") || path === "knowledge/discord-development.md") return { id: "discord", label: "Discord" };
     if (path.startsWith("courses/web/") || path === "knowledge/web-practices.md") return { id: "web", label: "Développement Web" };
-    if (path.startsWith("knowledge/imported/") || path.startsWith("knowledge/discussion-global") || path.startsWith("knowledge/pdfs/")) return { id: "documents", label: "Documents et PDF" };
+    if (path.startsWith("knowledge/pdfs/")) return { id: "documents", label: "Documents et PDF" };
+    if (path.startsWith("knowledge/imported/") || path.startsWith("knowledge/discussion-global")) {
+      const title = norm(heading || "");
+      const mappings = [
+        ["math", /calculs et fractions|equations et raisonnement mathematique/],
+        ["science", /sciences et methode d observation/],
+        ["culture", /histoire et chronologie|geographie et lieux du monde|lecture et comprehension d un livre/],
+        ["language", /francais familier|traduction et apprentissage des langues/],
+        ["writing", /redaction et construction d un paragraphe/],
+        ["school", /organisation du travail scolaire|expliquer une notion simplement|definir un mot|resumer un texte|revision et memorisation/],
+        ["daily", /telephone et depannage simple/],
+        ["general", /discussion libre|donner un avis|emotions ordinaires|demander de l aide|relancer une discussion|clarifier une question/]
+      ];
+      for (const [id, pattern] of mappings) {
+        if (pattern.test(title)) return Object.values(SUBJECTS).find(subject => subject.id === id) || null;
+      }
+      return { id: "general", label: "Discussion générale" };
+    }
     return null;
   }
   let sections = [];
@@ -344,7 +481,7 @@
     const result = retrieveDocs(query);
     if (!result || !result.best) return null;
     const neural = classify(query);
-    const documentSubject = subjectFromPath(result.best.section.path);
+    const documentSubject = subjectFromPath(result.best.section.path, result.best.section.heading);
     const predictedSubject = neural.kind === "topic" && neural.confidence >= 0.2
       ? SUBJECTS[neural.intent] || null
       : null;
