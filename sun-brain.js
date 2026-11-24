@@ -379,7 +379,7 @@
     const has = (...values) => values.some(value => tokens.has(value));
     const includes = (...values) => values.some(value => text.includes(value));
     const hints = [
-      ["topic_python", () => has("python", "def", "return", "variable", "variables", "boucle", "boucles", "liste", "dictionnaire")],
+      ["topic_python", () => has("python", "def", "return", "variable", "variables", "boucle", "boucles", "liste", "dictionnaire", "venv", "pip", "virtualenv") || includes("environnement virtuel", "environnements virtuels")],
       ["topic_ia", () => includes("intelligence artificielle", "reseau neuronal", "machine learning", "deep learning", "perceptron") || has("ia", "neurone", "neurones")],
       ["topic_discord", () => has("discord", "bot", "bots", "gateway") || includes("serveur discord")],
       ["topic_web", () => has("html", "css", "javascript", "responsive", "frontend") || includes("site web", "navigateur web")],
@@ -438,18 +438,21 @@
   function split(md, path) {
     const lines = md.split(/\r?\n/);
     const title = (lines.find(x => /^#\s/.test(x)) || path).replace(/^#\s*/, "");
-    let heading = title, buffer = [], out = [], started = false;
+    let heading = title, chapterHeading = title, buffer = [], out = [], started = false;
     function flush() {
       const body = clean(buffer.join("\n"));
-      if (started && body.length > 35) out.push({ title, heading, body, path });
+      if (started && body.length > 35) {
+        out.push({ title, heading, chapterHeading, body, path });
+      }
       buffer = [];
     }
     lines.forEach((line, i) => {
-      const m = line.match(/^#{2,4}\s+(.+)/);
+      const m = line.match(/^(#{2,4})\s+(.+)/);
       if (m) {
         if (started) flush();
         else buffer = [];
-        heading = m[1];
+        heading = m[2];
+        if (m[1] === "##") chapterHeading = m[2];
         started = true;
       } else if (started && i > 0 && !/^#\s/.test(line)) {
         buffer.push(line);
@@ -506,7 +509,7 @@
     const result = retrieveDocs(query);
     if (!result || !result.best) return null;
     const neural = classify(query);
-    const documentSubject = subjectFromPath(result.best.section.path, result.best.section.heading);
+    const documentSubject = subjectFromPath(result.best.section.path, result.best.section.chapterHeading || result.best.section.heading);
     const lexicalSubject = detectTopicHint(query);
     const predictedSubject = lexicalSubject || (neural.kind === "topic" && neural.confidence >= 0.2
       ? SUBJECTS[neural.intent] || null
@@ -754,7 +757,7 @@
       }
       if (coverage === 1) score += 1.2;
       else if (coverage >= 0.66) score += 0.45;
-      const sectionSubject = subjectFromPath(item.section.path, item.section.heading);
+      const sectionSubject = subjectFromPath(item.section.path, item.section.chapterHeading || item.section.heading);
       const sectionSubjectMatch = predictedSubject && sectionSubject &&
         sectionSubject.id === predictedSubject.id;
       const specificPathMatch = predictedSubject && predictedSubject.paths
@@ -784,7 +787,7 @@
     if (predictedSubject && predictedSubject.paths.includes("knowledge/imported/")) {
       const subjectCandidate = ranked.find(item => {
         const sectionSubject = subjectFromPath(item.section.path,
-          item.section.heading + " " + item.section.title);
+          (item.section.chapterHeading || item.section.heading) + " " + item.section.heading + " " + item.section.title);
         return sectionSubject && sectionSubject.id === predictedSubject.id &&
           item.coverage >= 0.2 && item.score >= 0.5 && item.matchedTokens.length >= 1;
       });
