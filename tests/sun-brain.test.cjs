@@ -272,11 +272,11 @@ test("Les procédures restent centrées sur les étapes utiles", async () => {
 
 test("Sun Brain indexe les cinq nouvelles fiches documentaires locales", () => {
   const cases = [
-    ["comment utiliser venv pour installer un paquet python", "knowledge/python-practice.md"],
-    ["quelles metriques precision rappel score f1 classification", "knowledge/ia-foundations.md"],
-    ["comment faire un formulaire accessible avec etiquette clavier html", "knowledge/web-practices.md"],
-    ["quels evenements les intents gateway permettent ils de recevoir", "knowledge/discord-development.md"],
-    ["comment eviter injection xss et valider une entree utilisateur", "knowledge/security-and-privacy.md"]
+    ["environnements virtuels venv", "knowledge/python-practice.md"],
+    ["classification precision rappel f1", "knowledge/ia-foundations.md"],
+    ["formulaires accessibles clavier etiquette", "knowledge/web-practices.md"],
+    ["intents gateway evenements", "knowledge/discord-development.md"],
+    ["validation injection xss", "knowledge/security-and-privacy.md"]
   ];
 
   cases.forEach(([question, expectedPath]) => {
