@@ -391,7 +391,8 @@
     if (/\b(difference|diff|comparer|compare|comparaison|versus|vs)\b/.test(text) ||
         /\bentre\b.*\bet\b/.test(text)) return "comparison";
     if (/\b(exemple|illustrer|montre moi|un cas concret)\b/.test(text)) return "example";
-    if (/\b(comment|etapes|etape|procedure|methode|creer|construire|installer|utiliser|preparer|securiser|proteger)\b/.test(text)) return "procedure";
+    if (/\b(comment|etapes|etape|procedure|methode|creer|construire|installer|utiliser|preparer|securiser|proteger|adapter|faire)\b/.test(text) &&
+        !/\b(fonctionne|fonctionner|marche|signifie|est ce que)\b/.test(text)) return "procedure";
     if (/\b(c est quoi|qu est ce|definition|definis|signifie|que signifie)\b/.test(text)) return "definition";
     return "explanation";
   }
@@ -547,8 +548,17 @@
   function composeProcedure(query, result) {
     const queryData = getQueryTerms(query);
     const basePathPrefix = result.best.section.path.split("/").slice(0, 2).join("/") + "/";
-    const excludedHeading = /\b(objectif|exercice|correction|fiche de revision|validation|mini defi|mini-defi)\b/i;
-    const actionHeading = /\b(preparer|preparation|creer|creation|configurer|configurer|securiser|proteger|utiliser|boucle|conditions?|liste|token|intents|lancer|adapter|responsive|nettoyer|transformer|qualite|separer|entrainement|validation|test)\b/i;
+    const excludedHeading = /\b(objectifs?|exercices?|corrections?|fiche de revision|validation|sommaire|ressources|mini defi)\b/i;
+    const actionHeading = /\b(preparer|preparation|creer|creation|configurer|securiser|proteger|utiliser|boucle|conditions?|liste|token|intents|lancer|adapter|responsive|nettoyer|transformer|qualite|separer|entrainement|test|donnees|jeu de donnees)\b/i;
+    const queryText = norm(query);
+    const focus = {
+      create: /\b(creer|cree|creation)\b/.test(queryText),
+      prepare: /\b(preparer|preparation)\b/.test(queryText),
+      secure: /\b(securiser|proteger)\b/.test(queryText),
+      use: /\b(utiliser|utilise)\b/.test(queryText),
+      responsive: /\b(responsive|ecran|telephone)\b/.test(queryText)
+    };
+
     const ranked = (result.candidates || [result.best])
       .filter(candidate => candidate.section.path.startsWith(basePathPrefix))
       .filter(candidate => !excludedHeading.test(norm(candidate.section.heading)))
@@ -557,7 +567,13 @@
         const body = norm(candidate.section.body);
         const headingMatches = queryData.base.filter(token => heading.includes(token)).length;
         const bodyMatches = queryData.base.filter(token => body.includes(token)).length;
-        const actionBoost = actionHeading.test(heading) ? 3.0 : 0;
+        let actionBoost = actionHeading.test(heading) ? 3 : 0;
+        if (focus.create && /\b(creer|creation)\b/.test(heading)) actionBoost += 8;
+        if (focus.prepare && /\b(preparer|qualite|nettoyer|transformer|separer|jeu de donnees)\b/.test(heading)) actionBoost += 8;
+        if (focus.secure && /\b(token|proteger|secret|securiser|environnement)\b/.test(heading)) actionBoost += 8;
+        if (focus.use && /\b(utiliser|choisir|boucle|for|while)\b/.test(heading)) actionBoost += 6;
+        if (focus.responsive && /\b(responsive|adapter|ecrans)\b/.test(heading)) actionBoost += 8;
+        if (/\bmini projet\b/.test(heading) && !focus.prepare) actionBoost -= 5;
         return {
           ...candidate,
           procedureScore: candidate.score + headingMatches * 3 + bodyMatches * 0.15 + actionBoost
@@ -567,21 +583,22 @@
 
     const chosen = [];
     const seenHeadings = new Set();
-    ranked.forEach(candidate => {
+    const maxSteps = focus.create && !focus.prepare && !focus.secure ? 2 : 3;
+    for (const candidate of ranked) {
       const headingKey = norm(candidate.section.heading);
-      if (seenHeadings.has(headingKey)) return;
+      if (seenHeadings.has(headingKey)) continue;
       const sentences = answerSentences(candidate.section);
       const relevant = sentences.map(sentence => ({
         sentence,
         relevance: sentenceRelevance(sentence, queryData)
       })).filter(item => item.relevance.score >= 1.5)
         .sort((a, b) => b.relevance.score - a.relevance.score);
-      const summary = relevant[0]?.sentence || sentences[0] || "";
-      if (!summary || summary.length < 25) return;
+      const summary = relevant[0]?.sentence || "";
+      if (!summary || summary.length < 25) continue;
       chosen.push({ section: candidate.section, summary });
       seenHeadings.add(headingKey);
-      if (chosen.length >= 3) return;
-    });
+      if (chosen.length >= maxSteps) break;
+    }
 
     if (!chosen.length) return "";
     let answer = "Voici une démarche possible, organisée à partir des cours :\n\n";
@@ -599,8 +616,14 @@
       return "J’ai retrouvé un passage dans les cours, mais je n’ai pas assez d’éléments pour en construire une réponse fiable. Reformule la question ou précise le point que tu veux comprendre.";
     }
     const chosen = [];
+    const definingEvidence = type === "definition"
+      ? evidence.find(item => /\b(est un|est une|sont des|désigne|signifie|correspond à|se définit)\b/i.test(item.sentence))
+      : null;
+    const orderedEvidence = definingEvidence
+      ? [definingEvidence].concat(evidence.filter(item => item !== definingEvidence))
+      : evidence;
     const maxItems = type === "definition" ? 2 : 3;
-    evidence.forEach(item => {
+    orderedEvidence.forEach(item => {
       if (chosen.some(existing => norm(existing.sentence) === norm(item.sentence))) return;
       if (chosen.length && item.score < chosen[0].score * 0.58) return;
       if (chosen.length && item.section.path !== chosen[0].section.path) return;
