@@ -126,7 +126,7 @@ const QA_CASES = [
   },
   {
     question: "comment securiser le token d un bot",
-    sources: ["courses/discord/lesson-02.md", "courses/discord/lesson-03.md"],
+    sources: ["courses/discord/lesson-01.md", "courses/discord/lesson-02.md", "courses/discord/lesson-03.md"],
     required: ["secret", "token"]
   },
   {
