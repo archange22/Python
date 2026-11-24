@@ -7,7 +7,7 @@ Sun IA est une application web progressive (PWA) à identité solaire. Sa page p
 - Un petit réseau neuronal artificiel à propagation avant, avec une couche cachée de 16 neurones, entraîné localement sur des exemples de phrases ; ses poids sont conservés dans le stockage local après le premier entraînement.
 - Classification de huit intentions de base : salutations, questions simples sur l’état, demande de nom, identité, remerciements, départ, demande d’aide et discussion informelle.
 - Compréhension de quelques abréviations françaises courantes, comme « ccmt », « cv », « bjr » et « slt ».
-- Indexation locale de 19 fichiers pédagogiques en Markdown : cours Python, IA, Discord et Web.
+- Indexation locale de 24 fichiers Markdown : cours Python, IA, Discord et Web, complétés par cinq fiches françaises sur Python avancé, les fondamentaux IA, les pratiques Web, le développement Discord et la sécurité.
 - Recherche documentaire pondérée (BM25), normalisation de plusieurs abréviations françaises et rapprochement de synonymes techniques.
 - Analyse du type de demande : définition, explication, comparaison, procédure ou exemple.
 - Composition de réponses à partir de phrases pertinentes extraites de plusieurs sections, avec attribution des fichiers sources ; les comparaisons HTML/CSS/JavaScript et les procédures multi-étapes sont prises en charge.
@@ -32,6 +32,12 @@ Les contenus pédagogiques restent accessibles depuis l’application :
 - Création de sites Web (HTML, CSS et JavaScript)
 
 Les sources sont organisées dans \`courses/<parcours>/lesson-NN.md\`. Les cours et PDF d’intelligence artificielle sont conservés. Les PDF associés sont générés par le workflow \`.github/workflows/build-course-pdfs.yml\`.
+
+### Base documentaire complémentaire de Sun
+
+Les fiches originales du dossier `knowledge/` sont indexées localement par Sun Brain et mises en cache par le Service Worker. Elles synthétisent des notions issues de documentations officielles, avec leurs références dans `knowledge/SOURCES.md`.
+
+Sun Brain lit actuellement le Markdown ; il ne décode pas directement les fichiers PDF binaires. Pour les intégrer ultérieurement, le texte d'un PDF devra être extrait et vérifié avant d'être ajouté comme document indexable. Aucun service d'IA payant ni aucune conversation privée ne sert à constituer cette base.
 
 ## Console Python 3
 

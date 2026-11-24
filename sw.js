@@ -1,4 +1,4 @@
-const STATIC_CACHE = "academique-shell-v18";
+const STATIC_CACHE = "academique-shell-v19";
 const PDF_CACHE = "academique-pdf-v2";
 const APP_FILES = [
   "./",
@@ -33,6 +33,11 @@ const APP_FILES = [
   "./courses/web/lesson-02.md",
   "./courses/web/lesson-03.md",
   "./courses/web/lesson-04.md",
+  "./knowledge/python-practice.md",
+  "./knowledge/ia-foundations.md",
+  "./knowledge/web-practices.md",
+  "./knowledge/discord-development.md",
+  "./knowledge/security-and-privacy.md",
   "./apps/python-console-3/index.html",
   "./apps/python-console-3/styles.css",
   "./apps/python-console-3/app.js",

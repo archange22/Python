@@ -9,7 +9,10 @@
     "courses/discord/lesson-04.md", "courses/web/lesson-01.md",
     "courses/web/lesson-02.md", "courses/web/lesson-03.md",
     "courses/web/lesson-04.md", "pdf/lecon-01.md", "pdf/lecon-02.md",
-    "pdf/lecon-03.md", "pdf/lecon-04.md"
+    "pdf/lecon-03.md", "pdf/lecon-04.md",
+    "knowledge/python-practice.md", "knowledge/ia-foundations.md",
+    "knowledge/web-practices.md", "knowledge/discord-development.md",
+    "knowledge/security-and-privacy.md"
   ];
   const data = {
     greeting: ["bonjour", "salut", "yo", "coucou", "hello", "hey", "bonsoir", "bjr", "slt", "cc"],

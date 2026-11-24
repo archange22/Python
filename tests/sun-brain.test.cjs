@@ -26,7 +26,12 @@ const DOCUMENTS = [
   "pdf/lecon-01.md",
   "pdf/lecon-02.md",
   "pdf/lecon-03.md",
-  "pdf/lecon-04.md"
+  "pdf/lecon-04.md",
+  "knowledge/python-practice.md",
+  "knowledge/ia-foundations.md",
+  "knowledge/web-practices.md",
+  "knowledge/discord-development.md",
+  "knowledge/security-and-privacy.md"
 ];
 
 const values = new Map();
@@ -262,4 +267,22 @@ test("Les procédures restent centrées sur les étapes utiles", async () => {
   assert.match(answer, /Comprendre et créer une liste/);
   assert.doesNotMatch(answer, /start=1/);
   assert.doesNotMatch(answer, /mini-projet/i);
+});
+
+
+test("Sun Brain indexe les cinq nouvelles fiches documentaires locales", () => {
+  const cases = [
+    ["comment utiliser venv pour installer un paquet python", "knowledge/python-practice.md"],
+    ["quelles metriques precision rappel score f1 classification", "knowledge/ia-foundations.md"],
+    ["comment faire un formulaire accessible avec etiquette clavier html", "knowledge/web-practices.md"],
+    ["quels evenements les intents gateway permettent ils de recevoir", "knowledge/discord-development.md"],
+    ["comment eviter injection xss et valider une entree utilisateur", "knowledge/security-and-privacy.md"]
+  ];
+
+  cases.forEach(([question, expectedPath]) => {
+    const result = brain.searchDocuments(question);
+    assert.ok(result && result.best, "Une fiche doit être retrouvée pour : " + question);
+    assert.equal(result.best.section.path, expectedPath);
+    assert.ok(result.best.section.body.length > 35);
+  });
 });
