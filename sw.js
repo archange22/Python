@@ -111,7 +111,7 @@ self.addEventListener("fetch", (event) => {
             /^knowledge\/imported\/[a-z0-9][a-z0-9.-]*\.md$/i.test(item.path) &&
             !item.path.includes("..")) assets.push({ path: item.path, cache: STATIC_CACHE });
         if (typeof item.pdf === "string" &&
-            /^knowledge\/pdfs\/[a-z0-9][a-z0-9.-]*\.pdf$/i.test(item.pdf) &&
+            /^knowledge\/pdfs\/(?:imported\/)?[a-z0-9][a-z0-9.-]*\.pdf$/i.test(item.pdf) &&
             !item.pdf.includes("..")) assets.push({ path: item.pdf, cache: PDF_CACHE });
       });
 
