@@ -452,8 +452,10 @@
 
       answerSentences(section).forEach((sentence, sentenceIndex) => {
         const relevance = sentenceRelevance(sentence, queryData);
-        if (relevance.score < 1.5 || relevance.matched === 0) return;
         const minimumCoverage = Math.min(2, queryData.base.length);
+        const headingContext = queryData.base.length > 1 && contextMatches >= minimumCoverage;
+        if (relevance.score < 1.5 && !headingContext) return;
+        if (relevance.matched === 0 && !headingContext) return;
         if (relevance.matched + Math.min(contextMatches, 1) < minimumCoverage) return;
         if (queryData.base.length > 1 && relevance.matched === 1 && contextMatches === 0) return;
         if (queryData.base.includes("neurone") && !queryData.base.some(token => token === "reseau" || token === "neurone") ) return;
@@ -466,9 +468,10 @@
         const titleMatches = queryData.base.filter(token => titleTokens.has(token)).length;
         const preferredBoost = section.path.startsWith(preferredPrefix) ? 1.2 : 0;
         const headingBoost = headingMatches * 3.6 + titleMatches * 1.8;
+        const contextSentenceBoost = relevance.matched === 0 ? 3.0 : 0;
         let definitionBoost = /\b(est une|est un|sont des|désigne|signifie|correspond à|se définit)\b/i.test(sentence) ? 2.2 : 0;
         if (/\b(condition imbriquée|exemple|exercice|leçon|prochaine étape)\b/i.test(sentence)) definitionBoost -= 0.8;
-        const score = relevance.score + headingBoost + preferredBoost + definitionBoost + (sentenceIndex === 0 ? 0.25 : 0);
+        const score = relevance.score + headingBoost + preferredBoost + contextSentenceBoost + definitionBoost + (sentenceIndex === 0 ? 0.25 : 0);
         evidence.push({ sentence, section, score, matched: relevance.matched });
       });
     });
@@ -624,8 +627,9 @@
       const contextMatches = queryData.base.filter(token => headingTokens.has(token) || titleTokens.has(token)).length;
       answerSentences(section).forEach(sentence => {
         const relevance = sentenceRelevance(sentence, queryData);
-        if (relevance.matched === 0) return;
         const minimumCoverage = Math.min(2, queryData.base.length);
+        const headingContext = queryData.base.length > 1 && contextMatches >= minimumCoverage;
+        if (relevance.matched === 0 && !headingContext) return;
         if (relevance.matched + Math.min(contextMatches, 1) < minimumCoverage) return;
         const headingMatches = queryData.base.filter(token => headingTokens.has(token)).length;
         const titleMatches = queryData.base.filter(token => titleTokens.has(token)).length;
@@ -641,11 +645,12 @@
           new RegExp("^(?:(?:un|une|le|la|l|les|des|du)\\s+)?" + token + "\\b").test(normalizedSentence)
         );
         const definitionBoost = type === "definition" && subjectBeforeVerb && startsWithTopic ? 28 : 0;
+        const contextSentenceBoost = relevance.matched === 0 ? 5 : 0;
         const narrowDefinitionPenalty = /\b(imbriquee|particulier|exemple)\b/.test(normalizedSentence) ? 1.5 : 0;
         const explanatoryBoost = type !== "definition" && /\b(utilise|apprend|ajuste|fonctionne|permet|recoit|produit|calcule|transmet)\b/.test(normalizedSentence) ? 3.5 : 0;
         const exampleBoost = type === "example" && /\b(exemple|par exemple|while|for|utilise)\b/.test(normalizedSentence) ? 4 : 0;
         const score = relevance.score + headingMatches * 3.5 + titleMatches * 1.8 +
-          definitionBoost + explanatoryBoost + exampleBoost - narrowDefinitionPenalty;
+          definitionBoost + contextSentenceBoost + explanatoryBoost + exampleBoost - narrowDefinitionPenalty;
         candidates.push({ sentence, section, score, matched: relevance.matched });
       });
     });
