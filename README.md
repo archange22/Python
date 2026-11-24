@@ -4,7 +4,7 @@ Sun IA est une application web progressive (PWA) à identité solaire. Sa page p
 
 ## Sun Brain — assistant documentaire local 0.0.3
 
-- Un réseau neuronal artificiel local à propagation avant, avec 24 neurones cachés, entraîné sur 128 formulations françaises réparties entre huit intentions de conversation et treize familles de sujets ; ses poids sont conservés localement après le premier entraînement.
+- Un réseau neuronal artificiel local à propagation avant, avec 24 neurones cachés, entraîné sur 224 formulations françaises réparties entre huit intentions de conversation et treize familles de sujets ; ses poids sont conservés localement après le premier entraînement.
 - Classification neuronale de huit intentions sociales et de treize familles de sujets : Python, IA, Discord, Web, documents/PDF, études, mathématiques, sciences, culture, langues, rédaction, dépannage et discussion générale.
 - Analyse de mots, bigrammes, préfixes, suffixes et trigrammes de caractères pour mieux reconnaître les variantes d’écriture, les abréviations et les formulations proches.
 - Indexation locale du noyau documentaire de 32 fichiers Markdown : 23 leçons de cours, quatre fiches d'exercices et cinq fiches documentaires. Le catalogue ajoute en plus les documents approuvés, dont le corpus de discussion extrait du PDF.
@@ -18,7 +18,7 @@ Sun IA est une application web progressive (PWA) à identité solaire. Sa page p
 - Historique des conversations conservé sur l’appareil.
 - Aucun service d’IA externe, aucune clé API et aucun grand modèle de langage.
 
-**Limite importante :** ce n’est pas encore un assistant génératif comparable à ChatGPT, Claude ou Grok. Le réseau neuronal reconnaît des intentions et propose cinq domaines de sujet, puis la recherche documentaire sélectionne des preuves et compose des réponses à partir des passages disponibles. Cette architecture améliore le repérage du sujet, mais ne produit pas une compréhension générale du monde ni une rédaction libre de type grand modèle de langage. Sun ne peut pas garantir une réponse sur un fait absent de ses documents. Il n’apprend pas automatiquement de nouvelles connaissances à partir des conversations. Ajouter un cours à l’index améliore les documents consultables, mais ne met pas à jour les poids neuronaux.
+**Limite importante :** ce n’est pas encore un assistant génératif comparable à ChatGPT, Claude ou Grok. Le réseau neuronal reconnaît des intentions et propose treize familles de sujets, puis la recherche documentaire sélectionne des preuves et compose des réponses à partir des passages disponibles. Cette architecture améliore le repérage du sujet, mais ne produit pas une compréhension générale du monde ni une rédaction libre de type grand modèle de langage. Sun ne peut pas garantir une réponse sur un fait absent de ses documents. Il n’apprend pas automatiquement de nouvelles connaissances à partir des conversations. Ajouter un cours à l’index améliore les documents consultables, mais ne met pas à jour les poids neuronaux.
 
 Les fichiers principaux sont \`sun-brain.js\` (classification neuronale et recherche documentaire), \`sun-ia.js\` (interface de discussion) et \`sun-ia.css\` (présentation).
 
@@ -48,7 +48,7 @@ python scripts/ingest_pdf_knowledge.py mon-document.pdf \
 
 L'import crée d'abord un aperçu dans `knowledge/staging/`, dossier ignoré par Git. `--approve` confirme la vérification manuelle, mais ne publie rien à lui seul. Pour copier le fichier, son texte extrait et sa référence dans le dépôt public, il faut aussi indiquer explicitement `--publish-public`. N'utilise cette option que pour un document dont la redistribution est autorisée ; les documents privés doivent rester hors du dépôt public. Les PDF scannés ou constitués d'images sont refusés et nécessitent un OCR séparé qui n'est pas encore intégré. Le contrôle automatique des marqueurs sensibles ne garantit pas qu'un document ne contient aucune donnée personnelle : une lecture humaine reste obligatoire.
 
-**Limite :** le réseau neuronal classe huit intentions de conversation et cinq domaines documentaires ; il ne devient pas un grand modèle de langage génératif. Le corpus et l'import PDF renforcent la recherche documentaire, mais un sujet absent des documents nécessite une source supplémentaire ou une recherche externe réellement disponible.
+**Limite :** le réseau neuronal classe huit intentions de conversation et treize familles de sujets ; il ne devient pas un grand modèle de langage génératif. Le corpus et l'import PDF renforcent la recherche documentaire, mais un sujet absent des documents nécessite une source supplémentaire ou une recherche externe réellement disponible.
 
 ## Formations et bibliothèque
 
