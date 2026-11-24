@@ -591,14 +591,14 @@
     perceptron: ["neurone", "poids", "biais", "activation"],
     poids: ["parametre", "neurone", "modele"],
     biais: ["neurone", "perceptron", "poids"],
-    organiser: ["organisation", "organise", "planifier", "travail", "scolaire"],
-    organisation: ["organiser", "planifier", "travail", "scolaire"],
-    devoir: ["devoirs", "exercice", "exercices", "travail"],
-    devoirs: ["devoir", "exercice", "exercices", "travail"],
-    reviser: ["revision", "memoriser", "memorisation", "apprendre"],
-    revision: ["reviser", "memoriser", "memorisation", "apprendre"],
-    examen: ["revision", "evaluation", "controle", "etudier"],
-    etudier: ["etude", "apprentissage", "revision", "scolaire"],
+    organiser: ["organisation", "organise", "planifier", "scolaire"],
+    organisation: ["organiser", "planifier", "scolaire"],
+    devoir: ["devoirs", "scolaire", "revision"],
+    devoirs: ["devoir", "scolaire", "revision"],
+    reviser: ["revision", "memoriser", "memorisation", "examen"],
+    revision: ["reviser", "memoriser", "memorisation", "devoirs", "examen"],
+    examen: ["revision", "evaluation", "controle", "epreuve"],
+    etudier: ["etude", "revision", "scolaire"],
     fraction: ["fractions", "calcul", "numerateur", "denominateur"],
     fractions: ["fraction", "calcul", "numerateur", "denominateur"],
     traduire: ["traduction", "langue", "anglais", "francais"],
@@ -727,9 +727,16 @@
       }
       if (coverage === 1) score += 1.2;
       else if (coverage >= 0.66) score += 0.45;
-      if (predictedSubject && predictedSubject.paths.some(prefix =>
+      const matchesPredictedSubject = predictedSubject && predictedSubject.paths.some(prefix =>
         item.section.path === prefix || item.section.path.startsWith(prefix)
-      )) score += 0.55 * neural.confidence;
+      );
+      if (matchesPredictedSubject) {
+        score += 0.75 * neural.confidence;
+      } else if (predictedSubject &&
+          predictedSubject.paths.includes("knowledge/imported/") &&
+          item.section.path.startsWith("courses/")) {
+        score -= 0.8 * neural.confidence;
+      }
       return { section: item.section, score, coverage, matchedTokens };
     }).sort((a, b) => b.score - a.score);
 
