@@ -12,17 +12,25 @@ const DOCUMENTS = [
   "courses/ia/lesson-02.md",
   "courses/ia/lesson-03.md",
   "courses/ia/lesson-04.md",
+  "courses/ia/lesson-05.md",
+  "courses/ia/lesson-06.md",
   "courses/python/lesson-05.md",
   "courses/python/lesson-06.md",
   "courses/python/lesson-07.md",
+  "courses/python/lesson-08.md",
+  "courses/python/lesson-09.md",
   "courses/discord/lesson-01.md",
   "courses/discord/lesson-02.md",
   "courses/discord/lesson-03.md",
   "courses/discord/lesson-04.md",
+  "courses/discord/lesson-05.md",
+  "courses/discord/lesson-06.md",
   "courses/web/lesson-01.md",
   "courses/web/lesson-02.md",
   "courses/web/lesson-03.md",
   "courses/web/lesson-04.md",
+  "courses/web/lesson-05.md",
+  "courses/web/lesson-06.md",
   "pdf/lecon-01.md",
   "pdf/lecon-02.md",
   "pdf/lecon-03.md",
@@ -184,7 +192,47 @@ const QA_CASES = [
       "courses/web/lesson-04.md"
     ],
     required: ["responsive", "écrans", "meta viewport"]
-  }
+  },
+  {
+    question: "comment entrainer un modele simple avec le plus proche centroide",
+    sources: ["courses/ia/lesson-05.md"],
+    required: ["plus proche centroïde", "entraîner", "inférence"]
+  },
+  {
+    question: "comment fonctionne un perceptron avec poids biais et activation",
+    sources: ["courses/ia/lesson-06.md"],
+    required: ["perceptron", "poids", "biais"]
+  },
+  {
+    question: "comment créer une fonction python avec def et return",
+    sources: ["courses/python/lesson-08.md"],
+    required: ["fonction", "def", "return"]
+  },
+  {
+    question: "comment utiliser un dictionnaire python avec des clés et valeurs",
+    sources: ["courses/python/lesson-09.md"],
+    required: ["dictionnaire", "clé", "valeur"]
+  },
+  {
+    question: "comment vérifier les rôles et permissions dans un bot discord",
+    sources: ["courses/discord/lesson-05.md"],
+    required: ["permissions", "rôle", "moindre privilège"]
+  },
+  {
+    question: "comment tester et gérer les erreurs d'un bot discord",
+    sources: ["courses/discord/lesson-06.md"],
+    required: ["erreurs", "unittest", "journal"]
+  },
+  {
+    question: "comment utiliser javascript et addEventListener pour un clic",
+    sources: ["courses/web/lesson-05.md"],
+    required: ["javascript", "événement", "addEventListener"]
+  },
+  {
+    question: "comment utiliser fetch async await pour lire une api json",
+    sources: ["courses/web/lesson-06.md"],
+    required: ["fetch", "async", "json"]
+  },
 ];
 
 test("Sun Brain charge tous les documents pédagogiques prévus", () => {
@@ -337,4 +385,23 @@ test("Les documents non approuvés ou aux chemins non sûrs sont ignorés", () =
   assert.ok(!requestedPaths.includes("./knowledge/imported/test-pending.md"));
   assert.ok(!requestedPaths.includes("./../private.md"));
   assert.equal(typeof brain.recognizeTopic, "function");
+});
+
+
+test("Les huit nouvelles leçons sont bien indexées par Sun Brain", () => {
+  const cases = [
+    ["plus proche centroïde modèle machine learning", "courses/ia/lesson-05.md"],
+    ["neurone artificiel perceptron poids biais", "courses/ia/lesson-06.md"],
+    ["fonction def paramètres return", "courses/python/lesson-08.md"],
+    ["dictionnaire clé valeur get", "courses/python/lesson-09.md"],
+    ["permissions rôles moindre privilège", "courses/discord/lesson-05.md"],
+    ["cooldown unittest journaux erreurs", "courses/discord/lesson-06.md"],
+    ["javascript DOM événements addEventListener", "courses/web/lesson-05.md"],
+    ["fetch async await api json", "courses/web/lesson-06.md"]
+  ];
+  cases.forEach(([question, source]) => {
+    const result = brain.searchDocuments(question);
+    assert.ok(result && result.best, "Leçon introuvable : " + source);
+    assert.equal(result.best.section.path, source);
+  });
 });
