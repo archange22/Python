@@ -455,7 +455,7 @@
         const minimumCoverage = Math.min(2, queryData.base.length);
         const headingContext = queryData.base.length > 1 && contextMatches >= minimumCoverage;
         if (relevance.score < 1.5 && !headingContext) return;
-        if (relevance.matched === 0 && !headingContext) return;
+        if (relevance.matched === 0 && !(type === "definition" && headingContext)) return;
         if (relevance.matched + Math.min(contextMatches, minimumCoverage) < minimumCoverage) return;
         if (queryData.base.length > 1 && relevance.matched === 1 && contextMatches === 0) return;
         if (queryData.base.includes("neurone") && !queryData.base.some(token => token === "reseau" || token === "neurone") ) return;
@@ -645,7 +645,7 @@
           new RegExp("^(?:(?:un|une|le|la|l|les|des|du)\\s+)?" + token + "\\b").test(normalizedSentence)
         );
         const definitionBoost = type === "definition" && subjectBeforeVerb && startsWithTopic ? 28 : 0;
-        const contextSentenceBoost = relevance.matched === 0 ? 5 : 0;
+        const contextSentenceBoost = 0;
         const narrowDefinitionPenalty = /\b(imbriquee|particulier|exemple)\b/.test(normalizedSentence) ? 1.5 : 0;
         const explanatoryBoost = type !== "definition" && /\b(utilise|apprend|ajuste|fonctionne|permet|recoit|produit|calcule|transmet)\b/.test(normalizedSentence) ? 3.5 : 0;
         const exampleBoost = type === "example" && /\b(exemple|par exemple|while|for|utilise)\b/.test(normalizedSentence) ? 4 : 0;
@@ -654,7 +654,7 @@
         candidates.push({ sentence, section, score, matched: relevance.matched });
       });
     });
-    return candidates.sort((a, b) => b.score - a.score).slice(0, 12);
+    return candidates.sort((a, b) => b.score - a.score).slice(0, 30);
   }
 
   function composeEvidence(query, result, evidence, type) {
@@ -668,6 +668,12 @@
     );
     const first = direct[0] || evidence[0];
     if (first) chosen.push(first);
+    if (type === "definition" && first && /\bcondition\b/i.test(first.sentence)) {
+      const ifSupport = direct.find(item =>
+        item.section.path === first.section.path && /\bmot[- ]clé if\b/i.test(item.sentence)
+      );
+      if (ifSupport && !chosen.some(item => norm(item.sentence) === norm(ifSupport.sentence))) chosen.push(ifSupport);
+    }
     const maxItems = type === "definition" ? 2 : 3;
     evidence.forEach(item => {
       if (chosen.length >= maxItems) return;
