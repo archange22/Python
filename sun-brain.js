@@ -371,7 +371,7 @@
       });
     }
 
-    return { best, alternatives, queryTerms: queryData.base, coverage: covered.size / queryData.base.length };
+    return { best, alternatives, candidates: ranked.slice(0, 28), queryTerms: queryData.base, coverage: covered.size / queryData.base.length };
   }
   function buildContextQuery(message, history) {
     const current = norm(message);
