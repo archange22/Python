@@ -1,4 +1,22 @@
 {
   "version": 1,
-  "documents": []
+  "documents": [
+    {
+      "id": "discussion-global-v0.0.2",
+      "title": "Sun IA - Corpus de discussion globale - système neuronal 0.0.2",
+      "topic": "salutations, français familier, conversation, école, langues, mathématiques, Python, Web, IA, Discord, sciences et sécurité",
+      "path": "knowledge/imported/discussion-global-v0.0.2.md",
+      "pdf": "knowledge/pdfs/sun-discussion-global-v0.0.2.pdf",
+      "source": "Corpus original créé pour Sun IA à partir de situations fictives.",
+      "license": "Contenu original du projet Sun IA.",
+      "approved": true,
+      "version": "0.0.2",
+      "pages": 112,
+      "chapters": 36,
+      "situations": 216,
+      "response_variants": 432,
+      "extracted_chars": 216851,
+      "sha256_pdf": "4330064065e4faa3aa74b9855c11077cb73ad1da14809eaaf53ff4d19ea41b4c"
+    }
+  ]
 }
