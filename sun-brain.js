@@ -151,34 +151,216 @@
     } catch (_) { failed++; return []; }
   })).then(groups => { sections = groups.flat(); return status(); });
   function status() { return { documents: loaded, total: paths.length, sections: sections.length, failed }; }
-  function searchDocs(query) {
-    let terms = norm(query).split(/\s+/).filter(t => (t.length > 2 || t === "ia") && !["comment", "pourquoi", "explique", "donne", "moi", "dans", "quoi", "cest"].includes(t));
-    const expanded = terms.slice();
-    terms.forEach(t => {
-      if (t === "ia") expanded.push("intelligence", "artificielle");
-      if (t === "neurone" || t === "neurones") expanded.push("reseau", "reseaux", "deep");
-      if (t === "machine" || t === "learning") expanded.push("apprentissage", "automatique", "machine", "learning");
-      if (t === "python") expanded.push("programmation");
-    });
-    terms = Array.from(new Set(expanded));
-    let best = null;
-    sections.forEach(section => {
-      const headingTerms = norm(section.heading).split(/\s+/);
-      const titleTerms = norm(section.title).split(/\s+/);
-      const bodyTerms = norm(section.body).split(/\s+/);
-      let score = 0;
-      terms.forEach(term => {
-        if (headingTerms.includes(term)) score += 4;
-        else if (titleTerms.includes(term)) score += 0.8;
-        const occurrences = bodyTerms.filter(word => word === term).length;
-        score += Math.min(occurrences, 3) * 0.7;
+  const STOP_QUERY_WORDS = new Set([
+    "a", "au", "aux", "avec", "ce", "ces", "cette", "dans", "de", "des", "du",
+    "en", "est", "et", "la", "le", "les", "un", "une", "pour", "par", "sur",
+    "mon", "ma", "mes", "moi", "me", "toi", "ton", "ta", "tes", "nous", "vous",
+    "qui", "que", "quoi", "quel", "quelle", "quels", "quelles", "comment",
+    "pourquoi", "explique", "expliquer", "donne", "donner", "montre", "montrer",
+    "faire", "fait", "fais", "cest", "estce", "peux", "peut", "on", "il", "elle",
+    "je", "tu", "ils", "elles", "aide", "y", "comme"
+  ]);
+
+  const QUERY_SYNONYMS = {
+    ia: ["intelligence", "artificielle"],
+    intelligence: ["ia", "artificielle"],
+    artificielle: ["ia", "intelligence"],
+    machine: ["learning", "apprentissage", "automatique"],
+    learning: ["machine", "apprentissage", "automatique"],
+    apprentissage: ["machine", "learning"],
+    automatique: ["machine", "learning"],
+    neurone: ["reseau", "deep", "neurones"],
+    reseau: ["neurone", "neurones", "deep"],
+    donnees: ["data", "dataset"],
+    data: ["donnees", "dataset"],
+    code: ["python", "programmation"],
+    programmer: ["python", "programmation", "code"],
+    programmation: ["python", "code"],
+    condition: ["if", "else", "elif", "conditions"],
+    conditions: ["condition", "if", "else", "elif"],
+    boucle: ["for", "while", "range", "boucles"],
+    boucles: ["boucle", "for", "while", "range"],
+    liste: ["listes", "collection"],
+    listes: ["liste", "collection"],
+    bot: ["discord", "robot"],
+    bots: ["bot", "discord"],
+    discord: ["bot", "bots"],
+    site: ["web", "html", "css"],
+    web: ["html", "css", "javascript"],
+    javascript: ["js"],
+    js: ["javascript"],
+    style: ["css", "mise", "forme"],
+    page: ["html", "web"],
+    creer: ["creation", "construire"],
+    cree: ["creation", "construire", "creer"],
+    creation: ["creer", "construire"]
+  };
+
+  function canonicalToken(token) {
+    let value = token;
+    if (value === "donnees" || value === "donnee") return "donnees";
+    if (value.length > 5 && value.endsWith("s")) value = value.slice(0, -1);
+    return value;
+  }
+
+  function getQueryTerms(query) {
+    const raw = norm(query).split(/\s+/).filter(Boolean).map(canonicalToken);
+    const base = Array.from(new Set(raw.filter(token =>
+      !STOP_QUERY_WORDS.has(token) && token.length > 1
+    )));
+    const weighted = new Map();
+    base.forEach(token => {
+      weighted.set(token, Math.max(weighted.get(token) || 0, 1));
+      (QUERY_SYNONYMS[token] || []).forEach(synonym => {
+        const key = canonicalToken(synonym);
+        if (!STOP_QUERY_WORDS.has(key)) weighted.set(key, Math.max(weighted.get(key) || 0, 0.48));
       });
-      if (!best || score > best.score) best = { section, score };
     });
-    if (!best || best.score < 1) return "Je n’ai pas trouvé de passage assez pertinent dans les cours chargés. Précise le sujet et je relancerai la recherche.";
-    let excerpt = best.section.body;
-    if (excerpt.length > 750) excerpt = excerpt.slice(0, 740) + "…";
-    return "Dans le cours « " + best.section.title + " », partie « " + best.section.heading + " » :\n\n" + excerpt + "\n\nSource : " + best.section.path;
+    return { base, weighted };
+  }
+
+  function tokenizeField(value) {
+    return norm(value).split(/\s+/).filter(Boolean).map(canonicalToken);
+  }
+
+  function frequency(tokens) {
+    const map = new Map();
+    tokens.forEach(token => map.set(token, (map.get(token) || 0) + 1));
+    return map;
+  }
+
+  function bm25(tf, length, averageLength, idf) {
+    if (!tf) return 0;
+    const k1 = 1.35;
+    const b = 0.72;
+    const denominator = tf + k1 * (1 - b + b * length / Math.max(1, averageLength));
+    return idf * (tf * (k1 + 1)) / denominator;
+  }
+
+  function retrieveDocs(query) {
+    if (!sections.length) return null;
+    const queryData = getQueryTerms(query);
+    if (!queryData.base.length) return null;
+
+    const prepared = sections.map(section => {
+      const titleTokens = tokenizeField(section.title);
+      const headingTokens = tokenizeField(section.heading);
+      const bodyTokens = tokenizeField(section.body);
+      return {
+        section,
+        titleTokens,
+        headingTokens,
+        bodyTokens,
+        titleCounts: frequency(titleTokens),
+        headingCounts: frequency(headingTokens),
+        bodyCounts: frequency(bodyTokens),
+        allTokens: new Set(titleTokens.concat(headingTokens, bodyTokens)),
+        bodyLength: bodyTokens.length
+      };
+    });
+
+    const averageLength = prepared.reduce((sum, item) => sum + item.bodyLength, 0) / Math.max(1, prepared.length);
+    const documentFrequency = new Map();
+    prepared.forEach(item => {
+      item.allTokens.forEach(token => documentFrequency.set(token, (documentFrequency.get(token) || 0) + 1));
+    });
+
+    const ranked = prepared.map(item => {
+      let score = 0;
+      let matched = 0;
+      queryData.base.forEach(token => {
+        const df = documentFrequency.get(token) || 0;
+        const idf = Math.log(1 + (prepared.length - df + 0.5) / (df + 0.5));
+        const titleTf = item.titleCounts.get(token) || 0;
+        const headingTf = item.headingCounts.get(token) || 0;
+        const bodyTf = item.bodyCounts.get(token) || 0;
+        if (titleTf || headingTf || bodyTf) matched += 1;
+        score += 2.1 * bm25(titleTf, item.titleTokens.length, 8, idf);
+        score += 3.0 * bm25(headingTf, item.headingTokens.length, 8, idf);
+        score += 1.0 * bm25(bodyTf, item.bodyLength, averageLength, idf);
+      });
+
+      queryData.weighted.forEach((weight, token) => {
+        if (weight >= 1 || item.allTokens.has(token)) return;
+        const df = documentFrequency.get(token) || 0;
+        const idf = Math.log(1 + (prepared.length - df + 0.5) / (df + 0.5));
+        const tf = item.bodyCounts.get(token) || 0;
+        if (tf) score += 0.55 * weight * bm25(tf, item.bodyLength, averageLength, idf);
+      });
+
+      const coverage = matched / queryData.base.length;
+      const normalizedQuery = norm(query);
+      const normalizedHeading = norm(item.section.heading);
+      const normalizedTitle = norm(item.section.title);
+      if (normalizedQuery.length > 5 &&
+          (normalizedHeading.includes(normalizedQuery) || normalizedTitle.includes(normalizedQuery))) {
+        score += 4.5;
+      }
+      if (coverage === 1) score += 1.2;
+      else if (coverage >= 0.66) score += 0.45;
+      return { section: item.section, score, coverage };
+    }).sort((a, b) => b.score - a.score);
+
+    const best = ranked[0];
+    const second = ranked[1] || null;
+    if (!best || best.score < 0.85 || best.coverage < 0.34) return null;
+    if (queryData.base.length >= 3 && best.coverage < 0.5) return null;
+    if (second && second.score >= best.score * 0.98 &&
+        second.coverage > best.coverage && best.coverage < 0.6) return null;
+
+    return {
+      best,
+      alternatives: ranked.slice(1, 3).filter(item =>
+        item.score >= best.score * 0.72 && item.coverage >= 0.5
+      )
+    };
+  }
+
+  function buildContextQuery(message, history) {
+    const current = norm(message);
+    const wordCount = getQueryTerms(current).base.length;
+    const followUp = /\b(exemple|un exemple|pourquoi|comment faire|et ensuite|et apres|la suite|plus simple|plus simplement|detaille|developpe|continue|resume|autre exemple)\b/.test(current);
+    if (!Array.isArray(history) || (!followUp && wordCount > 3)) return message;
+
+    const previousUser = history.slice(0, -1).reverse().find(item =>
+      item && item.role === "user" && typeof item.content === "string"
+    );
+    if (!previousUser) return message;
+    return previousUser.content + " " + message;
+  }
+
+  function makeExcerpt(section, limit) {
+    let excerpt = section.body
+      .replace(/~~~[\w-]*\n?/g, "")
+      .replace(/\x60{3}[\w-]*\n?/g, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+    if (excerpt.length <= limit) return excerpt;
+    const boundary = excerpt.lastIndexOf(". ", limit);
+    const cut = boundary > Math.floor(limit * 0.55) ? boundary + 1 : limit;
+    return excerpt.slice(0, cut).trim() + "…";
+  }
+
+  function searchDocs(query) {
+    const result = retrieveDocs(query);
+    if (!result) {
+      return "Je n’ai pas trouvé de passage suffisamment fiable dans les cours pour répondre à cette question. Tu peux préciser le sujet ou poser une question plus ciblée. Je préfère signaler cette limite plutôt que d’inventer une réponse.";
+    }
+
+    const section = result.best.section;
+    let answer = "Voici ce que j’ai trouvé dans les cours de l’application :\n\n";
+    answer += "**" + section.title + "**\n";
+    answer += "Partie : " + section.heading + "\n\n";
+    answer += makeExcerpt(section, 980);
+    answer += "\n\nSource : " + section.path;
+
+    if (result.alternatives.length) {
+      answer += "\n\nAutres parties proches : " + result.alternatives
+        .map(item => item.section.heading)
+        .filter((heading, index, list) => list.indexOf(heading) === index)
+        .slice(0, 2).join(" ; ");
+    }
+    return answer;
   }
   function extractName(s) {
     const m = norm(s).match(/(?:je m appelle|moi c est|mon nom est|appelle moi|je suis)\s+([a-z]{2,22})/);
@@ -241,12 +423,14 @@
       }
     }
     await ready;
-    return searchDocs(message);
+    const contextualQuery = buildContextQuery(message, history);
+    return searchDocs(contextualQuery);
   }
   window.SunBrain = {
     ready: () => ready,
     reply,
     classifyIntent: classify,
+    searchDocuments: query => retrieveDocs(query),
     status,
     modelInfo: { type: "small-feedforward-neural-intent-classifier", hiddenNeurons: hidden, intents: labels.length, trainingExamples: samples.length }
   };
