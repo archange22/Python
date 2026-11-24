@@ -407,7 +407,7 @@
       const cleaned = line.trim().replace(/^(?:[-*]\s+|\d+[.)]\s+)/, "").trim();
       if (!cleaned || cleaned.length < 18 || cleaned.startsWith("|") || cleaned === "[[CODE_BLOCK]]") return;
       const normalizedLine = norm(cleaned);
-      if (/^(?:explique|expliquer|definis|definir|definition|ecris|reponds|repondre|complete|exercice|correction|objectif|a la fin|prochaine etape|avant la lecon|tu sauras|tu vas|essaie de|imagine que tu veuilles|quelle valeur|si tu ne peux pas|il faut|reponds aux questions|repere|identifie|dans cette lecon|a retenir)\b/.test(normalizedLine)) return;
+      if (/^(?:explique|expliquer|definis|definir|definition|ecris|reponds|repondre|complete|exercice|correction|objectif|a la fin|prochaine etape|avant la lecon|avant de|tu sauras|tu vas|essaie de|imagine que tu veuilles|quelle valeur|si tu ne peux pas|il faut|reponds aux questions|repere|identifie|dans cette lecon|a retenir)\b/.test(normalizedLine)) return;
       if (/^(?:if|elif|else|for|while|print|return|raise|import|from|class|def|const|let|var)\b|^[a-z_][\w.]*\s*=\s*|^[{}()[\]]+$/.test(cleaned)) return;
       const pieces = cleaned.match(/[^.!?]+[.!?]?/g) || [cleaned];
       pieces.forEach(piece => {
@@ -611,7 +611,7 @@
     return answer.trim();
   }
 
-  function findDirectEvidence(query) {
+  function findDirectEvidence(query, type) {
     const queryData = getQueryTerms(query);
     const candidates = [];
     searchIndex.forEach(indexed => {
@@ -626,8 +626,17 @@
         if (relevance.matched + Math.min(contextMatches, 1) < minimumCoverage) return;
         const headingMatches = queryData.base.filter(token => headingTokens.has(token)).length;
         const titleMatches = queryData.base.filter(token => titleTokens.has(token)).length;
-        const definitionBoost = /\b(est un|est une|sont des|désigne|signifie|correspond à|se définit)\b/i.test(sentence) ? 5 : 0;
-        const score = relevance.score + headingMatches * 3.5 + titleMatches * 1.8 + definitionBoost;
+        const normalizedSentence = norm(sentence);
+        const definitionVerb = /\b(est|sont|designe|signifie|correspond|represente|se definit)\b/;
+        const verbIndex = normalizedSentence.search(definitionVerb);
+        const subjectBeforeVerb = verbIndex > 0 && queryData.base.some(token =>
+          normalizedSentence.slice(0, verbIndex).split(/\s+/).includes(token)
+        );
+        const definitionBoost = type === "definition" && subjectBeforeVerb ? 8 : 0;
+        const explanatoryBoost = type !== "definition" && /\b(utilise|apprend|ajuste|fonctionne|permet|recoit|produit|calcule|transmet)\b/.test(normalizedSentence) ? 3.5 : 0;
+        const exampleBoost = type === "example" && /\b(exemple|par exemple|while|for|utilise)\b/.test(normalizedSentence) ? 4 : 0;
+        const score = relevance.score + headingMatches * 3.5 + titleMatches * 1.8 +
+          definitionBoost + explanatoryBoost + exampleBoost;
         candidates.push({ sentence, section, score, matched: relevance.matched });
       });
     });
@@ -639,7 +648,7 @@
       return "J’ai retrouvé un passage dans les cours, mais je n’ai pas assez d’éléments pour en construire une réponse fiable. Reformule la question ou précise le point que tu veux comprendre.";
     }
     const chosen = [];
-    const direct = findDirectEvidence(query);
+    const direct = findDirectEvidence(query, type);
     const first = direct[0] || evidence[0];
     if (first) chosen.push(first);
     const maxItems = type === "definition" ? 2 : 3;
