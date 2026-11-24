@@ -501,6 +501,7 @@
       const headingTokens = new Set(indexed.headingTokens);
       const titleTokens = new Set(indexed.titleTokens);
       const contextMatches = queryData.base.filter(token => headingTokens.has(token) || titleTokens.has(token)).length;
+      const sameTopic = section.path.startsWith(preferredPrefix);
 
       answerSentences(section).forEach((sentence, sentenceIndex) => {
         const relevance = sentenceRelevance(sentence, queryData);
@@ -508,8 +509,8 @@
         const headingContext = queryData.base.length > 1 && contextMatches >= minimumCoverage;
         if (relevance.score < 1.5 && !headingContext) return;
         if (relevance.matched === 0 && !headingContext) return;
-        if (relevance.matched + Math.min(contextMatches, minimumCoverage) < minimumCoverage) return;
-        if (queryData.base.length > 1 && relevance.matched === 1 && contextMatches === 0) return;
+        if (relevance.matched + Math.min(contextMatches, minimumCoverage) < minimumCoverage && !sameTopic) return;
+        if (queryData.base.length > 1 && relevance.matched === 1 && contextMatches === 0 && !sameTopic) return;
         if (queryData.base.includes("neurone") && !queryData.base.some(token => token === "reseau" || token === "neurone") ) return;
 
         const key = norm(sentence);
@@ -705,10 +706,10 @@
     if (focus.errors && /discord/.test(basePathPrefix)) {
       const logSection = searchIndex.find(item =>
         item.section.path === "courses/discord/lesson-06.md" &&
-        /journal/.test(norm(item.section.heading))
+        /journ/.test(norm(item.section.heading))
       );
       const logSentence = logSection &&
-        answerSentences(logSection.section).find(sentence => /journal|log/.test(norm(sentence)));
+        answerSentences(logSection.section).find(sentence => /journ|log/.test(norm(sentence)));
       if (logSentence && !answer.includes(logSentence)) {
         answer += "\n\nJournalisation : " + logSentence +
           "\nSource : " + logSection.section.path;
@@ -806,6 +807,17 @@
     }
     const maxItems = type === "definition" ? 2 : type === "explanation" ? 5 : 3;
     if (type === "explanation" && first) {
+      const neighbouringSentences = answerSentences(first.section);
+      const firstIndex = neighbouringSentences.findIndex(sentence => norm(sentence) === norm(first.sentence));
+      if (firstIndex >= 0) {
+        neighbouringSentences.slice(firstIndex + 1, firstIndex + 3).forEach(sentence => {
+          if (chosen.length >= maxItems) return;
+          if (chosen.some(item => norm(item.sentence) === norm(sentence))) return;
+          chosen.push({ sentence, section: first.section, score: first.score * 0.9, matched: first.matched });
+        });
+      }
+    }
+    if (type === "explanation" && first) {
       const subjectPrefix = result.best.section.path.split("/").slice(0, 2).join("/") + "/";
       const covered = new Set();
       const markCovered = item => {
@@ -902,7 +914,7 @@
       const procedure = composeProcedure(query, result);
       if (procedure) return procedure;
     }
-    return composeEvidence(query, result, collectEvidence(query, result, 8), type);
+    return composeEvidence(query, result, collectEvidence(query, result, 30), type);
   }
   function extractName(s) {
     const m = norm(s).match(/(?:je m appelle|moi c est|mon nom est|appelle moi|je suis)\s+([a-z]{2,22})/);
