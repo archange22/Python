@@ -404,8 +404,9 @@
     const output = [];
     text.split(/\n+/).forEach(line => {
       const cleaned = line.trim().replace(/^(?:[-*]\s+|\d+[.)]\s+)/, "").trim();
-      if (!cleaned || cleaned.length < 18) return;
-      if (/^(?:~~~|import\s|from\s+\w+\s+import|<\/?[a-z][^>]*>)/.test(cleaned)) return;
+      if (!cleaned || cleaned.length < 18 || cleaned.startsWith("|")) return;
+      if (/^(?:~~~|import\s|from\s+\w+\s+import|<\/?[a-z][^>]*>|(?:explique|définis|definis|écris|ecris|réponds|reponds|complète|complete|exercice|correction|objectif|à la fin|a la fin|prochaine étape|prochaine etape|avant la leçon|avant la lecon|tu sauras|tu vas|essaie de|imagine que tu veuilles)\b)/i.test(cleaned)) return;
+      if (/^(?:if|elif|else|for|while|print|return|raise|import|from|class|def|const|let|var)\b|^[a-z_][\w.]*\s*=\s*|^[{}()[\]]+$/.test(cleaned)) return;
       const pieces = cleaned.match(/[^.!?]+[.!?]?/g) || [cleaned];
       pieces.forEach(piece => {
         const sentence = piece.trim();
@@ -423,8 +424,12 @@
       if (tokens.has(token)) {
         score += 2;
         matched += 1;
-      } else if ((QUERY_SYNONYMS[token] || []).some(synonym => tokens.has(canonicalToken(synonym)))) {
-        score += 0.7;
+      } else {
+        const synonymMatch = (QUERY_SYNONYMS[token] || []).some(synonym => tokens.has(canonicalToken(synonym)));
+        if (synonymMatch) {
+          score += 1.25;
+          matched += 1;
+        }
       }
     });
     if (/\b(est|sont|designe|signifie|permet|sert|consiste|utilise|recoit|produit)\b/i.test(sentence)) score += 0.5;
@@ -433,49 +438,53 @@
 
   function collectEvidence(query, result, limit) {
     const queryData = getQueryTerms(query);
-    const candidates = result.candidates || [result.best].concat(result.alternatives || []);
+    const preferredPrefix = result.best.section.path.split("/").slice(0, 2).join("/") + "/";
     const evidence = [];
     const seen = new Set();
-    candidates.forEach((candidate, candidateIndex) => {
-      answerSentences(candidate.section).forEach((sentence, sentenceIndex) => {
+
+    searchIndex.forEach((indexed, indexNumber) => {
+      const section = indexed.section;
+      const headingTokens = new Set(indexed.headingTokens);
+      const titleTokens = new Set(indexed.titleTokens);
+      const headingMatches = queryData.base.filter(token => headingTokens.has(token)).length;
+      const titleMatches = queryData.base.filter(token => titleTokens.has(token)).length;
+      answerSentences(section).forEach((sentence, sentenceIndex) => {
         const relevance = sentenceRelevance(sentence, queryData);
         if (relevance.score < 1.5 || relevance.matched === 0) return;
         const key = norm(sentence);
         if (seen.has(key)) return;
         seen.add(key);
-        const headingTokens = tokenizeField(candidate.section.title + " " + candidate.section.heading);
-        const headingBoost = queryData.base.some(token => headingTokens.includes(token)) ? 1.2 : 0;
-        evidence.push({
-          sentence,
-          section: candidate.section,
-          score: relevance.score + headingBoost + (sentenceIndex === 0 ? 0.35 : 0) + Math.max(0, 0.45 - candidateIndex * 0.025),
-          matched: relevance.matched
-        });
+
+        const preferredBoost = section.path.startsWith(preferredPrefix) ? 1.4 : 0;
+        const headingBoost = headingMatches * 3.4 + titleMatches * 1.7;
+        const definitionBoost = /\b(est|sont|désigne|signifie|permet|sert|consiste|correspond à|représente)\b/i.test(sentence) ? 0.8 : 0;
+        const positionBoost = sentenceIndex === 0 ? 0.25 : 0;
+        const score = relevance.score + headingBoost + preferredBoost + definitionBoost + positionBoost;
+        evidence.push({ sentence, section, score, matched: relevance.matched, indexNumber });
       });
     });
+
     return evidence.sort((a, b) => b.score - a.score).slice(0, limit || 6);
   }
 
   function findConceptEvidence(concept) {
     const token = canonicalToken(concept);
     const ranked = searchIndex.map(item => {
-      const score = (item.headingCounts.get(token) || 0) * 9 +
-        (item.titleCounts.get(token) || 0) * 4 +
-        Math.min(item.bodyCounts.get(token) || 0, 3) * 0.65;
+      const headingText = norm(item.section.heading);
+      const titleText = norm(item.section.title);
+      const startsWithConcept = headingText === token || headingText.startsWith(token + " ");
+      const score = (startsWithConcept ? 35 : 0) +
+        (item.headingCounts.get(token) || 0) * 10 +
+        (item.titleCounts.get(token) || 0) * 3 +
+        Math.min(item.bodyCounts.get(token) || 0, 3) * 0.35;
       return { item, score };
     }).filter(entry => entry.score > 0).sort((a, b) => b.score - a.score);
     if (!ranked.length) return null;
+
     const selected = ranked[0].item;
     const sentences = answerSentences(selected.section);
-    const chosen = sentences.filter(sentence =>
-      new Set(tokenizeField(sentence)).has(token)
-    ).slice(0, 2);
-    if (chosen.length < 2) {
-      sentences.slice(0, 2).forEach(sentence => {
-        if (!chosen.includes(sentence)) chosen.push(sentence);
-      });
-    }
-    return { section: selected.section, sentences: chosen.slice(0, 2) };
+    const chosen = sentences.slice(0, 3);
+    return { section: selected.section, sentences: chosen };
   }
 
   function displayConceptName(token) {
