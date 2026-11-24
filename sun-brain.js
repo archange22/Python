@@ -781,6 +781,15 @@
       );
       if (completeMatch) best = completeMatch;
     }
+    if (predictedSubject && predictedSubject.paths.includes("knowledge/imported/")) {
+      const subjectCandidate = ranked.find(item => {
+        const sectionSubject = subjectFromPath(item.section.path,
+          item.section.heading + " " + item.section.title);
+        return sectionSubject && sectionSubject.id === predictedSubject.id &&
+          item.coverage >= 0.5 && item.score >= 0.5;
+      });
+      if (subjectCandidate) best = subjectCandidate;
+    }
     const second = ranked.find(item => item !== best) || null;
     if (!best || best.score < 0.85 || best.coverage < 0.34) return null;
     if (queryData.base.length >= 3 && best.coverage < 0.5) return null;
