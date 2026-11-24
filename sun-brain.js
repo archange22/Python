@@ -786,7 +786,7 @@
         const sectionSubject = subjectFromPath(item.section.path,
           item.section.heading + " " + item.section.title);
         return sectionSubject && sectionSubject.id === predictedSubject.id &&
-          item.coverage >= 0.5 && item.score >= 0.5;
+          item.coverage >= 0.2 && item.score >= 0.5 && item.matchedTokens.length >= 1;
       });
       if (subjectCandidate) best = subjectCandidate;
     }
