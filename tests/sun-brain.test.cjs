@@ -448,3 +448,28 @@ test("L'analyse ne transforme pas un sujet absent du corpus en connaissance pré
   assert.equal(analysis.source, null);
   assert.equal(analysis.confidence, 0);
 });
+
+test("Le classificateur neuronal distingue les formulations hors jeu d'entraînement dans les treize familles", () => {
+  const cases = [
+    ["comment écrire une fonction python avec def et return", "topic_python"],
+    ["comment entraîner un réseau de neurones artificiels avec des données", "topic_ia"],
+    ["comment programmer un bot discord et protéger son token", "topic_discord"],
+    ["comment construire un site responsive en html css et javascript", "topic_web"],
+    ["comment extraire le texte d un pdf et indexer son contenu", "topic_documents"],
+    ["comment planifier mes devoirs et organiser mes révisions scolaires", "topic_school"],
+    ["comment calculer et simplifier des fractions mathématiques", "topic_math"],
+    ["comment mener une expérience scientifique et tester une hypothèse", "topic_science"],
+    ["explique la chronologie d un événement historique", "topic_culture"],
+    ["comment traduire une phrase et apprendre du vocabulaire anglais", "topic_language"],
+    ["comment rédiger un paragraphe clair et corriger le texte", "topic_writing"],
+    ["comment dépanner mon téléphone android", "topic_daily"],
+    ["je voudrais discuter librement d un sujet et échanger", "topic_general"]
+  ];
+  cases.forEach(([question, expected]) => {
+    const prediction = brain.classifyIntent(question);
+    assert.equal(prediction.intent, expected,
+      "Le réseau doit classer ce sujet : " + question + " ; reçu " + prediction.intent +
+      " (" + prediction.confidence.toFixed(3) + ")");
+    assert.equal(prediction.kind, "topic");
+  });
+});
