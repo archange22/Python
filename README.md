@@ -7,7 +7,7 @@ Sun IA est une application web progressive (PWA) à identité solaire. Sa page p
 - Un petit réseau neuronal artificiel à propagation avant, avec une couche cachée de 16 neurones, entraîné localement sur des exemples de phrases ; ses poids sont conservés dans le stockage local après le premier entraînement.
 - Classification de huit intentions de base : salutations, questions simples sur l’état, demande de nom, identité, remerciements, départ, demande d’aide et discussion informelle.
 - Compréhension de quelques abréviations françaises courantes, comme « ccmt », « cv », « bjr » et « slt ».
-- Indexation locale de 32 fichiers Markdown : 23 leçons de cours, quatre sources de leçons complémentaires et cinq fiches documentaires sur Python, l'IA, le Web, Discord et la sécurité.
+- Indexation locale du noyau documentaire de 32 fichiers Markdown : 23 leçons de cours, quatre fiches d'exercices et cinq fiches documentaires. Le catalogue ajoute en plus les documents approuvés, dont le corpus de discussion extrait du PDF.
 - Recherche documentaire pondérée (BM25), normalisation de plusieurs abréviations françaises et rapprochement de synonymes techniques.
 - Analyse du type de demande : définition, explication, comparaison, procédure ou exemple.
 - Composition de réponses à partir de phrases pertinentes extraites de plusieurs sections, avec attribution des fichiers sources ; les comparaisons HTML/CSS/JavaScript et les procédures multi-étapes sont prises en charge.
@@ -28,7 +28,7 @@ Les fichiers principaux sont \`sun-brain.js\` (classification neuronale et reche
 - Thèmes : salutations, français familier, présentation, discussion générale, demandes d'aide, école, rédaction, langues, mathématiques, Python, Web, IA, Discord, sciences, culture, sécurité, dépannage, actualité et gestion des limites.
 - Le corpus original est généré de manière déterministe à partir de 36 thèmes documentaires et de six situations par thème. Le PDF produit est relu page par page avec pypdf ; les chapitres, le texte extrait et les pages sources sont ensuite inscrits au catalogue local après contrôles.
 - Sun Brain peut charger jusqu'à 100 documents Markdown supplémentaires marqués `approved: true` dans `knowledge/catalog.json`, sous le chemin sécurisé `knowledge/imported/`. Il expose aussi `recognizeTopic(query)` pour retrouver le sujet, le chapitre et la source la plus pertinente.
-- Le Service Worker v20 met en cache le catalogue, les textes approuvés et leurs PDF locaux afin de pouvoir les rouvrir hors connexion après leur téléchargement.
+- Le Service Worker v21 met en cache les 23 leçons, le catalogue, les textes approuvés et leurs PDF locaux afin de pouvoir les rouvrir hors connexion après leur téléchargement.
 - Le catalogue indique le PDF et le texte extraits lorsqu'ils ont été générés et publiés par le workflow de construction.
 
 ### Importer un autre PDF
