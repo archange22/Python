@@ -216,8 +216,8 @@ test("Sun Brain conserve le contexte pour une demande de précision", async () =
     { role: "user", content: "donne un exemple" }
   ];
   const answer = await brain.reply("donne un exemple", history);
-  assert.match(answer, /Python — Leçon 05/);
   assert.match(answer, /if/i);
+  assert.match(answer, /Source : courses\/python\/lesson-05\.md/);
 });
 
 test("Les documents sont lus localement et les poids du réseau sont réutilisés", () => {
