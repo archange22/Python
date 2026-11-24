@@ -892,6 +892,22 @@
       const example = chosen.find(item => /\b(exemple|par exemple|analogie|imagine)\b/i.test(item.sentence));
       if (example && !answer.includes(example.sentence)) answer += "\nExemple : " + example.sentence;
     }
+    if (type === "explanation" &&
+        queryTerms.includes("reseau") && queryTerms.includes("neurone")) {
+      const deepLearningSection = searchIndex.find(item =>
+        item.section.path === "courses/ia/lesson-01.md" &&
+        /deep learning/.test(norm(item.section.heading))
+      );
+      const layerSentence = deepLearningSection &&
+        answerSentences(deepLearningSection.section).find(sentence =>
+          /plusieurs couches de calcul/.test(norm(sentence))
+        );
+      if (layerSentence && !answer.includes(layerSentence)) {
+        answer += "\n\nPour aller plus loin : " + layerSentence +
+          "\nSource : " + deepLearningSection.section.path;
+      }
+    }
+
     const citedPaths = chosen.map(item => item.section.path);
     if (type === "explanation" && matchedHeadingTerms.length && result.best?.section.path) {
       citedPaths.push(result.best.section.path);
