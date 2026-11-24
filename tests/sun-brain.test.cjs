@@ -70,6 +70,7 @@ async function localFetch(input) {
         version: 1,
         documents: [
           { id: "approved-test", approved: true, path: "knowledge/imported/test-approved.md" },
+          { id: "discussion-global-v0.0.2", approved: true, path: "knowledge/imported/discussion-global-v0.0.2.md" },
           { id: "pending-test", approved: false, path: "knowledge/imported/test-pending.md" },
           { id: "unsafe-test", approved: true, path: "../private.md" }
         ]
@@ -238,8 +239,8 @@ const QA_CASES = [
 
 test("Sun Brain charge tous les documents pédagogiques prévus", () => {
   const status = brain.status();
-  assert.equal(status.documents, DOCUMENTS.length + 1);
-  assert.equal(status.total, DOCUMENTS.length + 1);
+  assert.equal(status.documents, DOCUMENTS.length + 2);
+  assert.equal(status.total, DOCUMENTS.length + 2);
   assert.equal(status.failed, 0);
   assert.ok(status.sections >= 250, "Le découpage des cours doit produire suffisamment de passages.");
 });
@@ -309,10 +310,11 @@ test("Sun Brain conserve le contexte pour une demande de précision", async () =
 });
 
 test("Les documents sont lus localement et les poids du réseau sont réutilisés", () => {
-  assert.equal(requestedPaths.length, DOCUMENTS.length + 2);
+  assert.equal(requestedPaths.length, DOCUMENTS.length + 3);
   assert.ok(requestedPaths.every(request => request.startsWith("./")));
   assert.ok(requestedPaths.includes("./knowledge/catalog.json"));
   assert.ok(requestedPaths.includes("./knowledge/imported/test-approved.md"));
+  assert.ok(requestedPaths.includes("./knowledge/imported/discussion-global-v0.0.2.md"));
   assert.ok(!requestedPaths.includes("./knowledge/imported/test-pending.md"));
   assert.ok(!requestedPaths.includes("./../private.md"));
   const writesBeforeReload = storageWrites;
