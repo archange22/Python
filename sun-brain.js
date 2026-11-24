@@ -167,7 +167,7 @@
           typeof entry.path === "string" &&
           /^knowledge\/imported\/[a-z0-9][a-z0-9.-]*\.md$/i.test(entry.path) &&
           !entry.path.includes(".."))
-        .slice(0, 100)
+        .slice(0, 50)
         .map(entry => entry.path);
     } catch (_) {
       return [];
