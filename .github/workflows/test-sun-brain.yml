@@ -67,5 +67,10 @@ jobs:
         run: python scripts/build_sun_discussion_pdf.py
       - name: Run PDF ingestion tests
         run: python -m unittest discover -s tests -p "test_pdf_ingestion.py"
-      - name: Run Sun Brain question-answering tests
-        run: node --test tests/sun-brain.test.cjs
+      - name: Check frontend JavaScript syntax
+        run: |
+          node --check sun-brain.js
+          node --check sun-ia.js
+          node --check app.js
+      - name: Run Sun Brain and interface regression tests
+        run: node --test tests/sun-brain.test.cjs tests/sun-ui.test.cjs
