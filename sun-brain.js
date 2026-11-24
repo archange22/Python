@@ -125,7 +125,7 @@
   function clean(s) {
     return String(s).replace(/\*\*([^*]+)\*\*/g, "$1").replace(/\*([^*]+)\*/g, "$1")
       .replace(/^#{1,6}\s+/gm, "").replace(/^\s*\|?[-:| ]{3,}\|?\s*$/gm, "")
-      .replace(/\x60([^\x60]+)\x60/g, "$1").replace(/~~~[\w-]*\n?/g, "")
+      .replace(/\x60([^\x60]+)\x60/g, "$1").replace(/~~~[\w-]*\n?/g, "\n[[CODE_BLOCK]]\n")
       .replace(/\n{3,}/g, "\n\n").trim();
   }
   function split(md, path) {
@@ -404,8 +404,9 @@
     const output = [];
     text.split(/\n+/).forEach(line => {
       const cleaned = line.trim().replace(/^(?:[-*]\s+|\d+[.)]\s+)/, "").trim();
-      if (!cleaned || cleaned.length < 18 || cleaned.startsWith("|")) return;
-      if (/^(?:~~~|import\s|from\s+\w+\s+import|<\/?[a-z][^>]*>|(?:explique|définis|definis|écris|ecris|réponds|reponds|complète|complete|exercice|correction|objectif|à la fin|a la fin|prochaine étape|prochaine etape|avant la leçon|avant la lecon|tu sauras|tu vas|essaie de|imagine que tu veuilles)\b)/i.test(cleaned)) return;
+      if (!cleaned || cleaned.length < 18 || cleaned.startsWith("|") || cleaned === "[[CODE_BLOCK]]") return;
+      const normalizedLine = norm(cleaned);
+      if (/^(?:explique|definis|definir|ecris|reponds|repondre|complete|exercice|correction|objectif|a la fin|prochaine etape|avant la lecon|tu sauras|tu vas|essaie de|imagine que tu veuilles|quelle valeur|si tu ne peux pas|il faut|reponds aux questions|repere|identifie)\b/.test(normalizedLine)) return;
       if (/^(?:if|elif|else|for|while|print|return|raise|import|from|class|def|const|let|var)\b|^[a-z_][\w.]*\s*=\s*|^[{}()[\]]+$/.test(cleaned)) return;
       const pieces = cleaned.match(/[^.!?]+[.!?]?/g) || [cleaned];
       pieces.forEach(piece => {
@@ -442,25 +443,29 @@
     const evidence = [];
     const seen = new Set();
 
-    searchIndex.forEach((indexed, indexNumber) => {
+    searchIndex.forEach(indexed => {
       const section = indexed.section;
       const headingTokens = new Set(indexed.headingTokens);
       const titleTokens = new Set(indexed.titleTokens);
-      const headingMatches = queryData.base.filter(token => headingTokens.has(token)).length;
-      const titleMatches = queryData.base.filter(token => titleTokens.has(token)).length;
+      const contextMatches = queryData.base.filter(token => headingTokens.has(token) || titleTokens.has(token)).length;
+
       answerSentences(section).forEach((sentence, sentenceIndex) => {
         const relevance = sentenceRelevance(sentence, queryData);
         if (relevance.score < 1.5 || relevance.matched === 0) return;
+        const minimumCoverage = Math.min(2, queryData.base.length);
+        if (relevance.matched + contextMatches < minimumCoverage) return;
+
         const key = norm(sentence);
         if (seen.has(key)) return;
         seen.add(key);
 
-        const preferredBoost = section.path.startsWith(preferredPrefix) ? 1.4 : 0;
-        const headingBoost = headingMatches * 3.4 + titleMatches * 1.7;
-        const definitionBoost = /\b(est|sont|désigne|signifie|permet|sert|consiste|correspond à|représente)\b/i.test(sentence) ? 0.8 : 0;
-        const positionBoost = sentenceIndex === 0 ? 0.25 : 0;
-        const score = relevance.score + headingBoost + preferredBoost + definitionBoost + positionBoost;
-        evidence.push({ sentence, section, score, matched: relevance.matched, indexNumber });
+        const headingMatches = queryData.base.filter(token => headingTokens.has(token)).length;
+        const titleMatches = queryData.base.filter(token => titleTokens.has(token)).length;
+        const preferredBoost = section.path.startsWith(preferredPrefix) ? 1.2 : 0;
+        const headingBoost = headingMatches * 3.6 + titleMatches * 1.8;
+        const definitionBoost = /\b(est|sont|désigne|signifie|permet|sert|consiste|correspond à|représente)\b/i.test(sentence) ? 1.0 : 0;
+        const score = relevance.score + headingBoost + preferredBoost + definitionBoost + (sentenceIndex === 0 ? 0.25 : 0);
+        evidence.push({ sentence, section, score, matched: relevance.matched });
       });
     });
 
@@ -521,6 +526,21 @@
     return answer.trim();
   }
 
+  function extractCodeExample(result) {
+    const candidates = result.candidates || [result.best];
+    for (const candidate of candidates) {
+      const body = String(candidate.section.body || "");
+      const pieces = body.split("[[CODE_BLOCK]]");
+      for (let index = 1; index < pieces.length; index += 2) {
+        const code = pieces[index].trim().split(/\n/).filter(Boolean);
+        if (code.length < 2) continue;
+        const readable = code.slice(0, 9).join("\n");
+        if (/\b(if|for|while|print|def|class|import|const|let|var)\b/.test(readable)) return readable;
+      }
+    }
+    return "";
+  }
+
   function composeEvidence(query, result, evidence, type) {
     if (!evidence.length) {
       return "J’ai retrouvé un passage dans les cours, mais je n’ai pas assez d’éléments pour en construire une réponse fiable. Reformule la question ou précise le point que tu veux comprendre.";
@@ -543,8 +563,13 @@
       chosen.slice(1).forEach(item => { answer += "- " + item.sentence + "\n"; });
     }
     if (type === "example") {
-      const example = chosen.find(item => /\b(exemple|par exemple|analogie|imagine)\b/i.test(item.sentence));
-      if (example && !answer.includes(example.sentence)) answer += "\nExemple : " + example.sentence;
+      const codeExample = extractCodeExample(result);
+      if (codeExample) {
+        answer += "\n\nExemple de code :\n" + codeExample;
+      } else {
+        const example = chosen.find(item => /\b(exemple|par exemple|analogie|imagine)\b/i.test(item.sentence));
+        if (example && !answer.includes(example.sentence)) answer += "\nExemple : " + example.sentence;
+      }
     }
     answer += "\n\nSources : " + Array.from(new Set(chosen.map(item => item.section.path))).join(" ; ");
     return answer;
