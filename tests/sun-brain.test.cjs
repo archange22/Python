@@ -126,7 +126,7 @@ const QA_CASES = [
   },
   {
     question: "comment securiser le token d un bot",
-    sources: ["courses/discord/lesson-02.md"],
+    sources: ["courses/discord/lesson-02.md", "courses/discord/lesson-03.md"],
     required: ["secret", "token"]
   },
   {
@@ -189,7 +189,7 @@ for (const item of QA_CASES) {
     );
 
     const answer = await brain.reply(item.question, []);
-    const sourceMatches = Array.from(answer.matchAll(/Source : ([^\s\n]+)/g)).map(match => match[1]);
+    const sourceMatches = Array.from(answer.matchAll(/Sources? : ([^\s\n]+)/g)).map(match => match[1]);
     assert.ok(sourceMatches.length > 0, "La réponse doit citer son fichier source.");
     sourceMatches.forEach(source => {
       assert.ok(item.sources.includes(source), "Source secondaire hors sujet : " + source);
