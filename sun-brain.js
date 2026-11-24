@@ -471,20 +471,23 @@
     const tokens = new Set(tokenizeField(sentence));
     let score = 0;
     let matched = 0;
+    const matchedTokens = [];
     queryData.base.forEach(token => {
       if (tokens.has(token)) {
         score += 2;
         matched += 1;
+        matchedTokens.push(token);
       } else {
         const synonymMatch = (QUERY_SYNONYMS[token] || []).some(synonym => tokens.has(canonicalToken(synonym)));
         if (synonymMatch) {
           score += 1.25;
           matched += 1;
+          matchedTokens.push(token);
         }
       }
     });
     if (/\b(est|sont|designe|signifie|permet|sert|consiste|utilise|recoit|produit)\b/i.test(sentence)) score += 0.5;
-    return { score, matched };
+    return { score, matched, matchedTokens };
   }
 
   function collectEvidence(query, result, limit) {
@@ -521,7 +524,7 @@
         let definitionBoost = /\b(est une|est un|sont des|désigne|signifie|correspond à|se définit)\b/i.test(sentence) ? 2.2 : 0;
         if (/\b(condition imbriquée|exemple|exercice|leçon|prochaine étape)\b/i.test(sentence)) definitionBoost -= 0.8;
         const score = relevance.score + headingBoost + preferredBoost + contextSentenceBoost + definitionBoost + (sentenceIndex === 0 ? 0.25 : 0);
-        evidence.push({ sentence, section, score, matched: relevance.matched });
+        evidence.push({ sentence, section, score, matched: relevance.matched, matchedTokens: relevance.matchedTokens });
       });
     });
 
@@ -604,14 +607,17 @@
     const queryData = getQueryTerms(query);
     const basePathPrefix = result.best.section.path.split("/").slice(0, 2).join("/") + "/";
     const excludedHeading = /\b(objectifs?|exercices?|corrections?|fiche de revision|validation|sommaire|ressources|mini defi|mini projet)\b/i;
-    const actionHeading = /\b(preparer|preparation|creer|creation|configurer|securiser|proteger|utiliser|boucle|conditions?|liste|token|intents|lancer|adapter|responsive|nettoyer|transformer|qualite|separer|entrainement|test|donnees|jeu de donnees)\b/i;
+    const actionHeading = /\b(preparer|preparation|creer|creation|configurer|securiser|proteger|utiliser|boucle|conditions?|liste|token|intents|lancer|adapter|responsive|nettoyer|transformer|qualite|separer|entrainement|test|donnees|jeu de donnees|evenements?|ecouteur|unittest)\b/i;
     const queryText = norm(query);
     const focus = {
       create: /\b(creer|cree|creation)\b/.test(queryText),
       prepare: /\b(preparer|preparation)\b/.test(queryText),
       secure: /\b(securiser|proteger)\b/.test(queryText),
       use: /\b(utiliser|utilise)\b/.test(queryText),
-      responsive: /\b(responsive|ecran|telephone)\b/.test(queryText)
+      responsive: /\b(responsive|ecran|telephone)\b/.test(queryText),
+      test: /\b(test|tester|tests)\b/.test(queryText),
+      listen: /\b(addEventListener|evenement|event|clic)\b/.test(queryText),
+      trainModel: /\b(entrainer|entrainement|modele|model)\b/.test(queryText)
     };
 
     const ranked = (result.candidates || [result.best])
@@ -628,6 +634,8 @@
         if (focus.secure && /\b(token|proteger|secret|securiser|environnement)\b/.test(heading)) actionBoost += 8;
         if (focus.use && /\b(utiliser|choisir|boucle|for|while)\b/.test(heading)) actionBoost += 6;
         if (focus.responsive && /\b(responsive|adapter|ecrans)\b/.test(heading)) actionBoost += 8;
+        if (focus.test && /\b(test|tester|unittest)\b/.test(heading)) actionBoost += 8;
+        if (focus.listen && /\b(evenements?|ecouteur|listener)\b/.test(heading)) actionBoost += 8;
         if (/\bmini projet\b/.test(heading) && !focus.prepare) actionBoost -= 5;
         return {
           ...candidate,
@@ -645,12 +653,16 @@
       const headingKey = norm(candidate.section.heading);
       if (seenHeadings.has(headingKey)) continue;
       const sentences = answerSentences(candidate.section);
+      const headingContext = queryData.base.some(token => norm(candidate.section.heading).split(/\s+/).includes(token));
       const relevant = sentences.map(sentence => ({
         sentence,
-        relevance: sentenceRelevance(sentence, queryData)
-      })).filter(item => item.relevance.score >= 1.5 &&
+        relevance: sentenceRelevance(sentence, queryData),
+        toolBoost: focus.test && /unittest/i.test(sentence) ? 3 : 0,
+        eventBoost: focus.listen && /addEventListener|evenement/i.test(sentence) ? 2 : 0
+      })).filter(item => (item.relevance.score >= 1.5 || headingContext) &&
         !/^(?:avant|avant d|quelle valeur|reponds|tu dois|essaie|py utilise|py permet)/i.test(norm(item.sentence)))
-        .sort((a, b) => b.relevance.score - a.relevance.score);
+        .sort((a, b) => (b.relevance.score + b.toolBoost + b.eventBoost) -
+          (a.relevance.score + a.toolBoost + a.eventBoost));
       const summary = relevant[0]?.sentence || "";
       if (!summary || summary.length < 25) continue;
       chosen.push({ section: candidate.section, summary });
@@ -675,6 +687,31 @@
       );
       answer += "\n\nExemple en Python :\n\n```python\n" + functionCode + "\n```";
       if (codeSource) answer += "\nSource : " + codeSource.section.path;
+    }
+
+    if (focus.trainModel) {
+      const inferenceSection = searchIndex.find(item =>
+        item.section.path.startsWith(basePathPrefix) && /\binference\b/.test(norm(item.section.heading))
+      );
+      const inferenceSentence = inferenceSection &&
+        answerSentences(inferenceSection.section).find(sentence => /inference/.test(norm(sentence)));
+      if (inferenceSentence && !answer.includes(inferenceSentence)) {
+        answer += "\n\nAprès l'entraînement — inférence : " + inferenceSentence +
+          "\nSource : " + inferenceSection.section.path;
+      }
+    }
+
+    if (focus.test && /discord/.test(basePathPrefix)) {
+      const testSection = searchIndex.find(item =>
+        item.section.path === "courses/discord/lesson-06.md" &&
+        /unittest/.test(norm(item.section.heading))
+      );
+      const testSentence = testSection &&
+        answerSentences(testSection.section).find(sentence => /unittest/.test(norm(sentence)));
+      if (testSentence && !answer.includes(testSentence)) {
+        answer += "\n\nPour les tests : " + testSentence +
+          "\nSource : " + testSection.section.path;
+      }
     }
 
     if (/\b(permission|permissions|role|roles|droit|droits)\b/.test(queryText)) {
@@ -725,9 +762,10 @@
         const contextSentenceBoost = 0;
         const narrowDefinitionPenalty = /\b(imbriquee|particulier|exemple)\b/.test(normalizedSentence) ? 1.5 : 0;
         const explanatoryBoost = type !== "definition" && /\b(utilise|apprend|ajuste|fonctionne|permet|recoit|produit|calcule|transmet)\b/.test(normalizedSentence) ? 3.5 : 0;
+        const topicDefinitionBoost = type !== "definition" && subjectBeforeVerb && startsWithTopic ? 7 : 0;
         const exampleBoost = type === "example" && /\b(exemple|par exemple|while|for|utilise)\b/.test(normalizedSentence) ? 4 : 0;
         const score = relevance.score + headingMatches * 3.5 + titleMatches * 1.8 +
-          definitionBoost + contextSentenceBoost + explanatoryBoost + exampleBoost - narrowDefinitionPenalty;
+          definitionBoost + contextSentenceBoost + explanatoryBoost + topicDefinitionBoost + exampleBoost - narrowDefinitionPenalty;
         candidates.push({ sentence, section, score, matched: relevance.matched });
       });
     });
@@ -751,25 +789,43 @@
       );
       if (ifSupport && !chosen.some(item => norm(item.sentence) === norm(ifSupport.sentence))) chosen.push(ifSupport);
     }
-    const maxItems = type === "definition" ? 2 : 3;
-    if (type === "explanation" && first && chosen.length < maxItems) {
-      const neighbouringSentences = answerSentences(first.section);
-      const firstIndex = neighbouringSentences.findIndex(sentence => norm(sentence) === norm(first.sentence));
-      if (firstIndex >= 0) {
-        neighbouringSentences.slice(firstIndex + 1, firstIndex + 3).forEach(sentence => {
-          if (chosen.length >= maxItems) return;
-          if (chosen.some(item => norm(item.sentence) === norm(sentence))) return;
-          chosen.push({ sentence, section: first.section, score: first.score * 0.9, matched: first.matched });
+    const maxItems = type === "definition" ? 2 : type === "explanation" ? 5 : 3;
+    if (type === "explanation" && first) {
+      const subjectPrefix = result.best.section.path.split("/").slice(0, 2).join("/") + "/";
+      const covered = new Set();
+      const markCovered = item => {
+        const matches = sentenceRelevance(item.sentence, queryData).matchedTokens || [];
+        matches.forEach(token => covered.add(token));
+        tokenizeField(item.section.heading).forEach(token => {
+          if (queryData.base.includes(token)) covered.add(token);
         });
-      }
+      };
+      chosen.forEach(markCovered);
+
+      evidence.forEach(item => {
+        if (chosen.length >= maxItems) return;
+        if (!item.section.path.startsWith(subjectPrefix)) return;
+        if (chosen.some(existing => norm(existing.sentence) === norm(item.sentence))) return;
+        if (item.score < chosen[0].score * 0.24) return;
+        const matchedTokens = item.matchedTokens ||
+          sentenceRelevance(item.sentence, queryData).matchedTokens || [];
+        const headingTokens = tokenizeField(item.section.heading);
+        const newMatches = queryData.base.filter(token =>
+          !covered.has(token) && (matchedTokens.includes(token) || headingTokens.includes(token))
+        );
+        if (!newMatches.length) return;
+        chosen.push(item);
+        newMatches.forEach(token => covered.add(token));
+      });
+    } else {
+      evidence.forEach(item => {
+        if (chosen.length >= maxItems) return;
+        if (chosen.some(existing => norm(existing.sentence) === norm(item.sentence))) return;
+        if (chosen.length && item.score < chosen[0].score * 0.58) return;
+        if (chosen.length && item.section.path !== chosen[0].section.path) return;
+        chosen.push(item);
+      });
     }
-    evidence.forEach(item => {
-      if (chosen.length >= maxItems) return;
-      if (chosen.some(existing => norm(existing.sentence) === norm(item.sentence))) return;
-      if (chosen.length && item.score < chosen[0].score * 0.58) return;
-      if (chosen.length && item.section.path !== chosen[0].section.path) return;
-      chosen.push(item);
-    });
 
     let answer = type === "definition"
       ? "En clair : " + chosen[0].sentence
