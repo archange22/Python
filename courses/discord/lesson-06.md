@@ -23,7 +23,7 @@ Cette leçon apprend à reconnaître les erreurs courantes, répondre sans rév�
 
 Le token doit rester dans une variable d'environnement ou un gestionnaire de secrets. Ne le copie jamais dans un fichier Python, un message, une capture ou un dépôt Git.
 
-## Sommaire
+### Sommaire
 
 1. Pourquoi fiabiliser un bot ?
 2. Identifier les familles d'erreurs
@@ -40,7 +40,7 @@ Le token doit rester dans une variable d'environnement ou un gestionnaire de sec
 13. Exercices et corrigés
 14. Fiche de révision
 
-## 1. Pourquoi fiabiliser un bot ?
+### 1. Pourquoi fiabiliser un bot ?
 
 Un bot fiable ne signifie pas qu'il ne rencontre jamais de problème. Cela signifie qu'il détecte les problèmes, les traite de manière prévisible et donne un message compréhensible aux utilisateurs.
 
@@ -147,7 +147,7 @@ Ne renvoie pas le traceback aux membres. Ne place pas non plus le token ou les v
 
 Selon la structure de ton bot, certaines erreurs peuvent être enveloppées dans une autre exception. Lis la documentation de la version de discord.py utilisée et teste chaque cas dans un serveur privé.
 
-## 5. Limiter les répétitions avec un cooldown
+### 5. Limiter les répétitions avec un cooldown
 
 Une commande appelée trop souvent peut produire du bruit, consommer des ressources ou déclencher des limites de débit. Un cooldown impose un délai entre les utilisations.
 
@@ -187,9 +187,9 @@ logger.warning("Une configuration facultative est absente.")
 logger.error("Une opération n'a pas pu être terminée.")
 ~~~
 
-Les niveaux courants sont DEBUG, INFO, WARNING, ERROR et CRITICAL. En production, INFO ou WARNING peuvent être un bon point de départ. DEBUG est utile pendant un test, mais peut produire beaucoup de données.
+Les niveaux courants sont DEBUG, INFO, WARNING, ERROR et CRITICAL. Utilise INFO en fonctionnement normal et DEBUG uniquement lorsque tu enquêtes sur un problème.
 
-Un bon journal indique ce qui s'est passé, à quel moment et dans quelle partie du programme. Évite d'enregistrer :
+Un bon journal indique l'événement et sa partie du programme. Évite d'enregistrer :
 - le token du bot ;
 - les mots de passe ;
 - les contenus privés sans nécessité ;
@@ -253,9 +253,7 @@ if __name__ == "__main__":
 
 Enregistre ce code dans test_calcul.py et lance-le avec Python. Les tests doivent être séparés du fichier qui démarre réellement le bot.
 
-Un test unitaire vérifie une petite partie isolée. Un test d'intégration vérifie plusieurs parties ensemble. Un test réel dans Discord vérifie le comportement avec les permissions, les intents et les salons.
-
-Un test réussi ne prouve pas l'absence de tout défaut. Il prouve seulement que les cas testés se comportent comme prévu.
+Un test unitaire vérifie une fonction isolée. Un test d'intégration vérifie plusieurs parties ensemble. Un essai dans Discord vérifie les permissions, les intents et les salons. Un test réussi couvre seulement les cas réellement testés.
 
 ### 9. Tester le bot dans un serveur privé
 
@@ -277,39 +275,25 @@ Accorde uniquement les permissions nécessaires. Une commande ping n'a pas besoi
 
 ## 10. Préparer le démarrage et l'arrêt
 
-Un bot doit vérifier sa configuration avant de se connecter. Le token est lu depuis l'environnement.
+Un bot doit vérifier sa configuration avant de se connecter. Le token est lu depuis l'environnement, jamais depuis une chaîne écrite dans le dépôt.
 
 ~~~python
 import os
-import logging
 import discord
-from discord.ext import commands
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("academique-bot")
 
 TOKEN = os.getenv("DISCORD_TOKEN")
-
 if not TOKEN:
-    raise RuntimeError("La variable DISCORD_TOKEN est absente.")
+    raise RuntimeError("DISCORD_TOKEN est absent.")
 
 intents = discord.Intents.default()
 intents.message_content = True
-
-bot = commands.Bot(command_prefix="!", intents=intents)
-
-@bot.event
-async def on_ready():
-    logger.info("Bot connecté sous %s", bot.user)
-
-bot.run(TOKEN)
 ~~~
 
 Pour les commandes préfixées qui lisent le contenu des messages, l'intent message_content doit être activé dans le portail développeur Discord et dans le code. N'active pas d'intents privilégiés qui ne sont pas nécessaires.
 
 Le démarrage peut échouer si le token est incorrect, si la connexion est indisponible ou si la configuration est incomplète. Affiche une erreur claire dans le journal, mais jamais le token.
 
-Sur Android, le système peut suspendre une application en arrière-plan. Un téléphone est adapté aux essais et à l'apprentissage, mais ne garantit pas un bot disponible en permanence. Un hébergement continu demande un service adapté et peut avoir des limites ou des coûts.
+Sur Android, le système peut suspendre une application en arrière-plan. Le téléphone convient aux essais, mais ne garantit pas une disponibilité permanente. Un hébergement continu dépend des limites et des coûts du fournisseur.
 
 ### Héberger sans exposer les secrets
 
