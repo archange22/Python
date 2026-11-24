@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - "courses/**/*.md"
-      - "knowledge/sources/discussion-global-v0.0.2.md.bz2.b64"
       - "knowledge/catalog.json"
       - "scripts/build_sun_discussion_pdf.py"
       - "scripts/ingest_pdf_knowledge.py"
