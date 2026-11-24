@@ -1,0 +1,35 @@
+name: Test Sun Brain
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "sun-brain.js"
+      - "tests/sun-brain.test.cjs"
+      - "courses/**/*.md"
+      - "pdf/lecon-0[234].md"
+      - ".github/workflows/test-sun-brain.yml"
+  pull_request:
+    paths:
+      - "sun-brain.js"
+      - "tests/sun-brain.test.cjs"
+      - "courses/**/*.md"
+      - "pdf/lecon-0[234].md"
+      - ".github/workflows/test-sun-brain.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run Sun Brain question-answering tests
+        run: node --test tests/sun-brain.test.cjs
