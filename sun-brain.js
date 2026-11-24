@@ -138,7 +138,7 @@
       buffer = [];
     }
     lines.forEach((line, i) => {
-      const m = line.match(/^#{2,4}\s+(.+)/);
+      const m = line.match(/^##\s+(.+)/);
       if (m) {
         if (started) flush();
         else buffer = [];
