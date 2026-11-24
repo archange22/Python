@@ -778,6 +778,7 @@
     }).sort((a, b) => b.score - a.score);
 
     let best = ranked[0];
+    let topicRoutedCandidate = false;
     if (queryData.base.length >= 3 && best) {
       const completeMatch = ranked.find(item =>
         item.coverage === 1 && item.score >= best.score * 0.55
@@ -791,12 +792,15 @@
         return sectionSubject && sectionSubject.id === predictedSubject.id &&
           item.coverage >= 0.2 && item.score >= 0.5 && item.matchedTokens.length >= 1;
       });
-      if (subjectCandidate) best = subjectCandidate;
+      if (subjectCandidate) {
+        best = subjectCandidate;
+        topicRoutedCandidate = true;
+      }
     }
     const second = ranked.find(item => item !== best) || null;
-    if (!best || best.score < 0.85 || best.coverage < 0.34) return null;
-    if (queryData.base.length >= 3 && best.coverage < 0.5) return null;
-    if (second && second.score >= best.score * 0.98 &&
+    if (!best || best.score < 0.85 || best.coverage < 0.2) return null;
+    if (queryData.base.length >= 3 && best.coverage < 0.5 && !topicRoutedCandidate) return null;
+    if (!topicRoutedCandidate && second && second.score >= best.score * 0.98 &&
         second.coverage > best.coverage && best.coverage < 0.6) return null;
 
     const covered = new Set(best.matchedTokens);
