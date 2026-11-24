@@ -375,22 +375,25 @@
 
   function detectTopicHint(query) {
     const text = norm(query);
+    const tokens = new Set(text.split(" ").filter(Boolean));
+    const has = (...values) => values.some(value => tokens.has(value));
+    const includes = (...values) => values.some(value => text.includes(value));
     const hints = [
-      ["topic_python", /\\bpython\\b|\\b(def|return|variable|variables|boucle|boucles|liste|dictionnaire)\\b/],
-      ["topic_ia", /intelligence artificielle|\\bia\\b|\\bneurone(s)?\\b|reseau neuronal|machine learning|deep learning|perceptron/],
-      ["topic_discord", /\\bdiscord\\b|\\bbot(s)?\\b|\\bgateway\\b|\\bserveur discord\\b/],
-      ["topic_web", /\\bhtml\\b|\\bcss\\b|javascript|site web|responsive|frontend|navigateur web/],
-      ["topic_documents", /\\bpdf\\b|document(s)?|fichier|extraction|indexation|chapitre(s)?|bibliotheque documentaire/],
-      ["topic_math", /fraction(s)?|equation(s)?|calcul|mathematique|pourcentage|numerateur|denominateur/],
-      ["topic_science", /science|scientifique|experience|hypothese|observation|biologie|physique/],
-      ["topic_culture", /histoire|historique|geographie|chronologie|livre|personnage|pays du monde/],
-      ["topic_language", /traduire|traduis|traduction|anglais|francais|grammaire|conjugaison|vocabulaire|langue(s)?/],
-      ["topic_writing", /rediger|redaction|paragraphe|orthographe|ponctuation|argumentation/],
-      ["topic_daily", /telephone|android|depannage|connexion internet|stockage|application mobile/],
-      ["topic_school", /scolaire|devoir(s)?|examen|revision|reviser|memorisation|etudier|etude(s)?/],
-      ["topic_general", /discussion libre|discuter|echanger|culture generale|avis equilibre|parler simplement/]
+      ["topic_python", () => has("python", "def", "return", "variable", "variables", "boucle", "boucles", "liste", "dictionnaire")],
+      ["topic_ia", () => includes("intelligence artificielle", "reseau neuronal", "machine learning", "deep learning", "perceptron") || has("ia", "neurone", "neurones")],
+      ["topic_discord", () => has("discord", "bot", "bots", "gateway") || includes("serveur discord")],
+      ["topic_web", () => has("html", "css", "javascript", "responsive", "frontend") || includes("site web", "navigateur web")],
+      ["topic_documents", () => has("pdf", "document", "documents", "fichier", "extraction", "indexation", "chapitre", "chapitres") || includes("bibliotheque documentaire")],
+      ["topic_math", () => has("fraction", "fractions", "equation", "equations", "calcul", "mathematique", "pourcentage", "numerateur", "denominateur")],
+      ["topic_science", () => has("science", "scientifique", "experience", "hypothese", "observation", "biologie", "physique")],
+      ["topic_culture", () => has("histoire", "historique", "geographie", "chronologie", "livre", "personnage") || includes("pays du monde")],
+      ["topic_language", () => has("traduire", "traduis", "traduction", "anglais", "francais", "grammaire", "conjugaison", "vocabulaire", "langue", "langues")],
+      ["topic_writing", () => has("rediger", "redaction", "paragraphe", "orthographe", "ponctuation", "argumentation")],
+      ["topic_daily", () => has("telephone", "android", "depannage", "stockage") || includes("connexion internet", "application mobile")],
+      ["topic_school", () => has("scolaire", "devoir", "devoirs", "examen", "revision", "reviser", "memorisation", "etudier", "etude", "etudes")],
+      ["topic_general", () => includes("discussion libre", "discuter", "echanger", "culture generale", "avis equilibre", "parler simplement")]
     ];
-    const match = hints.find(([key, pattern]) => pattern.test(text));
+    const match = hints.find(([, matches]) => matches());
     return match ? SUBJECTS[match[0]] : null;
   }
 
