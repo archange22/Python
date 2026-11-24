@@ -26,7 +26,12 @@ const DOCUMENTS = [
   "pdf/lecon-01.md",
   "pdf/lecon-02.md",
   "pdf/lecon-03.md",
-  "pdf/lecon-04.md"
+  "pdf/lecon-04.md",
+  "knowledge/python-practice.md",
+  "knowledge/ia-foundations.md",
+  "knowledge/web-practices.md",
+  "knowledge/discord-development.md",
+  "knowledge/security-and-privacy.md"
 ];
 
 const values = new Map();
@@ -262,4 +267,22 @@ test("Les procédures restent centrées sur les étapes utiles", async () => {
   assert.match(answer, /Comprendre et créer une liste/);
   assert.doesNotMatch(answer, /start=1/);
   assert.doesNotMatch(answer, /mini-projet/i);
+});
+
+
+test("Sun Brain indexe les cinq nouvelles fiches documentaires locales", () => {
+  const cases = [
+    ["environnements virtuels venv", "knowledge/python-practice.md"],
+    ["classification precision rappel f1", "knowledge/ia-foundations.md"],
+    ["formulaires accessibles clavier etiquette", "knowledge/web-practices.md"],
+    ["intents gateway evenements", "knowledge/discord-development.md"],
+    ["validation injection xss", "knowledge/security-and-privacy.md"]
+  ];
+
+  cases.forEach(([question, expectedPath]) => {
+    const result = brain.searchDocuments(question);
+    assert.ok(result && result.best, "Une fiche doit être retrouvée pour : " + question);
+    assert.equal(result.best.section.path, expectedPath);
+    assert.ok(result.best.section.body.length > 35);
+  });
 });
