@@ -311,7 +311,7 @@ Le démarrage peut échouer si le token est incorrect, si la connexion est indis
 
 Sur Android, le système peut suspendre une application en arrière-plan. Un téléphone est adapté aux essais et à l'apprentissage, mais ne garantit pas un bot disponible en permanence. Un hébergement continu demande un service adapté et peut avoir des limites ou des coûts.
 
-## 11. Héberger sans exposer les secrets
+### Héberger sans exposer les secrets
 
 Un hébergement exécute le programme sur une machine disponible sur Internet. Le bot doit rester en fonctionnement pour recevoir les événements. Vérifie les conditions du fournisseur : durée d'exécution, veille automatique, stockage, limites et éventuels coûts.
 

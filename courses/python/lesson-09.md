@@ -397,7 +397,7 @@ inventaire = {
 }
 
 def afficher_inventaire():
-    print("\\n--- INVENTAIRE ---")
+    print("\n--- INVENTAIRE ---")
     for nom, infos in inventaire.items():
         print(
             f"{nom} : {infos['quantite']} unite(s), "
