@@ -117,6 +117,9 @@
     return { intent: labels[best], confidence: out[best] };
   }
   let sections = [];
+  let searchIndex = [];
+  let averageSectionLength = 0;
+  let documentFrequency = new Map();
   let loaded = 0;
   let failed = 0;
   function clean(s) {
@@ -128,16 +131,22 @@
   function split(md, path) {
     const lines = md.split(/\r?\n/);
     const title = (lines.find(x => /^#\s/.test(x)) || path).replace(/^#\s*/, "");
-    let heading = title, buffer = [], out = [];
+    let heading = title, buffer = [], out = [], started = false;
     function flush() {
       const body = clean(buffer.join("\n"));
-      if (body.length > 35) out.push({ title, heading, body, path });
+      if (started && body.length > 35) out.push({ title, heading, body, path });
       buffer = [];
     }
     lines.forEach((line, i) => {
       const m = line.match(/^#{2,4}\s+(.+)/);
-      if (m) { flush(); heading = m[1]; }
-      else if (i > 0 && !/^#\s/.test(line)) buffer.push(line);
+      if (m) {
+        if (started) flush();
+        else buffer = [];
+        heading = m[1];
+        started = true;
+      } else if (started && i > 0 && !/^#\s/.test(line)) {
+        buffer.push(line);
+      }
     });
     flush();
     return out;
@@ -149,7 +158,7 @@
       loaded++;
       return split(await response.text(), path);
     } catch (_) { failed++; return []; }
-  })).then(groups => { sections = groups.flat(); return status(); });
+  })).then(groups => { sections = groups.flat(); buildSearchIndex(); return status(); });
   function status() { return { documents: loaded, total: paths.length, sections: sections.length, failed }; }
   const STOP_QUERY_WORDS = new Set([
     "a", "au", "aux", "avec", "ce", "ces", "cette", "dans", "de", "des", "du",
@@ -247,12 +256,8 @@
     return idf * (tf * (k1 + 1)) / denominator;
   }
 
-  function retrieveDocs(query) {
-    if (!sections.length) return null;
-    const queryData = getQueryTerms(query);
-    if (!queryData.base.length) return null;
-
-    const prepared = sections.map(section => {
+  function buildSearchIndex() {
+    searchIndex = sections.map(section => {
       const titleTokens = tokenizeField(section.title);
       const headingTokens = tokenizeField(section.heading);
       const bodyTokens = tokenizeField(section.body);
@@ -268,37 +273,42 @@
         bodyLength: bodyTokens.length
       };
     });
-
-    const averageLength = prepared.reduce((sum, item) => sum + item.bodyLength, 0) / Math.max(1, prepared.length);
-    const documentFrequency = new Map();
-    prepared.forEach(item => {
+    averageSectionLength = searchIndex.reduce((sum, item) => sum + item.bodyLength, 0) / Math.max(1, searchIndex.length);
+    documentFrequency = new Map();
+    searchIndex.forEach(item => {
       item.allTokens.forEach(token => documentFrequency.set(token, (documentFrequency.get(token) || 0) + 1));
     });
+  }
 
-    const ranked = prepared.map(item => {
+  function retrieveDocs(query) {
+    if (!searchIndex.length) return null;
+    const queryData = getQueryTerms(query);
+    if (!queryData.base.length) return null;
+
+    const ranked = searchIndex.map(item => {
       let score = 0;
-      let matched = 0;
+      const matchedTokens = [];
       queryData.base.forEach(token => {
         const df = documentFrequency.get(token) || 0;
-        const idf = Math.log(1 + (prepared.length - df + 0.5) / (df + 0.5));
+        const idf = Math.log(1 + (searchIndex.length - df + 0.5) / (df + 0.5));
         const titleTf = item.titleCounts.get(token) || 0;
         const headingTf = item.headingCounts.get(token) || 0;
         const bodyTf = item.bodyCounts.get(token) || 0;
-        if (titleTf || headingTf || bodyTf) matched += 1;
+        if (titleTf || headingTf || bodyTf) matchedTokens.push(token);
         score += 2.1 * bm25(titleTf, item.titleTokens.length, 8, idf);
         score += 3.0 * bm25(headingTf, item.headingTokens.length, 8, idf);
-        score += 1.0 * bm25(bodyTf, item.bodyLength, averageLength, idf);
+        score += 1.0 * bm25(bodyTf, item.bodyLength, averageSectionLength, idf);
       });
 
       queryData.weighted.forEach((weight, token) => {
         if (weight >= 1 || item.allTokens.has(token)) return;
         const df = documentFrequency.get(token) || 0;
-        const idf = Math.log(1 + (prepared.length - df + 0.5) / (df + 0.5));
+        const idf = Math.log(1 + (searchIndex.length - df + 0.5) / (df + 0.5));
         const tf = item.bodyCounts.get(token) || 0;
-        if (tf) score += 0.55 * weight * bm25(tf, item.bodyLength, averageLength, idf);
+        if (tf) score += 0.55 * weight * bm25(tf, item.bodyLength, averageSectionLength, idf);
       });
 
-      const coverage = matched / queryData.base.length;
+      const coverage = matchedTokens.length / queryData.base.length;
       const normalizedQuery = norm(query);
       const normalizedHeading = norm(item.section.heading);
       const normalizedTitle = norm(item.section.title);
@@ -308,7 +318,7 @@
       }
       if (coverage === 1) score += 1.2;
       else if (coverage >= 0.66) score += 0.45;
-      return { section: item.section, score, coverage };
+      return { section: item.section, score, coverage, matchedTokens };
     }).sort((a, b) => b.score - a.score);
 
     const best = ranked[0];
@@ -318,14 +328,25 @@
     if (second && second.score >= best.score * 0.98 &&
         second.coverage > best.coverage && best.coverage < 0.6) return null;
 
-    return {
-      best,
-      alternatives: ranked.slice(1, 3).filter(item =>
-        item.score >= best.score * 0.72 && item.coverage >= 0.5
-      )
-    };
-  }
+    const covered = new Set(best.matchedTokens);
+    const alternatives = [];
+    if (queryData.base.length >= 3 && best.coverage < 0.9) {
+      for (const item of ranked.slice(1, 18)) {
+        if (item.score < best.score * 0.18) continue;
+        const addsCoverage = item.matchedTokens.some(token => !covered.has(token));
+        if (!addsCoverage) continue;
+        alternatives.push(item);
+        item.matchedTokens.forEach(token => covered.add(token));
+        if (covered.size / queryData.base.length >= 0.9 || alternatives.length >= 3) break;
+      }
+    } else {
+      ranked.slice(1, 3).forEach(item => {
+        if (item.score >= best.score * 0.72 && item.coverage >= 0.5) alternatives.push(item);
+      });
+    }
 
+    return { best, alternatives, queryTerms: queryData.base, coverage: covered.size / queryData.base.length };
+  }
   function buildContextQuery(message, history) {
     const current = norm(message);
     const wordCount = getQueryTerms(current).base.length;
@@ -357,19 +378,21 @@
       return "Je n’ai pas trouvé de passage suffisamment fiable dans les cours pour répondre à cette question. Tu peux préciser le sujet ou poser une question plus ciblée. Je préfère signaler cette limite plutôt que d’inventer une réponse.";
     }
 
-    const section = result.best.section;
+    const sectionsToAnswer = [result.best].concat(result.alternatives || []);
+    const unique = [];
+    const seen = new Set();
+    sectionsToAnswer.forEach(item => {
+      const key = item.section.path + "|" + item.section.heading;
+      if (!seen.has(key)) { seen.add(key); unique.push(item.section); }
+    });
     let answer = "Voici ce que j’ai trouvé dans les cours de l’application :\n\n";
-    answer += section.title + "\n";
-    answer += "Partie : " + section.heading + "\n\n";
-    answer += makeExcerpt(section, 980);
-    answer += "\n\nSource : " + section.path;
-
-    if (result.alternatives.length) {
-      answer += "\n\nAutres parties proches : " + result.alternatives
-        .map(item => item.section.heading)
-        .filter((heading, index, list) => list.indexOf(heading) === index)
-        .slice(0, 2).join(" ; ");
-    }
+    unique.forEach((section, index) => {
+      if (index) answer += "\n\n";
+      answer += section.title + "\n";
+      answer += "Partie : " + section.heading + "\n\n";
+      answer += makeExcerpt(section, unique.length > 1 ? 520 : 980);
+      answer += "\nSource : " + section.path;
+    });
     return answer;
   }
   function extractName(s) {
