@@ -544,6 +544,56 @@
     return "";
   }
 
+  function composeProcedure(query, result) {
+    const queryData = getQueryTerms(query);
+    const basePathPrefix = result.best.section.path.split("/").slice(0, 2).join("/") + "/";
+    const excludedHeading = /\b(objectif|exercice|correction|fiche de revision|validation|mini defi|mini-defi)\b/i;
+    const actionHeading = /\b(preparer|preparation|creer|creation|configurer|configurer|securiser|proteger|utiliser|boucle|conditions?|liste|token|intents|lancer|adapter|responsive|nettoyer|transformer|qualite|separer|entrainement|validation|test)\b/i;
+    const ranked = (result.candidates || [result.best])
+      .filter(candidate => candidate.section.path.startsWith(basePathPrefix))
+      .filter(candidate => !excludedHeading.test(norm(candidate.section.heading)))
+      .map(candidate => {
+        const heading = norm(candidate.section.heading);
+        const body = norm(candidate.section.body);
+        const headingMatches = queryData.base.filter(token => heading.includes(token)).length;
+        const bodyMatches = queryData.base.filter(token => body.includes(token)).length;
+        const actionBoost = actionHeading.test(heading) ? 3.0 : 0;
+        return {
+          ...candidate,
+          procedureScore: candidate.score + headingMatches * 3 + bodyMatches * 0.15 + actionBoost
+        };
+      })
+      .sort((a, b) => b.procedureScore - a.procedureScore);
+
+    const chosen = [];
+    const seenHeadings = new Set();
+    ranked.forEach(candidate => {
+      const headingKey = norm(candidate.section.heading);
+      if (seenHeadings.has(headingKey)) return;
+      const sentences = answerSentences(candidate.section);
+      const relevant = sentences.map(sentence => ({
+        sentence,
+        relevance: sentenceRelevance(sentence, queryData)
+      })).filter(item => item.relevance.score >= 1.5)
+        .sort((a, b) => b.relevance.score - a.relevance.score);
+      const summary = relevant[0]?.sentence || sentences[0] || "";
+      if (!summary || summary.length < 25) return;
+      chosen.push({ section: candidate.section, summary });
+      seenHeadings.add(headingKey);
+      if (chosen.length >= 3) return;
+    });
+
+    if (!chosen.length) return "";
+    let answer = "Voici une démarche possible, organisée à partir des cours :\n\n";
+    chosen.forEach((step, index) => {
+      answer += (index + 1) + ". " + step.section.heading + "\n";
+      answer += step.summary + "\n";
+      answer += "Source : " + step.section.path + "\n\n";
+    });
+    answer += "Suis ces étapes dans l’ordre et vérifie le résultat après chaque étape.";
+    return answer.trim();
+  }
+
   function composeEvidence(query, result, evidence, type) {
     if (!evidence.length) {
       return "J’ai retrouvé un passage dans les cours, mais je n’ai pas assez d’éléments pour en construire une réponse fiable. Reformule la question ou précise le point que tu veux comprendre.";
@@ -552,9 +602,8 @@
     const maxItems = type === "definition" ? 2 : 3;
     evidence.forEach(item => {
       if (chosen.some(existing => norm(existing.sentence) === norm(item.sentence))) return;
-      if (chosen.length && item.score < chosen[0].score * 0.48) return;
-      if (chosen.length && item.section.path !== chosen[0].section.path &&
-          !item.section.path.split("/").slice(0, 2).join("/").startsWith(chosen[0].section.path.split("/").slice(0, 2).join("/"))) return;
+      if (chosen.length && item.score < chosen[0].score * 0.58) return;
+      if (chosen.length && item.section.path !== chosen[0].section.path) return;
       chosen.push(item);
       if (chosen.length >= maxItems) return;
     });
@@ -591,6 +640,10 @@
     if (type === "comparison") {
       const comparison = composeComparison(query);
       if (comparison) return comparison;
+    }
+    if (type === "procedure") {
+      const procedure = composeProcedure(query, result);
+      if (procedure) return procedure;
     }
     return composeEvidence(query, result, collectEvidence(query, result, 8), type);
   }
