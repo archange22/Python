@@ -86,9 +86,124 @@
   }
 
   function brainStatusText() {
-    if (!window.SunBrain) return "Composant local indisponible";
+    if (!window.SunBrain) return "Moteur local indisponible";
     const status = window.SunBrain.status();
-    return status.documents + "/" + status.total + " documents pédagogiques indexés";
+    if (!status.documents && status.total) return "Chargement de l’index documentaire…";
+    const summary = status.documents + "/" + status.total + " documents indexés";
+    return status.failed ? summary + " · " + status.failed + " indisponible(s)" : summary + " · local";
+  }
+
+  function inlineMarkup(value) {
+    return escapeHtml(value)
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+  }
+
+  function renderTextBlock(value) {
+    const lines = String(value || "").replace(/\r\n/g, "\n").split("\n");
+    let html = "";
+    let paragraph = [];
+    let listTag = "";
+    const listItems = [];
+
+    function flushParagraph() {
+      if (!paragraph.length) return;
+      html += "<p>" + inlineMarkup(paragraph.join(" ")) + "</p>";
+      paragraph = [];
+    }
+
+    function flushList() {
+      if (!listTag) return;
+      html += "<" + listTag + ">" + listItems.map(item => "<li>" + inlineMarkup(item) + "</li>").join("") + "</" + listTag + ">";
+      listItems.length = 0;
+      listTag = "";
+    }
+
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        flushParagraph();
+        flushList();
+        return;
+      }
+
+      if (/^Sources?\s*:/i.test(trimmed)) {
+        flushParagraph();
+        flushList();
+        const paths = trimmed.match(/(?:courses|knowledge|pdf)\/[A-Za-z0-9._/-]+\.md/g) || [];
+        const safePaths = paths.filter(source => !source.includes("..") && !source.startsWith("/"));
+        if (safePaths.length) {
+          html += '<div class="sun-source-citations"><span>Sources documentaires</span>' +
+            safePaths.map(source => '<a href="./' + escapeHtml(source) + '" target="_blank" rel="noopener">' + escapeHtml(source) + '</a>').join("") +
+            "</div>";
+        } else {
+          html += "<p>" + inlineMarkup(trimmed) + "</p>";
+        }
+        return;
+      }
+
+      const unordered = trimmed.match(/^[-*]\s+(.+)$/);
+      const ordered = trimmed.match(/^\d+[.)]\s+(.+)$/);
+      const match = unordered || ordered;
+      const nextTag = unordered ? "ul" : ordered ? "ol" : "";
+      if (match) {
+        flushParagraph();
+        if (listTag && listTag !== nextTag) flushList();
+        if (!listTag) listTag = nextTag;
+        listItems.push(match[1]);
+        return;
+      }
+
+      flushList();
+      paragraph.push(trimmed);
+    });
+
+    flushParagraph();
+    flushList();
+    return html;
+  }
+
+  function richMessageContent(value) {
+    const parts = String(value || "").split(/```([A-Za-z0-9_+-]*)[ \t]*\r?\n([\s\S]*?)```/g);
+    let html = "";
+    for (let index = 0; index < parts.length; index += 3) {
+      html += renderTextBlock(parts[index]);
+      if (index + 2 < parts.length) {
+        const language = parts[index + 1] || "code";
+        const code = parts[index + 2].replace(/\n$/, "");
+        html += '<div class="sun-code-panel"><div class="sun-code-toolbar"><span>' + escapeHtml(language) +
+          '</span><button class="sun-copy-code" type="button" data-sun-action="copy-code" data-code="' + escapeHtml(code) +
+          '" aria-label="Copier le code">Copier</button></div><pre><code>' + escapeHtml(code) + '</code></pre></div>';
+      }
+    }
+    return html || "<p></p>";
+  }
+
+  async function copyCode(control) {
+    const code = control.dataset.code || "";
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(code);
+      } else {
+        const helper = document.createElement("textarea");
+        helper.value = code;
+        helper.setAttribute("readonly", "");
+        helper.style.position = "fixed";
+        helper.style.opacity = "0";
+        document.body.appendChild(helper);
+        helper.select();
+        const copied = document.execCommand("copy");
+        helper.remove();
+        if (!copied) throw new Error("Copie non disponible");
+      }
+      const previous = control.textContent;
+      control.textContent = "Copié";
+      window.setTimeout(() => { control.textContent = previous; }, 1500);
+    } catch (error) {
+      control.textContent = "Échec";
+      window.setTimeout(() => { control.textContent = "Copier"; }, 1500);
+    }
   }
 
   function welcomeMarkup() {
@@ -96,14 +211,19 @@
       '<div class="sun-emblem" aria-hidden="true"><span class="sun-emblem-core"></span><span class="sun-emblem-orbit orbit-a"></span><span class="sun-emblem-orbit orbit-b"></span></div>' +
       '<span class="sun-welcome-kicker">SUN BRAIN · SYSTÈME NEURONAL 0.0.2</span>' +
       '<h1>Bonjour, je suis<br><span>Sun IA.</span></h1>' +
-      '<p>Je peux discuter, reconnaître des sujets et rechercher des réponses dans les cours et le corpus local.</p>' +
-      '<div class="sun-suggestions">' +
-        '<button type="button" data-sun-action="suggest" data-sun-prompt="Bonjour Sun IA !">Dire bonjour <span>↗</span></button>' +
-        '<button type="button" data-sun-action="suggest" data-sun-prompt="Comment ça va ?">Discuter <span>↗</span></button>' +
-        '<button type="button" data-sun-action="suggest" data-sun-prompt="Explique-moi le Machine Learning.">Interroger les cours <span>↗</span></button>' +
-        '<a href="./knowledge/pdfs/sun-discussion-global-v0.0.2.pdf" target="_blank" rel="noopener">Ouvrir le corpus PDF <span>↗</span></a>' +
+      '<p>Pose une question sur Python, l’IA, Discord ou le Web. Sun recherche les passages utiles dans sa bibliothèque locale et indique les documents utilisés.</p>' +
+      '<div class="sun-welcome-stats" aria-label="Fonctionnement de Sun">' +
+        '<div><strong id="sunWelcomeDocumentCount">…</strong><span>documents dans l’index</span></div>' +
+        '<div><strong>Sans API</strong><span>traitement documentaire local</span></div>' +
+        '<div><strong>Sources</strong><span>références dans les réponses</span></div>' +
       '</div>' +
-      '<div class="sun-demo-warning"><span aria-hidden="true">ⓘ</span><span><strong>Un premier cerveau local, pas encore un grand modèle.</strong> Un petit réseau neuronal classe les intentions. Sun Brain sélectionne des passages documentaires et compose des explications, comparaisons, procédures et exemples avec leurs sources. Aucun service d’IA externe ni API n’est utilisé.</span></div>' +
+      '<div class="sun-suggestions">' +
+        '<button type="button" data-sun-action="suggest" data-sun-prompt="Explique-moi les fonctions Python avec un exemple."><span aria-hidden="true">⌘</span> Exemple Python <span>↗</span></button>' +
+        '<button type="button" data-sun-action="suggest" data-sun-prompt="Explique les réseaux de neurones simplement."><span aria-hidden="true">◈</span> Comprendre l’IA <span>↗</span></button>' +
+        '<button type="button" data-sun-action="suggest" data-sun-prompt="Comment créer un bot Discord sécurisé ?"><span aria-hidden="true">◉</span> Bot Discord <span>↗</span></button>' +
+        '<a href="#bibliotheque"><span aria-hidden="true">▤</span> Parcourir les cours et PDF <span>↗</span></a>' +
+      '</div>' +
+      '<div class="sun-demo-warning"><span aria-hidden="true">ⓘ</span><span><strong>Un assistant documentaire local.</strong> Sun utilise un petit réseau neuronal pour classer des intentions et un moteur de recherche pour retrouver des preuves dans les documents intégrés. Ce n’est pas un grand modèle génératif : lorsque les sources ne suffisent pas, il doit le signaler.</span></div>' +
     '</section>';
   }
 
@@ -111,7 +231,7 @@
     const assistant = message.role === "assistant";
     return '<article class="sun-message ' + (assistant ? "sun-message-assistant" : "sun-message-user") + '">' +
       '<div class="sun-message-avatar" aria-hidden="true">' + (assistant ? "☼" : "T") + '</div>' +
-      '<div class="sun-message-body"><span class="sun-message-label">' + (assistant ? "Sun IA" : "Toi") + '</span><div class="sun-message-text">' + escapeHtml(message.content).replace(/\n/g, "<br>") + '</div></div>' +
+      '<div class="sun-message-body"><span class="sun-message-label">' + (assistant ? "Sun IA" : "Toi") + '</span><div class="sun-message-text">' + (assistant ? richMessageContent(message.content) : "<p>" + escapeHtml(message.content).replace(/\n/g, "<br>") + "</p>") + '</div></div>' +
     '</article>';
   }
 
@@ -120,7 +240,7 @@
     return '<section class="sun-thread" aria-label="Conversation">' +
       chat.messages.map(messageMarkup).join("") +
       (chat.pending ? '<article class="sun-message sun-message-assistant sun-message-pending"><div class="sun-message-avatar" aria-hidden="true">☼</div><div class="sun-message-body"><span class="sun-message-label">Sun IA</span><div class="sun-message-text">Je consulte mes cours…</div></div></article>' : "") +
-      '<div class="sun-local-notice"><span class="sun-local-notice-icon" aria-hidden="true">☼</span><div><strong>Sun Brain · traitement local</strong><p>Réseau neuronal de classification et recherche dans les documents de l’application. Les réponses restent limitées aux fonctions actuellement installées.</p></div></div>' +
+      '<div class="sun-local-notice"><span class="sun-local-notice-icon" aria-hidden="true">☼</span><div><strong>Recherche documentaire sur cet appareil</strong><p>Les messages de discussion ne sont pas ajoutés au corpus et ne servent pas à entraîner le réseau. Sun répond à partir des documents disponibles et peut reconnaître qu’une information manque.</p></div></div>' +
     '</section>';
   }
 
@@ -144,7 +264,7 @@
             '<a href="#bibliotheque"><span aria-hidden="true">▤</span> Cours et PDF</a>' +
             '<a href="#progression" data-nav="progression"><span aria-hidden="true">◷</span> Progression</a>' +
             '<a href="./apps/python-console-3/index.html"><span aria-hidden="true">⌘</span> Console Python 3</a>' +
-            '<div class="sun-local-status"><span class="sun-status-light"></span><span><strong>Sun Brain actif</strong><small>' + brainStatusText() + '</small></span></div>' +
+            '<div class="sun-local-status"><span class="sun-status-light"></span><span><strong>Sun Brain</strong><small class="sun-brain-status-text">' + brainStatusText() + '</small></span></div>' +
           '</div>' +
         '</aside>' +
         '<button class="sun-sidebar-backdrop" type="button" data-sun-action="close-sidebar" aria-label="Fermer la navigation"></button>' +
@@ -154,7 +274,7 @@
               '<button class="sun-menu-button" type="button" data-sun-action="toggle-sidebar" aria-label="Ouvrir la navigation">☰</button>' +
               '<div><strong>Sun IA</strong><span>Sun Brain · conversation et cours locaux</span></div>' +
             '</div>' +
-            '<div class="sun-main-actions"><span class="sun-mode-pill"><i></i> Réponses locales v1.2</span><button class="sun-header-new" type="button" data-sun-action="new-chat">＋ <span>Nouveau chat</span></button></div>' +
+            '<div class="sun-main-actions"><span class="sun-mode-pill"><i></i> Assistant documentaire local · 0.0.2</span><button class="sun-header-new" type="button" data-sun-action="new-chat">＋ <span>Nouveau chat</span></button></div>' +
           '</header>' +
           '<section class="sun-conversation-area" id="sunConversationArea">' + conversationMarkup(chat) + '</section>' +
           '<footer class="sun-composer-wrap">' +
@@ -165,7 +285,7 @@
                 '<div class="sun-composer-tools"><span>Entrée pour envoyer · Maj + Entrée pour une nouvelle ligne</span><button class="sun-send-button" type="submit" aria-label="Envoyer le message" disabled>↑</button></div>' +
               '</form>' +
             '</div>' +
-            '<p class="sun-composer-disclaimer">Version locale expérimentale : réponses construites à partir des cours et de leurs exemples. Pas encore de génération libre comme ChatGPT.</p>' +
+            '<p class="sun-composer-disclaimer">Aucune API payante · pas d’apprentissage à partir des conversations privées · réponses limitées aux documents indexés.</p>' +
           '</footer>' +
         '</section>' +
       '</div>';
@@ -175,8 +295,11 @@
     updateSendButton();
     if (window.SunBrain) {
       window.SunBrain.ready().then(() => {
-        const status = document.querySelector(".sun-local-status small");
-        if (status) status.textContent = brainStatusText();
+        document.querySelectorAll(".sun-brain-status-text").forEach(status => {
+          status.textContent = brainStatusText();
+        });
+        const count = document.querySelector("#sunWelcomeDocumentCount");
+        if (count) count.textContent = window.SunBrain.status().documents;
       });
     }
   }
@@ -242,7 +365,9 @@
     const action = control.dataset.sunAction;
     const chatId = control.dataset.chatId;
 
-    if (action === "new-chat") {
+    if (action === "copy-code") {
+      copyCode(control);
+    } else if (action === "new-chat") {
       createChat();
     } else if (action === "select-chat") {
       if (state.chats.some(chat => chat.id === chatId)) {
@@ -282,6 +407,12 @@
   });
 
   document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && sidebarOpen) {
+      sidebarOpen = false;
+      const shell = document.querySelector(".sun-chat-shell");
+      if (shell) shell.classList.remove("sun-sidebar-open");
+      return;
+    }
     if (event.target && event.target.id === "sunPrompt" && event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       const form = document.querySelector("#sunComposer");
