@@ -754,13 +754,20 @@
       }
       if (coverage === 1) score += 1.2;
       else if (coverage >= 0.66) score += 0.45;
-      const matchesPredictedSubject = predictedSubject && predictedSubject.paths.some(prefix =>
-        item.section.path === prefix || item.section.path.startsWith(prefix)
-      );
-      if (matchesPredictedSubject) {
-        score += (lexicalSubject ? 2.4 : 0.75) * subjectStrength;
-      } else if (predictedSubject &&
-          predictedSubject.paths.includes("knowledge/imported/") &&
+      const sectionSubject = subjectFromPath(item.section.path, item.section.heading);
+      const sectionSubjectMatch = predictedSubject && sectionSubject &&
+        sectionSubject.id === predictedSubject.id;
+      const specificPathMatch = predictedSubject && predictedSubject.paths
+        .filter(prefix => prefix !== "knowledge/imported/")
+        .some(prefix => item.section.path === prefix || item.section.path.startsWith(prefix));
+      if (sectionSubjectMatch) {
+        score += 2.8 * subjectStrength;
+      } else if (specificPathMatch) {
+        score += 0.75 * subjectStrength;
+      } else if (predictedSubject && predictedSubject.paths.includes("knowledge/imported/") &&
+          item.section.path.startsWith("knowledge/imported/")) {
+        score -= (lexicalSubject ? 1.1 : 0.35) * subjectStrength;
+      } else if (predictedSubject && predictedSubject.paths.includes("knowledge/imported/") &&
           item.section.path.startsWith("courses/")) {
         score -= (lexicalSubject ? 1.8 : 0.8) * subjectStrength;
       }
