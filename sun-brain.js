@@ -706,8 +706,8 @@
     }
     if (type === "example" && codeExample) {
       const sourceCandidate = (result.candidates || [result.best]).find(candidate =>
-        String(candidate.section.body || "").includes("[[CODE_BLOCK]]" + codeExample.slice(0, 18))
-      );
+        String(candidate.section.body || "").includes(codeExample.split("\n")[0])
+      ) || result.best;
       const explanationEvidence = findDirectEvidence(query, "explanation").find(item =>
         /\b(tant que|repete un bloc|condition reste vraie|compteur|boucle)\b/i.test(item.sentence) &&
         !/^(?:avant|quelle valeur|reponds)/i.test(norm(item.sentence))
