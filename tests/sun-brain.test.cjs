@@ -411,8 +411,8 @@ test("Le réseau neuronal v3 reconnaît les catégories de sujets en plus des in
   const info = brain.modelInfo;
   assert.equal(info.version, "0.0.3");
   assert.equal(info.hiddenNeurons, 24);
-  assert.equal(info.topicClasses, 5);
-  assert.ok(info.trainingExamples >= 120, "Le modèle doit disposer d'un jeu d'entraînement élargi.");
+  assert.equal(info.topicClasses, 13);
+  assert.ok(info.trainingExamples >= 220, "Le modèle doit disposer d'un jeu d'entraînement élargi.");
   assert.ok(info.inputFeatures > 100, "Les mots, préfixes, suffixes et trigrammes doivent enrichir les entrées.");
   assert.equal(brain.classifyIntent("bonjour sun").intent, "greeting");
   assert.equal(brain.classifyIntent("bonjour sun").kind, "conversation");
@@ -424,7 +424,14 @@ test("L'analyse sémantique identifie correctement les sujets et le type de dema
     ["explique le perceptron et le biais d un neurone artificiel", "ia", "explanation"],
     ["comment sécuriser le token de mon bot discord", "discord", "procedure"],
     ["quelle différence entre html css et javascript", "web", "comparison"],
-    ["comment ouvrir un pdf et extraire ses chapitres", "documents", "procedure"]
+    ["comment ouvrir un pdf et extraire ses chapitres", "documents", "procedure"],
+    ["comment organiser mes devoirs et réviser pour un examen", "school", "procedure"],
+    ["explique les fractions et les opérations mathématiques", "math", "explanation"],
+    ["traduis cette phrase du français vers l anglais", "language", "procedure"],
+    ["explique une expérience scientifique et une hypothèse", "science", "explanation"],
+    ["raconte un événement historique et sa chronologie", "culture", "explanation"],
+    ["aide moi à rédiger un paragraphe argumentatif", "writing", "procedure"],
+    ["mon téléphone android ne fonctionne plus comment le dépanner", "daily", "procedure"]
   ];
   cases.forEach(([question, expectedSubject, expectedType]) => {
     const analysis = brain.analyzeQuestion(question);
