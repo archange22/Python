@@ -14,6 +14,7 @@ KNOWLEDGE_ROOT = ROOT / "knowledge"
 CATALOG_PATH = KNOWLEDGE_ROOT / "catalog.json"
 MAX_PDF_BYTES = 30 * 1024 * 1024
 MAX_PDF_PAGES = 500
+MAX_EXTRACTED_CHARS = 5_000_000
 MIN_EXTRACTED_CHARS = 500
 
 EMAIL_RE = re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.I)
@@ -102,6 +103,8 @@ def extract_pdf_pages(pdf_path: Path) -> tuple[list[str], str, str]:
             "un OCR séparé est nécessaire avant indexation."
         )
     combined = "\n\n".join(pages)
+    if len(combined) > MAX_EXTRACTED_CHARS:
+        raise PDFIngestionError("Le texte extrait dépasse la limite de sécurité de 5 millions de caractères.")
     sensitive = detect_sensitive_markers(combined)
     if sensitive:
         raise PDFIngestionError(
@@ -182,6 +185,7 @@ def ingest_pdf(
     source: str,
     license_name: str,
     approve: bool = False,
+    publish_public: bool = False,
 ) -> dict:
     pages, raw_text, digest = extract_pdf_pages(pdf_path)
     markdown = organize_pages(title, topic, pages)
@@ -205,17 +209,44 @@ def ingest_pdf(
         "extracted_chars": len(raw_text),
         "sha256": digest,
         "preview": str(preview_path.relative_to(ROOT)),
-        "approved": bool(approve),
+        "approved": False,
+        "reviewed": False,
     }
     if not approve:
         return report
 
     if not source.strip() or not license_name.strip():
-        raise PDFIngestionError("Pour indexer le document, renseigne sa provenance et sa licence.")
+        raise PDFIngestionError("Pour valider un document, renseigne sa provenance et sa licence exactes.")
+    placeholders = {"inconnue", "unknown", "n/a", "à vérifier", "a verifier",
+                    "licence ou autorisation de redistribution", "non précisée", "non precisee"}
+    if license_name.strip().casefold() in placeholders:
+        raise PDFIngestionError("La licence doit être identifiée précisément ; une mention générique ne suffit pas.")
+    report["reviewed"] = True
+    if not publish_public:
+        report["message"] = (
+            "Aperçu vérifié localement, mais non publié. Pour ajouter ce document au dépôt et au site publics, "
+            "relance explicitement avec --approve --publish-public après confirmation des droits."
+        )
+        return report
+
+    catalog = load_catalog()
+    existing = next(
+        (doc for doc in catalog["documents"] if isinstance(doc, dict) and doc.get("sha256") == digest),
+        None,
+    )
+    if existing:
+        return {**existing, "already_indexed": True}
+    if any(isinstance(doc, dict) and doc.get("id") == entry_id for doc in catalog["documents"]):
+        raise PDFIngestionError(
+            "Un document différent utilise déjà ce titre/identifiant. Change le titre au lieu de l'écraser."
+        )
+
     imported_dir.mkdir(parents=True, exist_ok=True)
     pdf_dir.mkdir(parents=True, exist_ok=True)
     markdown_path = imported_dir / f"{slug}.md"
     pdf_target = pdf_dir / f"{slug}.pdf"
+    if markdown_path.exists() or pdf_target.exists():
+        raise PDFIngestionError("Un fichier porte déjà ce nom dans la bibliothèque ; aucun écrasement automatique.")
     markdown_path.write_text(markdown, encoding="utf-8")
     shutil.copy2(pdf_path, pdf_target)
     entry = {
@@ -223,6 +254,7 @@ def ingest_pdf(
         "path": str(markdown_path.relative_to(ROOT)).replace("\\", "/"),
         "pdf": str(pdf_target.relative_to(ROOT)).replace("\\", "/"),
         "approved": True,
+        "reviewed": True,
     }
     write_catalog_entry(entry)
     return entry
@@ -235,8 +267,15 @@ def main() -> int:
     parser.add_argument("--topic", required=True, help="Sujet principal")
     parser.add_argument("--source", required=True, help="Provenance ou auteur du document")
     parser.add_argument("--license", required=True, dest="license_name", help="Licence ou autorisation d'utilisation")
-    parser.add_argument("--approve", action="store_true", help="Autorise l'ajout au catalogue de connaissances")
+    parser.add_argument("--approve", action="store_true", help="Confirme la vérification manuelle du contenu et des droits")
+    parser.add_argument(
+        "--publish-public",
+        action="store_true",
+        help="Confirme que le document sera copié dans le dépôt public et publié avec l'application",
+    )
     args = parser.parse_args()
+    if args.publish_public and not args.approve:
+        parser.error("--publish-public nécessite aussi --approve.")
     try:
         result = ingest_pdf(
             args.pdf,
@@ -245,13 +284,18 @@ def main() -> int:
             source=args.source,
             license_name=args.license_name,
             approve=args.approve,
+            publish_public=args.publish_public,
         )
     except PDFIngestionError as exc:
         parser.error(str(exc))
         return 2
     print(json.dumps(result, ensure_ascii=False, indent=2))
     if not args.approve:
-        print("Aperçu créé uniquement. Relance avec --approve après vérification pour indexer le document.")
+        print("Aperçu créé uniquement. Vérifie le contenu et les droits avant toute validation.")
+    elif not args.publish_public:
+        print("Aperçu vérifié, mais conservé en staging local. Aucune publication ni indexation partagée.")
+    else:
+        print("Document explicitement autorisé pour publication dans le dépôt et l'application publics.")
     return 0
 
 

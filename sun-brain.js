@@ -2,13 +2,13 @@
   "use strict";
   const paths = [
     "courses/ia/lesson-01.md", "courses/ia/lesson-02.md",
-    "courses/ia/lesson-03.md", "courses/ia/lesson-04.md",
+    "courses/ia/lesson-03.md", "courses/ia/lesson-04.md", "courses/ia/lesson-05.md", "courses/ia/lesson-06.md",
     "courses/python/lesson-05.md", "courses/python/lesson-06.md",
-    "courses/python/lesson-07.md", "courses/discord/lesson-01.md",
+    "courses/python/lesson-07.md", "courses/python/lesson-08.md", "courses/python/lesson-09.md", "courses/discord/lesson-01.md",
     "courses/discord/lesson-02.md", "courses/discord/lesson-03.md",
-    "courses/discord/lesson-04.md", "courses/web/lesson-01.md",
+    "courses/discord/lesson-04.md", "courses/discord/lesson-05.md", "courses/discord/lesson-06.md", "courses/web/lesson-01.md",
     "courses/web/lesson-02.md", "courses/web/lesson-03.md",
-    "courses/web/lesson-04.md", "pdf/lecon-01.md", "pdf/lecon-02.md",
+    "courses/web/lesson-04.md", "courses/web/lesson-05.md", "courses/web/lesson-06.md", "pdf/lecon-01.md", "pdf/lecon-02.md",
     "pdf/lecon-03.md", "pdf/lecon-04.md",
     "knowledge/python-practice.md", "knowledge/ia-foundations.md",
     "knowledge/web-practices.md", "knowledge/discord-development.md",
@@ -471,20 +471,23 @@
     const tokens = new Set(tokenizeField(sentence));
     let score = 0;
     let matched = 0;
+    const matchedTokens = [];
     queryData.base.forEach(token => {
       if (tokens.has(token)) {
         score += 2;
         matched += 1;
+        matchedTokens.push(token);
       } else {
         const synonymMatch = (QUERY_SYNONYMS[token] || []).some(synonym => tokens.has(canonicalToken(synonym)));
         if (synonymMatch) {
           score += 1.25;
           matched += 1;
+          matchedTokens.push(token);
         }
       }
     });
     if (/\b(est|sont|designe|signifie|permet|sert|consiste|utilise|recoit|produit)\b/i.test(sentence)) score += 0.5;
-    return { score, matched };
+    return { score, matched, matchedTokens };
   }
 
   function collectEvidence(query, result, limit) {
@@ -498,6 +501,7 @@
       const headingTokens = new Set(indexed.headingTokens);
       const titleTokens = new Set(indexed.titleTokens);
       const contextMatches = queryData.base.filter(token => headingTokens.has(token) || titleTokens.has(token)).length;
+      const sameTopic = section.path.startsWith(preferredPrefix);
 
       answerSentences(section).forEach((sentence, sentenceIndex) => {
         const relevance = sentenceRelevance(sentence, queryData);
@@ -505,8 +509,8 @@
         const headingContext = queryData.base.length > 1 && contextMatches >= minimumCoverage;
         if (relevance.score < 1.5 && !headingContext) return;
         if (relevance.matched === 0 && !headingContext) return;
-        if (relevance.matched + Math.min(contextMatches, minimumCoverage) < minimumCoverage) return;
-        if (queryData.base.length > 1 && relevance.matched === 1 && contextMatches === 0) return;
+        if (relevance.matched + Math.min(contextMatches, minimumCoverage) < minimumCoverage && !sameTopic) return;
+        if (queryData.base.length > 1 && relevance.matched === 1 && contextMatches === 0 && !sameTopic) return;
         if (queryData.base.includes("neurone") && !queryData.base.some(token => token === "reseau" || token === "neurone") ) return;
 
         const key = norm(sentence);
@@ -521,7 +525,7 @@
         let definitionBoost = /\b(est une|est un|sont des|désigne|signifie|correspond à|se définit)\b/i.test(sentence) ? 2.2 : 0;
         if (/\b(condition imbriquée|exemple|exercice|leçon|prochaine étape)\b/i.test(sentence)) definitionBoost -= 0.8;
         const score = relevance.score + headingBoost + preferredBoost + contextSentenceBoost + definitionBoost + (sentenceIndex === 0 ? 0.25 : 0);
-        evidence.push({ sentence, section, score, matched: relevance.matched });
+        evidence.push({ sentence, section, score, matched: relevance.matched, matchedTokens: relevance.matchedTokens });
       });
     });
 
@@ -582,8 +586,11 @@
     return answer.trim();
   }
 
-  function extractCodeExample(result) {
-    const candidates = result.candidates || [result.best];
+  function extractCodeExample(result, preferredPrefix) {
+    const available = result.candidates || [result.best];
+    const candidates = preferredPrefix
+      ? available.filter(candidate => candidate.section.path.startsWith(preferredPrefix))
+      : available;
     for (const candidate of candidates) {
       const body = String(candidate.section.body || "");
       const pieces = body.split("[[CODE_BLOCK]]");
@@ -601,14 +608,18 @@
     const queryData = getQueryTerms(query);
     const basePathPrefix = result.best.section.path.split("/").slice(0, 2).join("/") + "/";
     const excludedHeading = /\b(objectifs?|exercices?|corrections?|fiche de revision|validation|sommaire|ressources|mini defi|mini projet)\b/i;
-    const actionHeading = /\b(preparer|preparation|creer|creation|configurer|securiser|proteger|utiliser|boucle|conditions?|liste|token|intents|lancer|adapter|responsive|nettoyer|transformer|qualite|separer|entrainement|test|donnees|jeu de donnees)\b/i;
+    const actionHeading = /\b(preparer|preparation|creer|creation|configurer|securiser|proteger|utiliser|boucle|conditions?|liste|token|intents|lancer|adapter|responsive|nettoyer|transformer|qualite|separer|entrainement|test|donnees|jeu de donnees|evenements?|ecouteur|unittest)\b/i;
     const queryText = norm(query);
     const focus = {
       create: /\b(creer|cree|creation)\b/.test(queryText),
       prepare: /\b(preparer|preparation)\b/.test(queryText),
       secure: /\b(securiser|proteger)\b/.test(queryText),
       use: /\b(utiliser|utilise)\b/.test(queryText),
-      responsive: /\b(responsive|ecran|telephone)\b/.test(queryText)
+      responsive: /\b(responsive|ecran|telephone)\b/.test(queryText),
+      test: /\b(test|tester|tests)\b/.test(queryText),
+      listen: /\b(addEventListener|evenement|event|clic)\b/.test(queryText),
+      trainModel: /\b(entrainer|entrainement|modele|model)\b/.test(queryText),
+      errors: /\b(erreur|erreurs|exception|fiabiliser)\b/.test(queryText)
     };
 
     const ranked = (result.candidates || [result.best])
@@ -625,6 +636,8 @@
         if (focus.secure && /\b(token|proteger|secret|securiser|environnement)\b/.test(heading)) actionBoost += 8;
         if (focus.use && /\b(utiliser|choisir|boucle|for|while)\b/.test(heading)) actionBoost += 6;
         if (focus.responsive && /\b(responsive|adapter|ecrans)\b/.test(heading)) actionBoost += 8;
+        if (focus.test && /\b(test|tester|unittest)\b/.test(heading)) actionBoost += 8;
+        if (focus.listen && /\b(evenements?|ecouteur|listener)\b/.test(heading)) actionBoost += 8;
         if (/\bmini projet\b/.test(heading) && !focus.prepare) actionBoost -= 5;
         return {
           ...candidate,
@@ -642,12 +655,16 @@
       const headingKey = norm(candidate.section.heading);
       if (seenHeadings.has(headingKey)) continue;
       const sentences = answerSentences(candidate.section);
+      const headingContext = queryData.base.some(token => norm(candidate.section.heading).split(/\s+/).includes(token));
       const relevant = sentences.map(sentence => ({
         sentence,
-        relevance: sentenceRelevance(sentence, queryData)
-      })).filter(item => item.relevance.score >= 1.5 &&
+        relevance: sentenceRelevance(sentence, queryData),
+        toolBoost: focus.test && /unittest/i.test(sentence) ? 3 : 0,
+        eventBoost: focus.listen && /addEventListener|evenement/i.test(sentence) ? 2 : 0
+      })).filter(item => (item.relevance.score >= 1.5 || headingContext) &&
         !/^(?:avant|avant d|quelle valeur|reponds|tu dois|essaie|py utilise|py permet)/i.test(norm(item.sentence)))
-        .sort((a, b) => b.relevance.score - a.relevance.score);
+        .sort((a, b) => (b.relevance.score + b.toolBoost + b.eventBoost) -
+          (a.relevance.score + a.toolBoost + a.eventBoost));
       const summary = relevant[0]?.sentence || "";
       if (!summary || summary.length < 25) continue;
       chosen.push({ section: candidate.section, summary });
@@ -662,7 +679,70 @@
       answer += step.summary + "\n";
       answer += "Source : " + step.section.path + "\n\n";
     });
-    answer += "Suis ces étapes dans l’ordre et vérifie le résultat après chaque étape.";
+    const functionCode = focus.create && /\bpython\b/.test(queryText)
+      ? extractCodeExample(result, basePathPrefix)
+      : "";
+    if (functionCode) {
+      const codeSource = (result.candidates || [result.best]).find(candidate =>
+        candidate.section.path.startsWith(basePathPrefix) &&
+        String(candidate.section.body || "").includes(functionCode.split("\n")[0])
+      );
+      answer += "\n\nExemple en Python :\n\n```python\n" + functionCode + "\n```";
+      if (codeSource) answer += "\nSource : " + codeSource.section.path;
+    }
+
+    if (focus.trainModel) {
+      const inferenceSection = searchIndex.find(item =>
+        item.section.path.startsWith(basePathPrefix) && /\binference\b/.test(norm(item.section.heading))
+      );
+      const inferenceSentence = inferenceSection &&
+        answerSentences(inferenceSection.section).find(sentence => /inference/.test(norm(sentence)));
+      if (inferenceSentence && !answer.includes(inferenceSentence)) {
+        answer += "\n\nAprès l'entraînement — inférence : " + inferenceSentence +
+          "\nSource : " + inferenceSection.section.path;
+      }
+    }
+
+    if (focus.errors && /discord/.test(basePathPrefix)) {
+      const logSection = searchIndex.find(item =>
+        item.section.path === "courses/discord/lesson-06.md" &&
+        /journ/.test(norm(item.section.heading))
+      );
+      const logSentence = logSection &&
+        answerSentences(logSection.section).find(sentence => /journ|log/.test(norm(sentence)));
+      if (logSentence && !answer.includes(logSentence)) {
+        answer += "\n\nJournalisation : " + logSentence +
+          "\nSource : " + logSection.section.path;
+      }
+    }
+
+    if (focus.test && /discord/.test(basePathPrefix)) {
+      const testSection = searchIndex.find(item =>
+        item.section.path === "courses/discord/lesson-06.md" &&
+        /unittest/.test(norm(item.section.heading))
+      );
+      const testSentence = testSection &&
+        answerSentences(testSection.section).find(sentence => /unittest/.test(norm(sentence)));
+      if (testSentence && !answer.includes(testSentence)) {
+        answer += "\n\nPour les tests : " + testSentence +
+          "\nSource : " + testSection.section.path;
+      }
+    }
+
+    if (/\b(permission|permissions|role|roles|droit|droits)\b/.test(queryText)) {
+      const leastPrivilege = searchIndex.find(item =>
+        item.section.path === "courses/discord/lesson-05.md" &&
+        /moindre privilege/.test(norm(item.section.heading))
+      );
+      const principle = leastPrivilege &&
+        answerSentences(leastPrivilege.section).find(sentence => /moindre privilege/.test(norm(sentence)));
+      if (principle) {
+        answer += "\n\nRègle de sécurité : " + principle +
+          "\nSource : " + leastPrivilege.section.path;
+      }
+    }
+
+    answer += "\n\nSuis ces étapes dans l’ordre et vérifie le résultat après chaque étape.";
     return answer.trim();
   }
 
@@ -697,9 +777,10 @@
         const contextSentenceBoost = 0;
         const narrowDefinitionPenalty = /\b(imbriquee|particulier|exemple)\b/.test(normalizedSentence) ? 1.5 : 0;
         const explanatoryBoost = type !== "definition" && /\b(utilise|apprend|ajuste|fonctionne|permet|recoit|produit|calcule|transmet)\b/.test(normalizedSentence) ? 3.5 : 0;
+        const topicDefinitionBoost = type !== "definition" && subjectBeforeVerb && startsWithTopic ? 7 : 0;
         const exampleBoost = type === "example" && /\b(exemple|par exemple|while|for|utilise)\b/.test(normalizedSentence) ? 4 : 0;
         const score = relevance.score + headingMatches * 3.5 + titleMatches * 1.8 +
-          definitionBoost + contextSentenceBoost + explanatoryBoost + exampleBoost - narrowDefinitionPenalty;
+          definitionBoost + contextSentenceBoost + explanatoryBoost + topicDefinitionBoost + exampleBoost - narrowDefinitionPenalty;
         candidates.push({ sentence, section, score, matched: relevance.matched });
       });
     });
@@ -711,6 +792,7 @@
       return "J’ai retrouvé un passage dans les cours, mais je n’ai pas assez d’éléments pour en construire une réponse fiable. Reformule la question ou précise le point que tu veux comprendre.";
     }
     const chosen = [];
+    const queryData = getQueryTerms(query);
     const codeExample = type === "example" ? extractCodeExample(result) : "";
     const direct = findDirectEvidence(query, type).filter(item =>
       type !== "example" || !/^(?:avant|quelle valeur|reponds|tu dois|essaie)/i.test(norm(item.sentence))
@@ -723,8 +805,8 @@
       );
       if (ifSupport && !chosen.some(item => norm(item.sentence) === norm(ifSupport.sentence))) chosen.push(ifSupport);
     }
-    const maxItems = type === "definition" ? 2 : 3;
-    if (type === "explanation" && first && chosen.length < maxItems) {
+    const maxItems = type === "definition" ? 2 : type === "explanation" ? 5 : 3;
+    if (type === "explanation" && first) {
       const neighbouringSentences = answerSentences(first.section);
       const firstIndex = neighbouringSentences.findIndex(sentence => norm(sentence) === norm(first.sentence));
       if (firstIndex >= 0) {
@@ -735,19 +817,58 @@
         });
       }
     }
-    evidence.forEach(item => {
-      if (chosen.length >= maxItems) return;
-      if (chosen.some(existing => norm(existing.sentence) === norm(item.sentence))) return;
-      if (chosen.length && item.score < chosen[0].score * 0.58) return;
-      if (chosen.length && item.section.path !== chosen[0].section.path) return;
-      chosen.push(item);
-    });
+    if (type === "explanation" && first) {
+      const subjectPrefix = result.best.section.path.split("/").slice(0, 2).join("/") + "/";
+      const covered = new Set();
+      const markCovered = item => {
+        const matches = sentenceRelevance(item.sentence, queryData).matchedTokens || [];
+        matches.forEach(token => covered.add(token));
+        tokenizeField(item.section.heading).forEach(token => {
+          if (queryData.base.includes(token)) covered.add(token);
+        });
+      };
+      chosen.forEach(markCovered);
+
+      evidence.forEach(item => {
+        if (chosen.length >= maxItems) return;
+        if (!item.section.path.startsWith(subjectPrefix)) return;
+        if (chosen.some(existing => norm(existing.sentence) === norm(item.sentence))) return;
+        if (item.score < chosen[0].score * 0.24) return;
+        const matchedTokens = item.matchedTokens ||
+          sentenceRelevance(item.sentence, queryData).matchedTokens || [];
+        const headingTokens = tokenizeField(item.section.heading);
+        const newMatches = queryData.base.filter(token =>
+          !covered.has(token) && (matchedTokens.includes(token) || headingTokens.includes(token))
+        );
+        if (!newMatches.length) return;
+        chosen.push(item);
+        newMatches.forEach(token => covered.add(token));
+      });
+    } else {
+      evidence.forEach(item => {
+        if (chosen.length >= maxItems) return;
+        if (chosen.some(existing => norm(existing.sentence) === norm(item.sentence))) return;
+        if (chosen.length && item.score < chosen[0].score * 0.58) return;
+        if (chosen.length && item.section.path !== chosen[0].section.path) return;
+        chosen.push(item);
+      });
+    }
 
     let answer = type === "definition"
       ? "En clair : " + chosen[0].sentence
       : type === "example"
         ? "Voici l’idée illustrée par les cours : " + chosen[0].sentence
         : "Voici l’explication que je peux construire à partir des cours : " + chosen[0].sentence;
+
+    const resultHeading = result.best && result.best.section.heading;
+    const queryTerms = getQueryTerms(query).base;
+    const headingTokens = resultHeading ? tokenizeField(resultHeading) : [];
+    const matchedHeadingTerms = queryTerms.filter(token =>
+      token.length >= 4 && headingTokens.includes(token)
+    );
+    if (type === "explanation" && matchedHeadingTerms.length) {
+      answer = "Partie du cours : " + resultHeading + "\n\n" + answer;
+    }
 
     if (chosen.length > 1) {
       answer += "\n\nPour compléter :\n";
@@ -771,7 +892,27 @@
       const example = chosen.find(item => /\b(exemple|par exemple|analogie|imagine)\b/i.test(item.sentence));
       if (example && !answer.includes(example.sentence)) answer += "\nExemple : " + example.sentence;
     }
-    answer += "\n\nSources : " + Array.from(new Set(chosen.map(item => item.section.path))).join(" ; ");
+    if (type === "explanation" &&
+        queryTerms.includes("reseau") && queryTerms.includes("neurone")) {
+      const deepLearningSection = searchIndex.find(item =>
+        item.section.path === "courses/ia/lesson-01.md" &&
+        /deep learning/.test(norm(item.section.heading))
+      );
+      const layerSentence = deepLearningSection &&
+        answerSentences(deepLearningSection.section).find(sentence =>
+          /plusieurs couches de calcul/.test(norm(sentence))
+        );
+      if (layerSentence && !answer.includes(layerSentence)) {
+        answer += "\n\nPour aller plus loin : " + layerSentence +
+          "\nSource : " + deepLearningSection.section.path;
+      }
+    }
+
+    const citedPaths = chosen.map(item => item.section.path);
+    if (type === "explanation" && matchedHeadingTerms.length && result.best?.section.path) {
+      citedPaths.push(result.best.section.path);
+    }
+    answer += "\n\nSources : " + Array.from(new Set(citedPaths)).join(" ; ");
     return answer;
   }
 
@@ -789,7 +930,7 @@
       const procedure = composeProcedure(query, result);
       if (procedure) return procedure;
     }
-    return composeEvidence(query, result, collectEvidence(query, result, 8), type);
+    return composeEvidence(query, result, collectEvidence(query, result, 30), type);
   }
   function extractName(s) {
     const m = norm(s).match(/(?:je m appelle|moi c est|mon nom est|appelle moi|je suis)\s+([a-z]{2,22})/);
