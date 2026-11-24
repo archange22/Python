@@ -433,12 +433,30 @@ test("L'analyse sémantique identifie correctement les sujets et le type de dema
     ["aide moi à rédiger un paragraphe argumentatif", "writing", "procedure"],
     ["mon téléphone android ne fonctionne plus comment le dépanner", "daily", "procedure"]
   ];
+  const allowedSources = {
+    python: ["courses/python/", "knowledge/python-practice.md"],
+    ia: ["courses/ia/", "knowledge/ia-foundations.md"],
+    discord: ["courses/discord/", "knowledge/discord-development.md"],
+    web: ["courses/web/", "knowledge/web-practices.md"],
+    documents: ["knowledge/imported/", "knowledge/pdfs/"],
+    school: ["knowledge/imported/"],
+    math: ["knowledge/imported/"],
+    science: ["knowledge/imported/"],
+    culture: ["knowledge/imported/"],
+    language: ["knowledge/imported/"],
+    writing: ["knowledge/imported/"],
+    daily: ["knowledge/imported/"],
+    general: ["knowledge/imported/"]
+  };
   cases.forEach(([question, expectedSubject, expectedType]) => {
     const analysis = brain.analyzeQuestion(question);
     assert.equal(analysis.subjectId, expectedSubject, "Sujet mal identifié pour : " + question);
     assert.equal(analysis.questionType, expectedType, "Type de demande incorrect pour : " + question);
     assert.ok(analysis.confidence > 0 && analysis.confidence <= 0.99);
     assert.ok(analysis.source, "L'analyse doit s'appuyer sur un document.");
+    assert.ok(allowedSources[expectedSubject].some(prefix =>
+      analysis.source === prefix || analysis.source.startsWith(prefix)
+    ), "La source doit correspondre au sujet " + expectedSubject + " : " + analysis.source);
   });
 });
 
