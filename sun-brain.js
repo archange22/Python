@@ -138,7 +138,7 @@
       buffer = [];
     }
     lines.forEach((line, i) => {
-      const m = line.match(/^##\s+(.+)/);
+      const m = line.match(/^#{2,4}\s+(.+)/);
       if (m) {
         if (started) flush();
         else buffer = [];
@@ -358,8 +358,10 @@
         if (covered.size / queryData.base.length >= 0.9 || alternatives.length >= 3) break;
       }
     } else {
-      ranked.slice(1, 3).forEach(item => {
-        if (item.score >= best.score * 0.72 && item.coverage >= 0.5) alternatives.push(item);
+      ranked.slice(1, 12).forEach(item => {
+        if (item.section.path === best.section.path &&
+            item.score >= best.score * 0.58 && item.coverage >= 0.5 &&
+            alternatives.length < 2) alternatives.push(item);
       });
     }
 
@@ -408,7 +410,7 @@
       if (index) answer += "\n\n";
       answer += section.title + "\n";
       answer += "Partie : " + section.heading + "\n\n";
-      answer += makeExcerpt(section, unique.length > 1 ? 520 : 980);
+      answer += makeExcerpt(section, unique.length > 1 ? 900 : 1100);
       answer += "\nSource : " + section.path;
     });
     return answer;
