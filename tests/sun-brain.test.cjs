@@ -83,7 +83,7 @@ async function localFetch(input) {
         "## Disponibilité hors connexion",
         "",
         "Le texte validé et le PDF associé sont conservés dans les caches locaux pour être consultés sans réseau."
-      ].join("\\n")
+      ].join("\n")
     };
   }
 
