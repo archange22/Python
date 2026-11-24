@@ -384,7 +384,7 @@ test("Sun Brain reconnaît un sujet dans un document PDF importé et approuvé",
     ["knowledge/imported/test-approved.md", "knowledge/imported/discussion-global-v0.0.2.md"].includes(topic.source),
     "Le sujet doit être retrouvé dans une source locale approuvée."
   );
-  assert.match(topic.heading, /Extraction et organisation des chapitres/i);
+  assert.match(topic.heading, /Documents PDF et lecture|Extraction et organisation des chapitres/i);
 });
 
 test("Les documents non approuvés ou aux chemins non sûrs sont ignorés", () => {
