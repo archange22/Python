@@ -617,7 +617,8 @@
       responsive: /\b(responsive|ecran|telephone)\b/.test(queryText),
       test: /\b(test|tester|tests)\b/.test(queryText),
       listen: /\b(addEventListener|evenement|event|clic)\b/.test(queryText),
-      trainModel: /\b(entrainer|entrainement|modele|model)\b/.test(queryText)
+      trainModel: /\b(entrainer|entrainement|modele|model)\b/.test(queryText),
+      errors: /\b(erreur|erreurs|exception|fiabiliser)\b/.test(queryText)
     };
 
     const ranked = (result.candidates || [result.best])
@@ -701,6 +702,19 @@
       }
     }
 
+    if (focus.errors && /discord/.test(basePathPrefix)) {
+      const logSection = searchIndex.find(item =>
+        item.section.path === "courses/discord/lesson-06.md" &&
+        /journal/.test(norm(item.section.heading))
+      );
+      const logSentence = logSection &&
+        answerSentences(logSection.section).find(sentence => /journal|log/.test(norm(sentence)));
+      if (logSentence && !answer.includes(logSentence)) {
+        answer += "\n\nJournalisation : " + logSentence +
+          "\nSource : " + logSection.section.path;
+      }
+    }
+
     if (focus.test && /discord/.test(basePathPrefix)) {
       const testSection = searchIndex.find(item =>
         item.section.path === "courses/discord/lesson-06.md" &&
@@ -777,6 +791,7 @@
       return "J’ai retrouvé un passage dans les cours, mais je n’ai pas assez d’éléments pour en construire une réponse fiable. Reformule la question ou précise le point que tu veux comprendre.";
     }
     const chosen = [];
+    const queryData = getQueryTerms(query);
     const codeExample = type === "example" ? extractCodeExample(result) : "";
     const direct = findDirectEvidence(query, type).filter(item =>
       type !== "example" || !/^(?:avant|quelle valeur|reponds|tu dois|essaie)/i.test(norm(item.sentence))
