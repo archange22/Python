@@ -331,10 +331,28 @@
     const covered = new Set(best.matchedTokens);
     const alternatives = [];
     if (queryData.base.length >= 3 && best.coverage < 0.9) {
-      for (const item of ranked.slice(1, 18)) {
+      const subjectPrefix = best.section.path.split("/").slice(0, 2).join("/") + "/";
+      queryData.base.filter(token => !covered.has(token)).forEach(token => {
+        const candidate = ranked.find(item =>
+          item.section.path.startsWith(subjectPrefix) &&
+          item.matchedTokens.includes(token) &&
+          item.section.path + "|" + item.section.heading !== best.section.path + "|" + best.section.heading &&
+          !alternatives.some(existing => existing.section.path === item.section.path && existing.section.heading === item.section.heading)
+        );
+        if (candidate && candidate.score >= best.score * 0.1) {
+          alternatives.push(candidate);
+          candidate.matchedTokens.forEach(value => covered.add(value));
+        }
+      });
+
+      for (const item of ranked.slice(1, 45)) {
         if (item.score < best.score * 0.18) continue;
         const addsCoverage = item.matchedTokens.some(token => !covered.has(token));
         if (!addsCoverage) continue;
+        const alreadyAdded = alternatives.some(existing =>
+          existing.section.path === item.section.path && existing.section.heading === item.section.heading
+        );
+        if (alreadyAdded) continue;
         alternatives.push(item);
         item.matchedTokens.forEach(token => covered.add(token));
         if (covered.size / queryData.base.length >= 0.9 || alternatives.length >= 3) break;
