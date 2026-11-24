@@ -15,39 +15,122 @@
     "knowledge/security-and-privacy.md"
   ];
   const data = {
-    greeting: ["bonjour", "salut", "yo", "coucou", "hello", "hey", "bonsoir", "bjr", "slt", "cc"],
-    how: ["ça va", "cv", "comment ça va", "comment tu vas", "comment vas tu", "tu vas bien"],
-    name: ["comment tu t appelles", "c est quoi ton nom", "quel est ton nom", "ton nom c est quoi"],
-    thanks: ["merci", "merci beaucoup", "je te remercie"],
-    bye: ["au revoir", "à bientôt", "bonne nuit", "ciao", "bye"],
-    identity: ["tu es qui", "qui es tu", "tu es quoi", "tu es une ia"],
-    help: ["que sais tu faire", "tu peux faire quoi", "comment peux tu m aider"],
-    smalltalk: ["quoi de neuf", "tu fais quoi", "comment se passe ta journée", "on peut discuter", "parlons un peu", "raconte moi quelque chose", "tu es disponible", "ça dit quoi"]
+    greeting: ["bonjour", "salut", "yo", "coucou", "hello", "hey", "bonsoir", "bjr", "slt", "cc", "salut sun", "bonjour sun", "wesh", "bien le bonjour"],
+    how: ["ça va", "cv", "comment ça va", "comment tu vas", "comment vas tu", "tu vas bien", "comment tu te sens", "ça roule", "tu vas bien sun", "comment allez vous"],
+    name: ["comment tu t appelles", "c est quoi ton nom", "quel est ton nom", "ton nom c est quoi", "comment dois je t appeler", "tu t appelles comment", "quel est ton prénom"],
+    thanks: ["merci", "merci beaucoup", "je te remercie", "c est gentil merci", "merci pour ton aide", "bien reçu merci"],
+    bye: ["au revoir", "à bientôt", "bonne nuit", "ciao", "bye", "à plus tard", "je dois partir", "bonne journée"],
+    identity: ["tu es qui", "qui es tu", "tu es quoi", "tu es une ia", "comment tu fonctionnes", "tu es un robot", "présente toi"],
+    help: ["que sais tu faire", "tu peux faire quoi", "comment peux tu m aider", "quelles sont tes capacités", "aide moi à utiliser sun", "comment poser une question"],
+    smalltalk: ["quoi de neuf", "tu fais quoi", "comment se passe ta journée", "on peut discuter", "parlons un peu", "raconte moi quelque chose", "tu es disponible", "ça dit quoi", "j aimerais discuter", "on parle de quoi"],
+
+    topic_python: [
+      "python programmation variables types conditions boucles fonctions listes dictionnaires",
+      "explique moi le langage python et donne un exemple de code",
+      "comment écrire une fonction avec def et return en python",
+      "comment corriger une erreur dans mon programme python",
+      "je veux apprendre à coder avec python",
+      "à quoi servent les variables et les boucles python",
+      "comment utiliser les listes et les dictionnaires python",
+      "programmation python débutant exercices et algorithmes",
+      "comment exécuter un script python sur android",
+      "quelle est la différence entre for et while en python",
+      "comment créer un programme python avec des conditions",
+      "aide moi à comprendre la syntaxe python"
+    ],
+    topic_ia: [
+      "intelligence artificielle machine learning deep learning réseau de neurones",
+      "comment entraîner un modèle neuronal avec des données",
+      "explique les perceptrons les poids les biais et activation",
+      "comment fonctionne l apprentissage automatique",
+      "classification précision rappel et score f1 pour une ia",
+      "qu est ce qu un dataset et comment préparer les données",
+      "comment fonctionne un réseau de neurones artificiels",
+      "différence entre ia apprentissage automatique et deep learning",
+      "comment faire une inférence avec un modèle entraîné",
+      "algorithme de classification et modèle prédictif",
+      "comment évaluer la qualité d un modèle ia",
+      "je veux comprendre les neurones artificiels"
+    ],
+    topic_discord: [
+      "discord bot discord py discord js serveur commande slash",
+      "comment programmer un bot discord avec python",
+      "comment sécuriser le token secret de mon bot discord",
+      "rôles permissions intents gateway événements discord",
+      "comment créer une commande pour un serveur discord",
+      "comment gérer les erreurs et les journaux d un bot",
+      "développer une application discord et un bot modérateur",
+      "comment vérifier les permissions des rôles discord",
+      "comment héberger un bot discord et le maintenir actif",
+      "comment tester un bot discord avec unittest",
+      "problème de connexion du bot discord à gateway",
+      "je veux créer une communauté avec un bot discord"
+    ],
+    topic_web: [
+      "création de site web html css javascript",
+      "comment construire une page web responsive pour téléphone",
+      "html structure css design et javascript interactions",
+      "comment utiliser fetch async await pour une api",
+      "comment créer un formulaire accessible dans un site",
+      "comment corriger le css et améliorer interface utilisateur",
+      "développement frontend web navigateur html",
+      "comment gérer les événements avec addEventListener",
+      "comment installer une application web progressive pwa",
+      "site internet responsive mobile ordinateur",
+      "comment créer une interface avec javascript dom",
+      "aide moi à développer une application web"
+    ],
+    topic_documents: [
+      "ouvrir un pdf extraire son texte organiser les chapitres",
+      "comment analyser un document et indexer ses informations",
+      "lire un fichier pdf et rechercher dans son contenu",
+      "extraire texte d un pdf et créer une base documentaire",
+      "comment classer des documents par sujet et chapitre",
+      "organiser une bibliothèque de cours hors connexion",
+      "importer un document texte et vérifier ses sources",
+      "comment retrouver une information dans un fichier",
+      "catalogue documentaire et recherche locale",
+      "comment ouvrir un document word et extraire le texte",
+      "comment reconnaître le sujet principal d un document",
+      "indexation de fichiers et recherche par mots clés"
+    ]
   };
+
   function norm(s) {
     return String(s || "").toLowerCase().normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/\bccmt\b/g, "comment").replace(/\bcmt\b/g, "comment")
       .replace(/\bbjr\b/g, "bonjour").replace(/\bslt\b/g, "salut")
       .replace(/\bcv\b/g, "ca va").replace(/\bc\s+ets\b/g, "c est")
+      .replace(/\bj\s+voudrais\b/g, "je voudrais")
+      .replace(/\bsvp\b/g, "s il vous plait")
       .replace(/[^a-z0-9]+/g, " ").trim();
   }
+
   function feats(s) {
-    const t = norm(s).split(/\s+/).filter(Boolean);
-    const out = t.slice();
-    for (let i = 0; i + 1 < t.length; i++) out.push(t[i] + "_" + t[i + 1]);
-    return out;
+    const tokens = norm(s).split(/\s+/).filter(Boolean);
+    const out = [];
+    tokens.forEach((token, i) => {
+      out.push("w:" + token);
+      if (token.length >= 4) {
+        out.push("p:" + token.slice(0, 3), "s:" + token.slice(-3));
+        for (let j = 0; j <= token.length - 3; j++) out.push("c:" + token.slice(j, j + 3));
+      }
+      if (i + 1 < tokens.length) out.push("b:" + token + "_" + tokens[i + 1]);
+    });
+    return Array.from(new Set(out));
   }
+
   const labels = Object.keys(data);
-  const vocab = Array.from(new Set(labels.flatMap(k => data[k].flatMap(feats))));
-  const index = new Map(vocab.map((t, i) => [t, i]));
+  const vocab = Array.from(new Set(labels.flatMap(label => data[label].flatMap(feats))));
+  const index = new Map(vocab.map((feature, i) => [feature, i]));
   const samples = [];
   labels.forEach((label, y) => data[label].forEach(phrase => {
-    const x = new Array(vocab.length).fill(0);
-    feats(phrase).forEach(t => { if (index.has(t)) x[index.get(t)] = 1; });
-    samples.push({ x, y });
+    const active = Array.from(new Set(feats(phrase).filter(feature => index.has(feature)).map(feature => index.get(feature))));
+    samples.push({ active, y });
   }));
-  const MODEL_CACHE_KEY = "sun-ia-neural-model-v1";
+
+  const MODEL_CACHE_KEY = "sun-ia-neural-model-v3";
   const modelSignature = JSON.stringify(data) + "|" + vocab.join("|");
 
   function rand(seed) {
@@ -55,51 +138,81 @@
     return () => ((n = (n * 1664525 + 1013904223) >>> 0) / 4294967296);
   }
 
-  function softmax(a) {
-    const m = Math.max(...a), e = a.map(v => Math.exp(v - m)), sum = e.reduce((x, y) => x + y, 0);
-    return e.map(v => v / sum);
+  function softmax(values) {
+    const maximum = Math.max(...values);
+    const exponentials = values.map(value => Math.exp(value - maximum));
+    const total = exponentials.reduce((sum, value) => sum + value, 0) || 1;
+    return exponentials.map(value => value / total);
   }
 
   function trainNetwork() {
     const random = rand(41721);
-    const hiddenSize = 16;
-    const w1 = Array.from({ length: hiddenSize }, () => Array.from({ length: vocab.length }, () => (random() - .5) * .2));
+    const hiddenSize = 24;
+    const w1 = Array.from({ length: hiddenSize }, () =>
+      Array.from({ length: vocab.length }, () => (random() - 0.5) * 0.16));
     const b1 = new Array(hiddenSize).fill(0);
-    const w2 = Array.from({ length: labels.length }, () => Array.from({ length: hiddenSize }, () => (random() - .5) * .2));
+    const w2 = Array.from({ length: labels.length }, () =>
+      Array.from({ length: hiddenSize }, () => (random() - 0.5) * 0.16));
     const b2 = new Array(labels.length).fill(0);
+    const order = samples.map((_, i) => i);
+    const learningRate = 0.035;
+    const epochs = 280;
 
-    for (let epoch = 0; epoch < 350; epoch++) {
-      samples.forEach(sample => {
-        const h = w1.map((row, j) => Math.tanh(row.reduce((sum, w, i) => sum + w * sample.x[i], b1[j])));
-        const out = softmax(w2.map((row, k) => row.reduce((sum, w, j) => sum + w * h[j], b2[k])));
-        const err = out.map((p, k) => p - (k === sample.y ? 1 : 0));
+    for (let epoch = 0; epoch < epochs; epoch++) {
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      for (const sampleIndex of order) {
+        const sample = samples[sampleIndex];
+        const hiddenValues = w1.map((row, j) => {
+          let sum = b1[j];
+          for (const featureIndex of sample.active) sum += row[featureIndex];
+          return Math.tanh(sum);
+        });
+        const output = softmax(w2.map((row, k) =>
+          row.reduce((sum, weight, j) => sum + weight * hiddenValues[j], b2[k])));
+        const errors = output.map((probability, k) => probability - (k === sample.y ? 1 : 0));
         const back = new Array(hiddenSize).fill(0);
+
+        for (let k = 0; k < labels.length; k++) {
+          for (let j = 0; j < hiddenSize; j++) back[j] += errors[k] * w2[k][j];
+        }
         for (let k = 0; k < labels.length; k++) {
           for (let j = 0; j < hiddenSize; j++) {
-            back[j] += err[k] * w2[k][j];
-            w2[k][j] -= .055 * err[k] * h[j];
+            w2[k][j] -= learningRate * (errors[k] * hiddenValues[j] + 0.00008 * w2[k][j]);
           }
-          b2[k] -= .055 * err[k];
+          b2[k] -= learningRate * errors[k];
         }
         for (let j = 0; j < hiddenSize; j++) {
-          const d = back[j] * (1 - h[j] * h[j]);
-          for (let i = 0; i < vocab.length; i++) w1[j][i] -= .055 * d * sample.x[i];
-          b1[j] -= .055 * d;
+          const gradient = back[j] * (1 - hiddenValues[j] * hiddenValues[j]);
+          for (const featureIndex of sample.active) {
+            w1[j][featureIndex] -= learningRate * (gradient + 0.00008 * w1[j][featureIndex]);
+          }
+          b1[j] -= learningRate * gradient;
         }
-      });
+      }
     }
     return { hidden: hiddenSize, w1, b1, w2, b2 };
+  }
+
+  function validNetwork(saved) {
+    return !!(saved && saved.version === 3 && saved.signature === modelSignature &&
+      saved.hidden === 24 && Array.isArray(saved.w1) && saved.w1.length === 24 &&
+      saved.w1.every(row => Array.isArray(row) && row.length === vocab.length) &&
+      Array.isArray(saved.b1) && saved.b1.length === 24 &&
+      Array.isArray(saved.w2) && saved.w2.length === labels.length &&
+      saved.w2.every(row => Array.isArray(row) && row.length === 24) &&
+      Array.isArray(saved.b2) && saved.b2.length === labels.length);
   }
 
   function loadNetwork() {
     try {
       const saved = JSON.parse(localStorage.getItem(MODEL_CACHE_KEY) || "null");
-      if (saved && saved.version === 1 && saved.signature === modelSignature &&
-          Array.isArray(saved.w1) && Array.isArray(saved.w2) &&
-          saved.w1.length === 16 && saved.w2.length === labels.length) return saved;
+      if (validNetwork(saved)) return saved;
     } catch (_) {}
     const trained = trainNetwork();
-    const model = { version: 1, signature: modelSignature, ...trained };
+    const model = { version: 3, signature: modelSignature, ...trained };
     try { localStorage.setItem(MODEL_CACHE_KEY, JSON.stringify(model)); } catch (_) {}
     return model;
   }
@@ -110,14 +223,43 @@
   const b1 = network.b1;
   const w2 = network.w2;
   const b2 = network.b2;
+
   function classify(s) {
-    const x = new Array(vocab.length).fill(0);
-    feats(s).forEach(t => { if (index.has(t)) x[index.get(t)] = 1; });
-    if (!x.some(Boolean)) return { intent: null, confidence: 0 };
-    const h = w1.map((row, j) => Math.tanh(row.reduce((sum, w, i) => sum + w * x[i], b1[j])));
-    const out = softmax(w2.map((row, k) => row.reduce((sum, w, j) => sum + w * h[j], b2[k])));
-    const best = out.indexOf(Math.max(...out));
-    return { intent: labels[best], confidence: out[best] };
+    const active = Array.from(new Set(feats(s).filter(feature => index.has(feature)).map(feature => index.get(feature))));
+    if (!active.length) return { intent: null, confidence: 0, margin: 0 };
+    const hiddenValues = w1.map((row, j) => {
+      let sum = b1[j];
+      for (const featureIndex of active) sum += row[featureIndex];
+      return Math.tanh(sum);
+    });
+    const output = softmax(w2.map((row, k) =>
+      row.reduce((sum, weight, j) => sum + weight * hiddenValues[j], b2[k])));
+    const sorted = output.map((confidence, labelIndex) => ({ confidence, label: labels[labelIndex] }))
+      .sort((a, b) => b.confidence - a.confidence);
+    const best = sorted[0];
+    return {
+      intent: best.label,
+      confidence: best.confidence,
+      margin: best.confidence - (sorted[1]?.confidence || 0),
+      kind: best.label.startsWith("topic_") ? "topic" : "conversation"
+    };
+  }
+
+  const SUBJECTS = {
+    topic_python: { id: "python", label: "Python", paths: ["courses/python/", "knowledge/python-practice.md"] },
+    topic_ia: { id: "ia", label: "Intelligence artificielle", paths: ["courses/ia/", "knowledge/ia-foundations.md"] },
+    topic_discord: { id: "discord", label: "Discord", paths: ["courses/discord/", "knowledge/discord-development.md"] },
+    topic_web: { id: "web", label: "Développement Web", paths: ["courses/web/", "knowledge/web-practices.md"] },
+    topic_documents: { id: "documents", label: "Documents et PDF", paths: ["knowledge/imported/", "knowledge/discussion-global", "knowledge/pdfs/"] }
+  };
+
+  function subjectFromPath(path) {
+    if (path.startsWith("courses/python/") || path === "knowledge/python-practice.md") return { id: "python", label: "Python" };
+    if (path.startsWith("courses/ia/") || path === "knowledge/ia-foundations.md") return { id: "ia", label: "Intelligence artificielle" };
+    if (path.startsWith("courses/discord/") || path === "knowledge/discord-development.md") return { id: "discord", label: "Discord" };
+    if (path.startsWith("courses/web/") || path === "knowledge/web-practices.md") return { id: "web", label: "Développement Web" };
+    if (path.startsWith("knowledge/imported/") || path.startsWith("knowledge/discussion-global") || path.startsWith("knowledge/pdfs/")) return { id: "documents", label: "Documents et PDF" };
+    return null;
   }
   let sections = [];
   let searchIndex = [];
