@@ -407,8 +407,8 @@
       const cleaned = line.trim().replace(/^(?:[-*]\s+|\d+[.)]\s+)/, "").trim();
       if (!cleaned || cleaned.length < 18 || cleaned.startsWith("|") || cleaned === "[[CODE_BLOCK]]") return;
       const normalizedLine = norm(cleaned);
-      if (/^(?:explique|expliquer|definis|definir|definition|ecris|reponds|repondre|complete|exercice|correction|objectif|a la fin|prochaine etape|avant la lecon|avant de|tu sauras|tu vas|essaie de|imagine que tu veuilles|quelle valeur|si tu ne peux pas|il faut|reponds aux questions|repere|identifie|dans cette lecon|a retenir)\b/.test(normalizedLine)) return;
-      if (/^(?:if|elif|else|for|while|print|return|raise|import|from|class|def|const|let|var)\b|^[a-z_][\w.]*\s*=\s*|^[{}()[\]]+$/.test(cleaned)) return;
+      if (/^(?:explique|expliquer|definis|definir|definition|ecris|reponds|repondre|complete|exercice|correction|objectif|a la fin|prochaine etape|avant la lecon|avant de|avant decrire|tu sauras|tu vas|essaie de|imagine que tu veuilles|quelle valeur|si tu ne peux pas|il faut|reponds aux questions|repere|identifie|dans cette lecon|a retenir)\b/.test(normalizedLine)) return;
+      if (/^(?:if|elif|else|for|while|print|return|raise|import|from|class|def|const|let|var|py\s+utilise|py\s+permet)\b|^[a-z_][\w.]*\s*=\s*|^[{}()[\]]+$|^<\/?[a-z][^>]*>/i.test(cleaned)) return;
       const pieces = cleaned.match(/[^.!?]+[.!?]?/g) || [cleaned];
       pieces.forEach(piece => {
         const sentence = piece.trim();
@@ -583,7 +583,9 @@
 
     const chosen = [];
     const seenHeadings = new Set();
-    const maxSteps = focus.create && !focus.prepare && !focus.secure ? 2 : 3;
+    const simpleCreation = focus.create && !focus.prepare && !focus.secure &&
+      !/\b(bot|discord|site|page|application)\b/.test(queryText);
+    const maxSteps = simpleCreation ? 1 : (focus.create && !focus.prepare && !focus.secure ? 2 : 3);
     for (const candidate of ranked) {
       const headingKey = norm(candidate.section.heading);
       if (seenHeadings.has(headingKey)) continue;
@@ -591,7 +593,8 @@
       const relevant = sentences.map(sentence => ({
         sentence,
         relevance: sentenceRelevance(sentence, queryData)
-      })).filter(item => item.relevance.score >= 1.5)
+      })).filter(item => item.relevance.score >= 1.5 &&
+        !/^(?:avant|avant d|quelle valeur|reponds|tu dois|essaie|py utilise|py permet)/i.test(norm(item.sentence)))
         .sort((a, b) => b.relevance.score - a.relevance.score);
       const summary = relevant[0]?.sentence || "";
       if (!summary || summary.length < 25) continue;
@@ -632,10 +635,12 @@
         const subjectBeforeVerb = verbIndex > 0 && queryData.base.some(token =>
           normalizedSentence.slice(0, verbIndex).split(/\s+/).includes(token)
         );
-        const startsWithTopic = queryData.base.some(token =>
+        const contextOnlyTokens = new Set(["python", "discord", "web", "html", "css", "javascript", "ia"]);
+        const topicTokens = queryData.base.filter(token => !contextOnlyTokens.has(token));
+        const startsWithTopic = topicTokens.length > 0 && topicTokens.some(token =>
           new RegExp("^(?:(?:un|une|le|la|l|les|des|du)\\s+)?" + token + "\\b").test(normalizedSentence)
         );
-        const definitionBoost = type === "definition" && subjectBeforeVerb && startsWithTopic ? 14 : 0;
+        const definitionBoost = type === "definition" && subjectBeforeVerb && startsWithTopic ? 28 : 0;
         const narrowDefinitionPenalty = /\b(imbriquee|particulier|exemple)\b/.test(normalizedSentence) ? 1.5 : 0;
         const explanatoryBoost = type !== "definition" && /\b(utilise|apprend|ajuste|fonctionne|permet|recoit|produit|calcule|transmet)\b/.test(normalizedSentence) ? 3.5 : 0;
         const exampleBoost = type === "example" && /\b(exemple|par exemple|while|for|utilise)\b/.test(normalizedSentence) ? 4 : 0;
