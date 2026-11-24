@@ -675,6 +675,17 @@
       if (ifSupport && !chosen.some(item => norm(item.sentence) === norm(ifSupport.sentence))) chosen.push(ifSupport);
     }
     const maxItems = type === "definition" ? 2 : 3;
+    if (type === "explanation" && first && chosen.length < maxItems) {
+      const neighbouringSentences = answerSentences(first.section);
+      const firstIndex = neighbouringSentences.findIndex(sentence => norm(sentence) === norm(first.sentence));
+      if (firstIndex >= 0) {
+        neighbouringSentences.slice(firstIndex + 1, firstIndex + 3).forEach(sentence => {
+          if (chosen.length >= maxItems) return;
+          if (chosen.some(item => norm(item.sentence) === norm(sentence))) return;
+          chosen.push({ sentence, section: first.section, score: first.score * 0.9, matched: first.matched });
+        });
+      }
+    }
     evidence.forEach(item => {
       if (chosen.length >= maxItems) return;
       if (chosen.some(existing => norm(existing.sentence) === norm(item.sentence))) return;
