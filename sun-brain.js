@@ -778,7 +778,7 @@
     if (/\b(difference|diff|comparer|compare|comparaison|versus|vs|opposer)\b/.test(text) ||
         /\bentre\b.*\bet\b/.test(text)) return "comparison";
     if (/\b(exemple|illustrer|montre moi|un cas concret|code complet|donne le code)\b/.test(text)) return "example";
-    if (/\b(comment|etapes|etape|procedure|methode|creer|construire|installer|utiliser|preparer|securiser|proteger|adapter|faire|configurer|corriger|resoudre)\b/.test(text) &&
+    if (/\b(comment|etapes|etape|procedure|methode|creer|construire|installer|utiliser|preparer|securiser|proteger|adapter|faire|configurer|corriger|resoudre|programmer|developper|coder|ecrire|realiser)\b/.test(text) &&
         !/\b(fonctionne|fonctionner|marche|signifie|est ce que|pourquoi)\b/.test(text)) return "procedure";
     if (/\b(c est quoi|qu est ce|definition|definis|signifie|que signifie|qui est|que represente)\b/.test(text)) return "definition";
     return "explanation";
@@ -1254,12 +1254,40 @@
     return answer;
   }
 
+  function composePerceptronExplanation(result) {
+    const candidates = (result.candidates || [result.best]).filter(item =>
+      item.section.path === "courses/ia/lesson-06.md"
+    );
+    const evidence = [];
+    candidates.forEach(candidate => answerSentences(candidate.section).forEach(sentence => {
+      if (/\\b(poids|biais|activation|perceptron|sortie|entree)\\b/i.test(sentence) &&
+          !evidence.includes(sentence)) evidence.push(sentence);
+    }));
+    const selected = [];
+    ["poids", "biais", "activation"].forEach(term => {
+      const sentence = evidence.find(value => norm(value).includes(term));
+      if (sentence && !selected.includes(sentence)) selected.push(sentence);
+    });
+    evidence.forEach(sentence => {
+      if (selected.length < 5 && !selected.includes(sentence)) selected.push(sentence);
+    });
+    if (!selected.length) return "";
+    return "Un perceptron est un modèle neuronal simple. Pour comprendre son calcul :\\n\\n" +
+      selected.map(sentence => "- " + sentence).join("\\n") +
+      "\\n\\nSource : courses/ia/lesson-06.md";
+  }
+
   function searchDocs(query) {
     const result = retrieveDocs(query);
     if (!result) {
       return "Je n’ai pas trouvé de passage suffisamment fiable dans les cours pour répondre à cette question. Tu peux préciser le sujet ou poser une question plus ciblée. Je préfère signaler cette limite plutôt que d’inventer une réponse.";
     }
     const type = detectQuestionType(query);
+    if (type === "explanation" &&
+        /\\b(perceptron|poids|biais|activation)\\b/.test(norm(query))) {
+      const perceptron = composePerceptronExplanation(result);
+      if (perceptron) return perceptron;
+    }
     if (type === "comparison") {
       const comparison = composeComparison(query);
       if (comparison) return comparison;
