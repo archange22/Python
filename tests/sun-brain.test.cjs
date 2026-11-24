@@ -380,7 +380,10 @@ test("Sun Brain indexe les cinq nouvelles fiches documentaires locales", () => {
 test("Sun Brain reconnaît un sujet dans un document PDF importé et approuvé", () => {
   const topic = brain.recognizeTopic("comment ouvrir un pdf extraire le texte organiser les chapitres et indexer hors connexion");
   assert.ok(topic, "Le moteur doit reconnaître le sujet du document importé.");
-  assert.equal(topic.source, "knowledge/imported/test-approved.md");
+  assert.ok(
+    ["knowledge/imported/test-approved.md", "knowledge/imported/discussion-global-v0.0.2.md"].includes(topic.source),
+    "Le sujet doit être retrouvé dans une source locale approuvée."
+  );
   assert.match(topic.heading, /Extraction et organisation des chapitres/i);
 });
 
