@@ -456,7 +456,7 @@
         const headingContext = queryData.base.length > 1 && contextMatches >= minimumCoverage;
         if (relevance.score < 1.5 && !headingContext) return;
         if (relevance.matched === 0 && !headingContext) return;
-        if (relevance.matched + Math.min(contextMatches, 1) < minimumCoverage) return;
+        if (relevance.matched + Math.min(contextMatches, minimumCoverage) < minimumCoverage) return;
         if (queryData.base.length > 1 && relevance.matched === 1 && contextMatches === 0) return;
         if (queryData.base.includes("neurone") && !queryData.base.some(token => token === "reseau" || token === "neurone") ) return;
 
@@ -630,7 +630,7 @@
         const minimumCoverage = Math.min(2, queryData.base.length);
         const headingContext = queryData.base.length > 1 && contextMatches >= minimumCoverage;
         if (relevance.matched === 0 && !headingContext) return;
-        if (relevance.matched + Math.min(contextMatches, 1) < minimumCoverage) return;
+        if (relevance.matched + Math.min(contextMatches, minimumCoverage) < minimumCoverage) return;
         const headingMatches = queryData.base.filter(token => headingTokens.has(token)).length;
         const titleMatches = queryData.base.filter(token => titleTokens.has(token)).length;
         const normalizedSentence = norm(sentence);
