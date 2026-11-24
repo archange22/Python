@@ -9,7 +9,6 @@ on:
       - "courses/**/*.md"
       - "knowledge/**/*.md"
       - "knowledge/**/*.json"
-      - "knowledge/sources/**/*.b64"
       - "scripts/**/*.py"
       - "tests/test_pdf_ingestion.py"
       - ".github/workflows/build-course-pdfs.yml"
