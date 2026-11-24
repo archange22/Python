@@ -94,7 +94,7 @@
   function welcomeMarkup() {
     return '<section class="sun-welcome">' +
       '<div class="sun-emblem" aria-hidden="true"><span class="sun-emblem-core"></span><span class="sun-emblem-orbit orbit-a"></span><span class="sun-emblem-orbit orbit-b"></span></div>' +
-      '<span class="sun-welcome-kicker">SUN BRAIN · VERSION LOCALE 1</span>' +
+      '<span class="sun-welcome-kicker">SUN BRAIN · VERSION LOCALE 1.2</span>' +
       '<h1>Bonjour, je suis<br><span>Sun IA.</span></h1>' +
       '<p>Je peux tenir une petite conversation et rechercher des explications dans les cours intégrés à cette application.</p>' +
       '<div class="sun-suggestions">' +
@@ -102,7 +102,7 @@
         '<button type="button" data-sun-action="suggest" data-sun-prompt="Comment ça va ?">Discuter <span>↗</span></button>' +
         '<button type="button" data-sun-action="suggest" data-sun-prompt="Explique-moi le Machine Learning.">Interroger les cours <span>↗</span></button>' +
       '</div>' +
-      '<div class="sun-demo-warning"><span aria-hidden="true">ⓘ</span><span><strong>Un premier cerveau local, pas encore un grand modèle.</strong> Un petit réseau neuronal classe les intentions simples. Un moteur de recherche retrouve ensuite des passages dans les fichiers de cours. Aucun service d’IA externe ni API n’est utilisé.</span></div>' +
+      '<div class="sun-demo-warning"><span aria-hidden="true">ⓘ</span><span><strong>Un premier cerveau local, pas encore un grand modèle.</strong> Un petit réseau neuronal classe les intentions. Sun Brain sélectionne des passages documentaires et compose des explications, comparaisons, procédures et exemples avec leurs sources. Aucun service d’IA externe ni API n’est utilisé.</span></div>' +
     '</section>';
   }
 
@@ -153,7 +153,7 @@
               '<button class="sun-menu-button" type="button" data-sun-action="toggle-sidebar" aria-label="Ouvrir la navigation">☰</button>' +
               '<div><strong>Sun IA</strong><span>Sun Brain · conversation et cours locaux</span></div>' +
             '</div>' +
-            '<div class="sun-main-actions"><span class="sun-mode-pill"><i></i> Réseau local v1</span><button class="sun-header-new" type="button" data-sun-action="new-chat">＋ <span>Nouveau chat</span></button></div>' +
+            '<div class="sun-main-actions"><span class="sun-mode-pill"><i></i> Réponses locales v1.2</span><button class="sun-header-new" type="button" data-sun-action="new-chat">＋ <span>Nouveau chat</span></button></div>' +
           '</header>' +
           '<section class="sun-conversation-area" id="sunConversationArea">' + conversationMarkup(chat) + '</section>' +
           '<footer class="sun-composer-wrap">' +
@@ -164,7 +164,7 @@
                 '<div class="sun-composer-tools"><span>Entrée pour envoyer · Maj + Entrée pour une nouvelle ligne</span><button class="sun-send-button" type="submit" aria-label="Envoyer le message" disabled>↑</button></div>' +
               '</form>' +
             '</div>' +
-            '<p class="sun-composer-disclaimer">Version locale expérimentale : réponses simples et recherche dans les cours. Pas encore de génération libre comme ChatGPT.</p>' +
+            '<p class="sun-composer-disclaimer">Version locale expérimentale : réponses construites à partir des cours et de leurs exemples. Pas encore de génération libre comme ChatGPT.</p>' +
           '</footer>' +
         '</section>' +
       '</div>';
