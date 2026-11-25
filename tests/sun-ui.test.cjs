@@ -53,7 +53,7 @@ test("Les réponses affichent le code, les sources et échappent le contenu", ()
 });
 
 test("Le Service Worker utilise le cache actualisé", () => {
-  assert.match(sw, /academique-shell-v22/);
+  assert.match(sw, /academique-shell-v23/);
   assert.match(sw, /knowledge\/catalog\.json/);
 });
 test("L'interface Sun 0.0.3 propose une recherche d'historique et des actions sur les réponses", () => {
