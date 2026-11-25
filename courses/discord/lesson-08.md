@@ -174,7 +174,7 @@ Pour un bot simple, tu peux conserver la date du dernier envoi dans SQLite. La c
 
 Ce principe s'appelle l'idempotence : répéter une opération ne doit pas créer un effet supplémentaire inattendu. Il est particulièrement important pour les paiements, notifications et modifications de données.
 
-## 10. Arrêter et redémarrer les tâches
+### 10. Arrêter et redémarrer les tâches
 Une boucle créée avec `tasks.loop` fournit des méthodes comme `start()`, `stop()`, `cancel()` et `is_running()`.
 
 ~~~python
