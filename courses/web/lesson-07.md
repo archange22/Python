@@ -192,78 +192,58 @@ Erreurs fréquentes :
 - contrôle insuffisant : répète les validations côté serveur.
 
 ## 12. Mini-projet : formulaire d'inscription de démonstration
-Crée `index.html` et colle ce code. Il fonctionne localement. Il ne transmet aucune donnée à Internet : il montre seulement validation et retour utilisateur.
+Crée `index.html` et colle ce code. Il fonctionne localement dans un navigateur récent. Il ne transmet aucune donnée à Internet : il montre seulement validation et retour utilisateur.
 
 ~~~html
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inscription de démonstration</title>
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 620px;
-      margin: 30px auto; padding: 16px; line-height: 1.5; }
-    form { display: grid; gap: 12px; }
-    input, select, button { box-sizing: border-box; width: 100%;
-      min-height: 44px; padding: 10px; font: inherit; }
-    #retour { padding: 10px; background: #eef6ee; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Profil de démonstration</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:620px;margin:30px auto;padding:16px}
+form{display:grid;gap:12px}
+input,select,button{box-sizing:border-box;width:100%;min-height:44px;padding:10px;font:inherit}
+#retour{padding:10px;background:#eef6ee}
+</style>
 </head>
 <body>
-  <main>
-    <h1>Créer un profil de démonstration</h1>
-    <p>Les données restent dans cette page.</p>
-    <form id="inscription">
-      <div>
-        <label for="nom">Nom ou pseudo</label>
-        <input id="nom" name="nom" required minlength="2" maxlength="30">
-      </div>
-      <div>
-        <label for="email">Adresse e-mail</label>
-        <input id="email" name="email" type="email" required>
-      </div>
-      <div>
-        <label for="parcours">Parcours préféré</label>
-        <select id="parcours" name="parcours" required>
-          <option value="">Choisir un parcours</option>
-          <option value="python">Python</option>
-          <option value="ia">Intelligence artificielle</option>
-          <option value="discord">Discord</option>
-          <option value="web">Sites Web</option>
-        </select>
-      </div>
-      <button type="submit">Valider</button>
-    </form>
-    <p id="retour" role="status" aria-live="polite"></p>
-  </main>
-  <script>
-    const formulaire = document.querySelector("#inscription");
-    const retour = document.querySelector("#retour");
-
-    formulaire.addEventListener("submit", function (event) {
-      event.preventDefault();
-      if (!formulaire.checkValidity()) {
-        formulaire.reportValidity();
-        retour.textContent = "Vérifie les champs indiqués.";
-        return;
-      }
-      const donnees = new FormData(formulaire);
-      const nom = String(donnees.get("nom") ?? "").trim();
-      const parcours = String(donnees.get("parcours") ?? "");
-      if (nom.length < 2) {
-        retour.textContent = "Le nom est trop court.";
-        return;
-      }
-      retour.textContent = "Merci " + nom + " ! Parcours : " + parcours + ".";
-      formulaire.reset();
-    });
-  </script>
+<main>
+<h1>Créer un profil</h1>
+<p>Les données restent dans cette page.</p>
+<form id="inscription">
+<label for="nom">Nom ou pseudo</label>
+<input id="nom" name="nom" required minlength="2" maxlength="30">
+<label for="email">Adresse e-mail</label>
+<input id="email" name="email" type="email" required>
+<label for="parcours">Parcours préféré</label>
+<select id="parcours" name="parcours" required>
+<option value="">Choisir</option><option>Python</option><option>IA</option>
+<option>Discord</option><option>Sites Web</option>
+</select>
+<button type="submit">Valider</button>
+</form>
+<p id="retour" role="status" aria-live="polite"></p>
+</main>
+<script>
+const formulaire=document.querySelector("#inscription");
+const retour=document.querySelector("#retour");
+formulaire.addEventListener("submit",event=>{
+  event.preventDefault();
+  if(!formulaire.checkValidity()){formulaire.reportValidity();return;}
+  const donnees=new FormData(formulaire);
+  const nom=String(donnees.get("nom")??"").trim();
+  if(nom.length<2){retour.textContent="Nom trop court.";return;}
+  retour.textContent="Merci "+nom+" ! Profil vérifié localement.";
+  formulaire.reset();
+});
+</script>
 </body>
 </html>
 ~~~
 
-Observe : HTML décrit les champs, CSS améliore la présentation et JavaScript écoute la soumission. Le texte est affiché avec `textContent`, pas interprété comme du HTML. Teste un champ vide, un email incorrect puis une saisie valide.
+Observe : HTML décrit les champs, CSS améliore la présentation et JavaScript écoute la soumission. Le texte est affiché avec `textContent`, pas interprété comme du HTML. Teste un champ vide, un email incorrect puis une saisie valide. Le formulaire ne contacte aucun serveur.
 
 ## 13. Exercices progressifs
 1. Ajoute un champ âge de type number, obligatoire, entre 10 et 99.
