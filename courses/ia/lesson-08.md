@@ -274,7 +274,7 @@ Si la liste des résultats est vide, affiche un message d'absence d'information 
 ### Exercice 5
 Teste une affirmation soutenue, une affirmation absente et une citation provenant d'un document ancien. La réponse doit citer le bon passage ou s'abstenir.
 
-## 17. Fiche de révision et validation
+### 17. Fiche de révision et validation
 | Notion | Rôle |
 |---|---|
 | Corpus | Ensemble de documents |
