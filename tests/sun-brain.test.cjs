@@ -16,6 +16,7 @@ const DOCUMENTS = [
   "courses/ia/lesson-06.md",
   "courses/ia/lesson-07.md",
   "courses/ia/lesson-08.md",
+  "courses/ia/lesson-09.md",
   "courses/python/lesson-05.md",
   "courses/python/lesson-06.md",
   "courses/python/lesson-07.md",
@@ -23,6 +24,7 @@ const DOCUMENTS = [
   "courses/python/lesson-09.md",
   "courses/python/lesson-10.md",
   "courses/python/lesson-11.md",
+  "courses/python/lesson-12.md",
   "courses/discord/lesson-01.md",
   "courses/discord/lesson-02.md",
   "courses/discord/lesson-03.md",
@@ -31,6 +33,7 @@ const DOCUMENTS = [
   "courses/discord/lesson-06.md",
   "courses/discord/lesson-07.md",
   "courses/discord/lesson-08.md",
+  "courses/discord/lesson-09.md",
   "courses/web/lesson-01.md",
   "courses/web/lesson-02.md",
   "courses/web/lesson-03.md",
@@ -39,6 +42,7 @@ const DOCUMENTS = [
   "courses/web/lesson-06.md",
   "courses/web/lesson-07.md",
   "courses/web/lesson-08.md",
+  "courses/web/lesson-09.md",
   "pdf/lecon-01.md",
   "pdf/lecon-02.md",
   "pdf/lecon-03.md",
@@ -175,7 +179,8 @@ const QA_CASES = [
     sources: [
       "courses/discord/lesson-01.md",
       "courses/discord/lesson-02.md",
-      "courses/discord/lesson-03.md"
+      "courses/discord/lesson-03.md",
+      "courses/discord/lesson-09.md"
     ],
     required: ["bot", "discord"]
   },
@@ -215,7 +220,7 @@ const QA_CASES = [
   },
   {
     question: "comment créer une fonction python avec def et return",
-    sources: ["courses/python/lesson-08.md", "courses/python/lesson-11.md"],
+    sources: ["courses/python/lesson-08.md", "courses/python/lesson-11.md", "courses/python/lesson-12.md"],
     required: ["fonction", "def", "return"]
   },
   {
