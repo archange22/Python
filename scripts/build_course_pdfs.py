@@ -16,17 +16,17 @@ OUTPUT_DIR = PDF_ROOT / "courses"
 CSS = """
 :root{color-scheme:light}
 *{box-sizing:border-box}
-body{margin:0;color:#39241d;background:#fff8f1;font-family:"DejaVu Sans",Arial,sans-serif;font-size:9.8pt;line-height:1.5}
+body{margin:0;color:#39241d;background:#fff8f1;font-family:"DejaVu Sans",Arial,sans-serif;font-size:9.5pt;line-height:1.42}
 .course-topline{margin:0 auto 7mm;padding:6mm 0 2mm;max-width:175mm;color:#b95a25;font-size:8pt;font-weight:800;letter-spacing:1.2px}
 h1{margin:0 0 8mm;color:#432018;font-size:24pt;line-height:1.17}
-h2{margin:10mm 0 3.5mm;padding:0 0 2mm;border-bottom:1.5pt solid #f0d6c3;color:#713114;font-size:15pt;line-height:1.3}
+h2{margin:8mm 0 3mm;padding:0 0 2mm;border-bottom:1.5pt solid #f0d6c3;color:#713114;font-size:15pt;line-height:1.3}
 h2.page-start{break-before:page;page-break-before:always}
-h3{margin:6mm 0 2mm;color:#a34f1e;font-size:11.5pt;line-height:1.3;break-after:avoid}
+h3{margin:5mm 0 1.5mm;color:#a34f1e;font-size:11.5pt;line-height:1.3;break-after:avoid}
 h4{color:#93471c;font-size:10.5pt;break-after:avoid}
 p{margin:2.3mm 0 3.2mm}
 ul,ol{padding-left:7mm}
 li{margin:1.1mm 0}
-pre{margin:2.5mm 0;padding:3.5mm;border-radius:3mm;background:#272220;color:#fff5eb;font-size:8.4pt;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;break-inside:avoid}
+pre{margin:2mm 0;padding:3mm;border-radius:3mm;background:#272220;color:#fff5eb;font-size:8.4pt;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;break-inside:avoid}
 code{font-family:"DejaVu Sans Mono",monospace;font-size:.9em;color:#a44c1b}
 pre code{color:inherit}
 blockquote{margin:3mm 0;padding:3mm 4mm;border-left:3pt solid #ec7a39;background:#fff2e8;break-inside:avoid}
