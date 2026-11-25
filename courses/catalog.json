@@ -92,6 +92,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/ia/lesson-08.md",
           "pdf": "./pdf/courses/ia-08.pdf"
+        },
+        {
+          "id": "ia09",
+          "title": "Évaluer un assistant documentaire RAG",
+          "description": "Construire un jeu de tests, mesurer la qualité de récupération et des réponses, vérifier les citations, analyser les échecs et protéger un assistant documentaire.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 09 · 115 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/ia/lesson-09.md",
+          "pdf": "./pdf/courses/ia-09.pdf"
         }
       ]
     },
@@ -185,6 +196,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/discord/lesson-08.md",
           "pdf": "./pdf/courses/discord-08.pdf"
+        },
+        {
+          "id": "discord09",
+          "title": "Créer des interfaces interactives avec boutons, menus et formulaires",
+          "description": "Construire des vues discord.py avec boutons, menus de sélection et modals, gérer les interactions, les délais, les permissions et les erreurs.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 09 · 120 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/discord/lesson-09.md",
+          "pdf": "./pdf/courses/discord-09.pdf"
         }
       ]
     },
@@ -278,6 +300,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/web/lesson-08.md",
           "pdf": "./pdf/courses/web-08.pdf"
+        },
+        {
+          "id": "web09",
+          "title": "Accessibilité Web : rendre une interface utilisable par tous",
+          "description": "Appliquer la sémantique HTML, la navigation au clavier, les contrastes, les textes alternatifs, les formulaires accessibles et tester une interface.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 09 · 110 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/web/lesson-09.md",
+          "pdf": "./pdf/courses/web-09.pdf"
         }
       ]
     },
@@ -360,6 +393,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/python/lesson-11.md",
           "pdf": "./pdf/courses/python-11.pdf"
+        },
+        {
+          "id": "python12",
+          "title": "Gérer les erreurs et sécuriser les saisies",
+          "description": "Comprendre les exceptions, utiliser try/except/else/finally, valider les entrées et diagnostiquer les erreurs dans des programmes Python.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 12 · 105 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/python/lesson-12.md",
+          "pdf": "./pdf/courses/python-12.pdf"
         }
       ]
     }
