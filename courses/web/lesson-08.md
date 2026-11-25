@@ -52,7 +52,7 @@ Un site statique peut contenir du JavaScript et interagir avec l'utilisateur, ma
 
 Ne place jamais un mot de passe, une clé privée ou un token d'administration dans un fichier JavaScript public. Tout code envoyé au navigateur peut être consulté.
 
-## 3. Préparer les fichiers
+### 3. Préparer les fichiers
 Une structure claire facilite la publication :
 
 ~~~text
@@ -72,7 +72,7 @@ mon-site/
 
 Garde les fichiers nécessaires dans le dossier publié. Ne publie pas des sauvegardes, des fichiers temporaires ou des données privées.
 
-## 4. Comprendre les chemins
+### 4. Comprendre les chemins
 Un chemin indique où trouver une ressource. Un chemin relatif est calculé à partir de l'emplacement du fichier courant.
 
 Dans `index.html` :
@@ -206,14 +206,14 @@ L'attribut `defer` permet au navigateur de télécharger le script sans bloquer 
 
 Pour les images, précise un texte alternatif utile. Compresse les images trop lourdes et utilise des noms de fichiers simples. Les ressources volumineuses ralentissent le chargement sur un réseau mobile.
 
-## 11. Domaine, HTTPS et cache
+### 11. Domaine, HTTPS et cache
 GitHub Pages peut fournir un sous-domaine gratuit. Un domaine personnalisé peut être ajouté si tu en possèdes un et si tu configures les enregistrements DNS correctement.
 
 HTTPS chiffre la connexion entre le navigateur et le site. Ne transmets pas d'informations sensibles sur une page qui n'utilise pas HTTPS.
 
 Le cache permet au navigateur de conserver certaines ressources. Après une mise à jour, un ancien fichier peut rester affiché temporairement. Vérifie le commit déployé et recharge la page. Évite de multiplier les changements de nom de fichier sans raison ; une version ou un nom de ressource mis à jour peut aider à gérer le cache.
 
-## 12. Sécurité d'un site statique
+### 12. Sécurité d'un site statique
 Tout ce qui est livré au navigateur est visible. Cela inclut HTML, CSS, JavaScript, les commentaires du code et les fichiers JSON publics.
 
 Règles essentielles :
