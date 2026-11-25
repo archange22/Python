@@ -81,6 +81,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/ia/lesson-07.md",
           "pdf": "./pdf/courses/ia-07.pdf"
+        },
+        {
+          "id": "ia08",
+          "title": "Construire un assistant documentaire avec le RAG",
+          "description": "Comprendre le RAG, préparer un corpus, découper et rechercher des passages, construire un contexte sourcé, évaluer la récupération et protéger un assistant documentaire.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 08 · 120 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/ia/lesson-08.md",
+          "pdf": "./pdf/courses/ia-08.pdf"
         }
       ]
     },
@@ -163,6 +174,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/discord/lesson-07.md",
           "pdf": "./pdf/courses/discord-07.pdf"
+        },
+        {
+          "id": "discord08",
+          "title": "Automatiser des tâches planifiées avec discord.py",
+          "description": "Créer des tâches de fond avec discord.py, gérer les horaires et la boucle asynchrone, attendre le démarrage, éviter les doublons et sécuriser les rappels automatiques.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 08 · 120 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/discord/lesson-08.md",
+          "pdf": "./pdf/courses/discord-08.pdf"
         }
       ]
     },
@@ -245,6 +267,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/web/lesson-07.md",
           "pdf": "./pdf/courses/web-07.pdf"
+        },
+        {
+          "id": "web08",
+          "title": "Publier un site statique avec GitHub Pages",
+          "description": "Préparer et publier un site statique avec GitHub Pages, gérer les chemins relatifs, comprendre les workflows, tester le déploiement et protéger les données.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 08 · 110 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/web/lesson-08.md",
+          "pdf": "./pdf/courses/web-08.pdf"
         }
       ]
     },
@@ -316,6 +349,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/python/lesson-10.md",
           "pdf": "./pdf/courses/python-10.pdf"
+        },
+        {
+          "id": "python11",
+          "title": "Organiser un programme avec des modules",
+          "description": "Découper un projet Python en modules réutilisables, importer la bibliothèque standard, protéger le démarrage avec __main__ et organiser un calculateur en plusieurs fichiers.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 11 · 110 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/python/lesson-11.md",
+          "pdf": "./pdf/courses/python-11.pdf"
         }
       ]
     }
