@@ -53,7 +53,7 @@ async def exemple():
 
 `asyncio.sleep` est asynchrone. À l'inverse, `time.sleep(2)` bloque le thread et peut empêcher le bot de traiter d'autres événements. N'utilise pas de longue attente bloquante dans une commande ou une tâche.
 
-## 3. Différencier commande et tâche de fond
+### 3. Différencier commande et tâche de fond
 Une commande est déclenchée par un utilisateur. Une tâche de fond est déclenchée par le programme selon un intervalle ou une heure.
 
 | Élément | Déclencheur | Exemple |
@@ -66,7 +66,7 @@ Les trois mécanismes peuvent appeler une fonction commune. Sépare la logique m
 
 Ne transforme pas chaque action en tâche de fond. Si une action doit répondre immédiatement à un membre, une commande ou un événement est plus adapté.
 
-## 4. Installer et importer tasks
+### 4. Installer et importer tasks
 Le module `discord.ext.tasks` fournit un décorateur `@tasks.loop`. Il simplifie la création et le contrôle d'une boucle de fond.
 
 ~~~python
