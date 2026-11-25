@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-24",
+  "updatedAt": "2026-11-25",
   "subjects": [
     {
       "id": "ia",
@@ -70,6 +70,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/ia/lesson-06.md",
           "pdf": "./pdf/courses/ia-06.pdf"
+        },
+        {
+          "id": "ia07",
+          "title": "Comprendre l’IA générative et les modèles de langage",
+          "description": "Distinguer systèmes à règles, Machine Learning et IA générative, comprendre tokens, contexte, entraînement, inférence, prompts, évaluation et limites.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 07 · 110 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/ia/lesson-07.md",
+          "pdf": "./pdf/courses/ia-07.pdf"
         }
       ]
     },
@@ -141,6 +152,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/discord/lesson-06.md",
           "pdf": "./pdf/courses/discord-06.pdf"
+        },
+        {
+          "id": "discord07",
+          "title": "Stocker les données d’un bot avec SQLite",
+          "description": "Créer des tables SQLite, lire et modifier des données avec des requêtes paramétrées, relier le stockage à discord.py et isoler les données par serveur.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 07 · 120 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/discord/lesson-07.md",
+          "pdf": "./pdf/courses/discord-07.pdf"
         }
       ]
     },
@@ -212,6 +234,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/web/lesson-06.md",
           "pdf": "./pdf/courses/web-06.pdf"
+        },
+        {
+          "id": "web07",
+          "title": "Créer des formulaires accessibles et valider les saisies",
+          "description": "Structurer des formulaires HTML, utiliser labels et contraintes natives, lire FormData, valider avec JavaScript et distinguer contrôles client et serveur.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 07 · 110 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/web/lesson-07.md",
+          "pdf": "./pdf/courses/web-07.pdf"
         }
       ]
     },
@@ -272,6 +305,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/python/lesson-09.md",
           "pdf": "./pdf/courses/python-09.pdf"
+        },
+        {
+          "id": "python10",
+          "title": "Lire et écrire des fichiers",
+          "description": "Lire, créer et compléter des fichiers texte, gérer les chemins et les erreurs, puis sauvegarder une liste de tâches en JSON avec Python standard.",
+          "level": "Débutant",
+          "duration": "Leçon 10 · 110 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/python/lesson-10.md",
+          "pdf": "./pdf/courses/python-10.pdf"
         }
       ]
     }
