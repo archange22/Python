@@ -2,13 +2,13 @@
   "use strict";
   const paths = [
     "courses/ia/lesson-01.md", "courses/ia/lesson-02.md",
-    "courses/ia/lesson-03.md", "courses/ia/lesson-04.md", "courses/ia/lesson-05.md", "courses/ia/lesson-06.md",
+    "courses/ia/lesson-03.md", "courses/ia/lesson-04.md", "courses/ia/lesson-05.md", "courses/ia/lesson-06.md", "courses/ia/lesson-07.md",
     "courses/python/lesson-05.md", "courses/python/lesson-06.md",
-    "courses/python/lesson-07.md", "courses/python/lesson-08.md", "courses/python/lesson-09.md", "courses/discord/lesson-01.md",
+    "courses/python/lesson-07.md", "courses/python/lesson-08.md", "courses/python/lesson-09.md", "courses/python/lesson-10.md", "courses/discord/lesson-01.md",
     "courses/discord/lesson-02.md", "courses/discord/lesson-03.md",
-    "courses/discord/lesson-04.md", "courses/discord/lesson-05.md", "courses/discord/lesson-06.md", "courses/web/lesson-01.md",
+    "courses/discord/lesson-04.md", "courses/discord/lesson-05.md", "courses/discord/lesson-06.md", "courses/discord/lesson-07.md", "courses/web/lesson-01.md",
     "courses/web/lesson-02.md", "courses/web/lesson-03.md",
-    "courses/web/lesson-04.md", "courses/web/lesson-05.md", "courses/web/lesson-06.md", "pdf/lecon-01.md", "pdf/lecon-02.md",
+    "courses/web/lesson-04.md", "courses/web/lesson-05.md", "courses/web/lesson-06.md", "courses/web/lesson-07.md", "pdf/lecon-01.md", "pdf/lecon-02.md",
     "pdf/lecon-03.md", "pdf/lecon-04.md",
     "knowledge/python-practice.md", "knowledge/ia-foundations.md",
     "knowledge/web-practices.md", "knowledge/discord-development.md",
