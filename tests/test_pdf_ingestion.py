@@ -60,8 +60,44 @@ class PDFIngestionTests(unittest.TestCase):
                 extract_pdf_pages(path)
 
 
-if __name__ == "__main__":
-    unittest.main()
+    def test_missing_pdf_is_rejected_before_extraction(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "missing.pdf"
+            with self.assertRaisesRegex(PDFIngestionError, "PDF introuvable"):
+                extract_pdf_pages(path)
+
+    def test_zero_byte_pdf_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "zero.pdf"
+            path.write_bytes(b"")
+            with self.assertRaisesRegex(PDFIngestionError, "Taille PDF invalide"):
+                extract_pdf_pages(path)
+
+    def test_corrupted_pdf_is_rejected_without_claiming_extraction(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "corrupt.pdf"
+            path.write_bytes(b"not a PDF document")
+            with self.assertRaisesRegex(PDFIngestionError, "Impossible de lire le PDF"):
+                extract_pdf_pages(path)
+
+    def test_oversized_pdf_is_rejected_before_parser_runs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "large.pdf"
+            path.write_bytes(b"x" * 32)
+            with patch("ingest_pdf_knowledge.MAX_PDF_BYTES", 16):
+                with self.assertRaisesRegex(PDFIngestionError, "Taille PDF invalide"):
+                    extract_pdf_pages(path)
+
+    def test_page_limit_is_enforced_before_text_extraction(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "pages.pdf"
+            writer = PdfWriter()
+            writer.add_blank_page(width=200, height=200)
+            with path.open("wb") as stream:
+                writer.write(stream)
+            with patch("ingest_pdf_knowledge.MAX_PDF_PAGES", 0):
+                with self.assertRaisesRegex(PDFIngestionError, "nombre de pages"):
+                    extract_pdf_pages(path)
 
 
 class PDFPublicationSafetyTests(unittest.TestCase):
@@ -129,3 +165,6 @@ class PDFPublicationSafetyTests(unittest.TestCase):
         duplicate = self.call_ingest(approve=True, publish=True, digest="c" * 64)
         self.assertTrue(duplicate["already_indexed"])
 
+
+if __name__ == "__main__":
+    unittest.main()
