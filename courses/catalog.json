@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-25",
+  "updatedAt": "2026-11-26",
   "subjects": [
     {
       "id": "ia",
@@ -103,6 +103,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/ia/lesson-09.md",
           "pdf": "./pdf/courses/ia-09.pdf"
+        },
+        {
+          "id": "ia10",
+          "title": "Améliorer la recherche documentaire par le découpage et le classement",
+          "description": "Préparer un corpus, découper les documents, gérer les métadonnées, comparer recherche lexicale et vectorielle, mesurer les résultats et construire un moteur hors ligne.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 10 · 125 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/ia/lesson-10.md",
+          "pdf": "./pdf/courses/ia-10.pdf"
         }
       ]
     },
@@ -207,6 +218,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/discord/lesson-09.md",
           "pdf": "./pdf/courses/discord-09.pdf"
+        },
+        {
+          "id": "discord10",
+          "title": "Préparer le déploiement et la surveillance d'un bot",
+          "description": "Séparer code, configuration et secrets, préparer les dépendances, choisir un hébergement, surveiller les journaux, gérer les permissions et préserver les données.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 10 · 125 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/discord/lesson-10.md",
+          "pdf": "./pdf/courses/discord-10.pdf"
         }
       ]
     },
@@ -311,6 +333,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/web/lesson-09.md",
           "pdf": "./pdf/courses/web-09.pdf"
+        },
+        {
+          "id": "web10",
+          "title": "Sécuriser les interactions et les données côté navigateur",
+          "description": "Traiter les données non fiables, utiliser textContent, éviter les insertions HTML risquées, vérifier les URL, valider les formulaires et protéger les secrets.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 10 · 120 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/web/lesson-10.md",
+          "pdf": "./pdf/courses/web-10.pdf"
         }
       ]
     },
@@ -404,6 +437,17 @@
           "reader": "./pdf/reader.html",
           "content": "../courses/python/lesson-12.md",
           "pdf": "./pdf/courses/python-12.pdf"
+        },
+        {
+          "id": "python13",
+          "title": "Créer des classes et des objets",
+          "description": "Comprendre classes, instances, attributs, méthodes, self, initialisation, encapsulation et composition, puis construire une petite bibliothèque en Python.",
+          "level": "Débutant à intermédiaire",
+          "duration": "Leçon 13 · 120 min",
+          "available": true,
+          "reader": "./pdf/reader.html",
+          "content": "../courses/python/lesson-13.md",
+          "pdf": "./pdf/courses/python-13.pdf"
         }
       ]
     }
