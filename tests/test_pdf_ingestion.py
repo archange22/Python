@@ -189,7 +189,7 @@ class PDFPublicationSafetyTests(unittest.TestCase):
 
 
     def test_publication_rejects_missing_canonical_source_url(self):
-        with self.assertRaisesRegex(PDFIngestionError, "Source canonique"):
+        with self.assertRaisesRegex(PDFIngestionError, "source canonique"):
             self.call_ingest(approve=True, publish=True, canonical_source_url="")
 
     def test_publication_rejects_non_https_license_url(self):
@@ -218,7 +218,7 @@ class PDFPublicationSafetyTests(unittest.TestCase):
         self.assertEqual(entry["extraction_method"], "pypdf")
         self.assertEqual(entry["verification_status"], "manual_review_complete_approved_for_publication")
         self.assertRegex(entry["sha256"], r"^[0-9a-f]{64}$")
-        self.assertRegex(entry["collection_date"], r"^\\d{4}-\\d{2}-\\d{2}$")
+        self.assertRegex(entry["collection_date"], r"^\d{4}-\d{2}-\d{2}$")
 
 
 if __name__ == "__main__":
