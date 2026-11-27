@@ -37,8 +37,18 @@ class PDFIngestionError(ValueError):
 def _require_https_url(value: str, label: str) -> str:
     url = str(value or "").strip()
     parsed = urlparse(url)
-    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
-        raise PDFIngestionError(f"{label} doit être une URL HTTPS complète.")
+    host = (parsed.hostname or "").casefold().rstrip(".")
+    reserved_hosts = {"example.com", "example.net", "example.org", "example.test", "example.invalid", "localhost"}
+    if (
+        parsed.scheme != "https"
+        or not host
+        or parsed.username
+        or parsed.password
+        or host in reserved_hosts
+        or any(host.endswith("." + reserved) for reserved in reserved_hosts)
+        or host.endswith((".example", ".test", ".invalid", ".localhost"))
+    ):
+        raise PDFIngestionError(f"{label} doit être une URL HTTPS réelle et complète, pas un domaine d'exemple.")
     return url
 
 
@@ -57,8 +67,8 @@ def validate_publication_metadata(
     verify copyright ownership or redistribution rights.
     """
     author = str(author_organization or "").strip()
-    if not author:
-        raise PDFIngestionError("L'auteur ou l'organisme éditeur doit être indiqué.")
+    if not author or author.casefold() in {"auteur", "organisme éditeur", "organisme editeur", "nom de l'auteur", "nom de l'organisme"}:
+        raise PDFIngestionError("L'auteur ou l'organisme éditeur réel doit être indiqué.")
 
     language_value = str(language or "").strip()
     if not re.fullmatch(r"[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*", language_value):
@@ -71,6 +81,7 @@ def validate_publication_metadata(
     placeholders = {
         "inconnue", "unknown", "n/a", "à vérifier", "a verifier",
         "licence ou autorisation de redistribution", "non précisée", "non precisee",
+        "nom exact de la licence", "licence exacte", "licence",
     }
     if not license_value or license_value.casefold() in placeholders:
         raise PDFIngestionError("La licence doit être identifiée précisément ; une mention générique ne suffit pas.")
@@ -258,8 +269,11 @@ def ingest_pdf(
     pages, raw_text, digest = extract_pdf_pages(pdf_path)
     provenance = {}
     if approve:
-        if not str(source or "").strip():
-            raise PDFIngestionError("La provenance documentaire doit être indiquée.")
+        source_description = str(source or "").strip()
+        if not source_description or source_description.casefold() in {
+            "source", "description de la source documentaire", "provenance inconnue", "unknown", "n/a"
+        }:
+            raise PDFIngestionError("La provenance documentaire réelle doit être indiquée.")
         provenance = validate_publication_metadata(
             author_organization=author_organization,
             canonical_source_url=canonical_source_url,
