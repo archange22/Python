@@ -41,12 +41,16 @@ Exemple après vérification manuelle de l'aperçu et de la licence :
 python scripts/ingest_pdf_knowledge.py mon-document.pdf \
   --title "Guide de programmation" \
   --topic "Python et programmation" \
-  --source "Documentation officielle de l'éditeur" \
-  --license "CC BY 4.0" \
+  --source "Description de la source documentaire" \
+  --source-url "https://example.org/documentation" \
+  --author "Organisme éditeur" \
+  --language "fr" \
+  --license "Nom exact de la licence" \
+  --license-url "https://example.org/license" \
   --approve --publish-public
 ```
 
-L'import crée d'abord un aperçu dans `knowledge/staging/`, dossier ignoré par Git. `--approve` confirme la vérification manuelle, mais ne publie rien à lui seul. Pour copier le fichier, son texte extrait et sa référence dans le dépôt public, il faut aussi indiquer explicitement `--publish-public`. N'utilise cette option que pour un document dont la redistribution est autorisée ; les documents privés doivent rester hors du dépôt public. Les PDF scannés ou constitués d'images sont refusés et nécessitent un OCR séparé qui n'est pas encore intégré. Le contrôle automatique des marqueurs sensibles ne garantit pas qu'un document ne contient aucune donnée personnelle : une lecture humaine reste obligatoire.
+L'import crée d'abord un aperçu dans `knowledge/staging/`, dossier ignoré par Git. Pour valider un document, renseigne l'auteur ou l'organisme, l'URL canonique de la source, la langue et l'URL de la licence exacte. La date de publication reste facultative lorsqu'elle est inconnue ; la date de collecte est enregistrée automatiquement. Le script vérifie la présence et la forme HTTPS des URL, mais ne vérifie pas lui-même les droits d'auteur ni la permission de redistribution : cette vérification reste humaine et doit précéder `--approve`. Cette option enregistre la revue sans publier. Pour copier le fichier, son texte extrait et sa référence dans le dépôt public, il faut aussi indiquer explicitement `--publish-public`. N'utilise cette option que si la redistribution est autorisée ; les documents privés doivent rester hors du dépôt public. Les PDF scannés ou constitués d'images sont refusés et nécessitent un OCR séparé qui n'est pas encore intégré. Le contrôle automatique des marqueurs sensibles ne garantit pas qu'un document ne contient aucune donnée personnelle : une lecture humaine reste obligatoire.
 
 **Limite :** le réseau neuronal classe huit intentions de conversation et treize familles de sujets ; il ne devient pas un grand modèle de langage génératif. Le corpus et l'import PDF renforcent la recherche documentaire, mais un sujet absent des documents nécessite une source supplémentaire ou une recherche externe réellement disponible.
 
