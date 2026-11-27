@@ -213,6 +213,7 @@ class PDFPublicationSafetyTests(unittest.TestCase):
         self.assertEqual(entry["discipline"], "Test de sécurité")
         self.assertEqual(entry["publication_date"], "2026-11-20")
         self.assertEqual(entry["license_url"], "https://docs.python.org/3/license.html")
+        self.assertEqual(entry["license"], "Python Software Foundation License Version 2")
         self.assertEqual(entry["format"], "pdf")
         self.assertEqual(entry["extraction_status"], "text_layer_extracted")
         self.assertEqual(entry["extraction_method"], "pypdf")
