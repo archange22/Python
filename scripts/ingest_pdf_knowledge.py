@@ -5,7 +5,9 @@ import hashlib
 import json
 import re
 import shutil
+from datetime import date, datetime, timezone
 from pathlib import Path
+from urllib.parse import urlparse
 
 from pypdf import PdfReader
 
@@ -30,6 +32,78 @@ CHAPTER_RE = re.compile(
 
 class PDFIngestionError(ValueError):
     """Raised when a PDF is not safe or readable enough to be indexed."""
+
+
+def _require_https_url(value: str, label: str) -> str:
+    url = str(value or "").strip()
+    parsed = urlparse(url)
+    host = (parsed.hostname or "").casefold().rstrip(".")
+    reserved_hosts = {"example.com", "example.net", "example.org", "example.test", "example.invalid", "localhost"}
+    if (
+        parsed.scheme != "https"
+        or not host
+        or parsed.username
+        or parsed.password
+        or host in reserved_hosts
+        or any(host.endswith("." + reserved) for reserved in reserved_hosts)
+        or host.endswith((".example", ".test", ".invalid", ".localhost"))
+    ):
+        raise PDFIngestionError(f"{label} doit être une URL HTTPS réelle et complète, pas un domaine d'exemple.")
+    return url
+
+
+def validate_publication_metadata(
+    *,
+    author_organization: str,
+    canonical_source_url: str,
+    language: str,
+    license_name: str,
+    license_url: str,
+    publication_date: str | None = None,
+) -> dict:
+    """Validate metadata supplied and manually checked by the publisher.
+
+    This checks completeness and URL/date syntax; it does not independently
+    verify copyright ownership or redistribution rights.
+    """
+    author = str(author_organization or "").strip()
+    if not author or author.casefold() in {"auteur", "organisme éditeur", "organisme editeur", "nom de l'auteur", "nom de l'organisme"}:
+        raise PDFIngestionError("L'auteur ou l'organisme éditeur réel doit être indiqué.")
+
+    language_value = str(language or "").strip()
+    if not re.fullmatch(r"[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*", language_value):
+        raise PDFIngestionError("La langue doit être indiquée avec un code tel que fr, en ou fr-FR.")
+
+    source_url = _require_https_url(canonical_source_url, "La source canonique")
+    license_url_value = _require_https_url(license_url, "L'URL de licence")
+
+    license_value = str(license_name or "").strip()
+    placeholders = {
+        "inconnue", "unknown", "n/a", "à vérifier", "a verifier",
+        "licence ou autorisation de redistribution", "non précisée", "non precisee",
+        "nom exact de la licence", "licence exacte", "licence",
+    }
+    if not license_value or license_value.casefold() in placeholders:
+        raise PDFIngestionError("La licence doit être identifiée précisément ; une mention générique ne suffit pas.")
+
+    published = str(publication_date or "").strip()
+    if published:
+        try:
+            parsed_date = date.fromisoformat(published)
+        except ValueError as exc:
+            raise PDFIngestionError("La date de publication doit utiliser le format YYYY-MM-DD.") from exc
+        if parsed_date.isoformat() != published:
+            raise PDFIngestionError("La date de publication doit utiliser le format YYYY-MM-DD.")
+
+    return {
+        "author_organization": author,
+        "canonical_source_url": source_url,
+        "language": language_value,
+        "publication_date": published or None,
+        "collection_date": datetime.now(timezone.utc).date().isoformat(),
+        "license": license_value,
+        "license_url": license_url_value,
+    }
 
 
 def slugify(value: str) -> str:
@@ -184,10 +258,30 @@ def ingest_pdf(
     topic: str,
     source: str,
     license_name: str,
+    author_organization: str = "",
+    canonical_source_url: str = "",
+    language: str = "",
+    publication_date: str | None = None,
+    license_url: str = "",
     approve: bool = False,
     publish_public: bool = False,
 ) -> dict:
     pages, raw_text, digest = extract_pdf_pages(pdf_path)
+    provenance = {}
+    if approve:
+        source_description = str(source or "").strip()
+        if not source_description or source_description.casefold() in {
+            "source", "description de la source documentaire", "provenance inconnue", "unknown", "n/a"
+        }:
+            raise PDFIngestionError("La provenance documentaire réelle doit être indiquée.")
+        provenance = validate_publication_metadata(
+            author_organization=author_organization,
+            canonical_source_url=canonical_source_url,
+            language=language,
+            license_name=license_name,
+            license_url=license_url,
+            publication_date=publication_date,
+        )
     markdown = organize_pages(title, topic, pages)
     slug = slugify(title)
     entry_id = slug
@@ -205,6 +299,17 @@ def ingest_pdf(
         "topic": topic,
         "source": source,
         "license": license_name,
+        "discipline": topic,
+        "format": "pdf",
+        "extraction_status": "text_layer_extracted",
+        "extraction_method": "pypdf",
+        "verification_status": "pending_manual_review",
+        "author_organization": None,
+        "canonical_source_url": None,
+        "language": None,
+        "publication_date": None,
+        "collection_date": datetime.now(timezone.utc).date().isoformat(),
+        "license_url": None,
         "pages": len(pages),
         "extracted_chars": len(raw_text),
         "sha256": digest,
@@ -215,13 +320,9 @@ def ingest_pdf(
     if not approve:
         return report
 
-    if not source.strip() or not license_name.strip():
-        raise PDFIngestionError("Pour valider un document, renseigne sa provenance et sa licence exactes.")
-    placeholders = {"inconnue", "unknown", "n/a", "à vérifier", "a verifier",
-                    "licence ou autorisation de redistribution", "non précisée", "non precisee"}
-    if license_name.strip().casefold() in placeholders:
-        raise PDFIngestionError("La licence doit être identifiée précisément ; une mention générique ne suffit pas.")
+    report.update(provenance)
     report["reviewed"] = True
+    report["verification_status"] = "manual_review_complete_not_published"
     if not publish_public:
         report["message"] = (
             "Aperçu vérifié localement, mais non publié. Pour ajouter ce document au dépôt et au site publics, "
@@ -255,6 +356,7 @@ def ingest_pdf(
         "pdf": str(pdf_target.relative_to(ROOT)).replace("\\", "/"),
         "approved": True,
         "reviewed": True,
+        "verification_status": "manual_review_complete_approved_for_publication",
     }
     write_catalog_entry(entry)
     return entry
@@ -265,8 +367,13 @@ def main() -> int:
     parser.add_argument("pdf", type=Path, help="PDF textuel à analyser")
     parser.add_argument("--title", required=True, help="Titre documentaire")
     parser.add_argument("--topic", required=True, help="Sujet principal")
-    parser.add_argument("--source", required=True, help="Provenance ou auteur du document")
-    parser.add_argument("--license", required=True, dest="license_name", help="Licence ou autorisation d'utilisation")
+    parser.add_argument("--source", required=True, help="Description de la provenance documentaire")
+    parser.add_argument("--source-url", dest="canonical_source_url", help="URL canonique HTTPS de la source")
+    parser.add_argument("--author", dest="author_organization", help="Auteur ou organisme éditeur")
+    parser.add_argument("--language", help="Code de langue, par exemple fr ou en")
+    parser.add_argument("--published-at", dest="publication_date", help="Date de publication connue (YYYY-MM-DD)")
+    parser.add_argument("--license", required=True, dest="license_name", help="Nom exact de la licence")
+    parser.add_argument("--license-url", help="URL HTTPS de la licence exacte")
     parser.add_argument("--approve", action="store_true", help="Confirme la vérification manuelle du contenu et des droits")
     parser.add_argument(
         "--publish-public",
@@ -283,6 +390,11 @@ def main() -> int:
             topic=args.topic,
             source=args.source,
             license_name=args.license_name,
+            author_organization=args.author_organization,
+            canonical_source_url=args.canonical_source_url,
+            language=args.language,
+            publication_date=args.publication_date,
+            license_url=args.license_url,
             approve=args.approve,
             publish_public=args.publish_public,
         )

@@ -1,3 +1,4 @@
+import json
 import sys
 import tempfile
 import unittest
@@ -112,7 +113,18 @@ class PDFPublicationSafetyTests(unittest.TestCase):
     def tearDown(self):
         self.temp.cleanup()
 
-    def call_ingest(self, *, digest="a" * 64, approve=True, publish=False):
+    def call_ingest(
+        self,
+        *,
+        digest="a" * 64,
+        approve=True,
+        publish=False,
+        author_organization="Python Software Foundation",
+        canonical_source_url="https://docs.python.org/3/",
+        language="en",
+        publication_date=None,
+        license_url="https://docs.python.org/3/license.html",
+    ):
         with patch("ingest_pdf_knowledge.ROOT", self.root), \
              patch("ingest_pdf_knowledge.KNOWLEDGE_ROOT", self.knowledge), \
              patch("ingest_pdf_knowledge.CATALOG_PATH", self.catalog), \
@@ -124,8 +136,13 @@ class PDFPublicationSafetyTests(unittest.TestCase):
                 self.pdf,
                 title="Guide de test",
                 topic="Test de sécurité",
-                source="Documentation de test créée localement",
-                license_name="CC BY 4.0",
+                source="Documentation officielle Python (métadonnées synthétiques de test)",
+                license_name="Python Software Foundation License Version 2",
+                author_organization=author_organization,
+                canonical_source_url=canonical_source_url,
+                language=language,
+                publication_date=publication_date,
+                license_url=license_url,
                 approve=approve,
                 publish_public=publish,
             )
@@ -156,7 +173,12 @@ class PDFPublicationSafetyTests(unittest.TestCase):
             with self.assertRaisesRegex(PDFIngestionError, "utilise déjà ce titre"):
                 ingest_pdf(
                     self.pdf, title="Guide de test", topic="Test",
-                    source="Source vérifiée", license_name="CC BY 4.0",
+                    source="Documentation officielle Python (métadonnées synthétiques de test)",
+                    license_name="Python Software Foundation License Version 2",
+                    author_organization="Python Software Foundation",
+                    canonical_source_url="https://docs.python.org/3/",
+                    language="en",
+                    license_url="https://docs.python.org/3/license.html",
                     approve=True, publish_public=True,
                 )
 
@@ -164,6 +186,40 @@ class PDFPublicationSafetyTests(unittest.TestCase):
         self.call_ingest(approve=True, publish=True, digest="c" * 64)
         duplicate = self.call_ingest(approve=True, publish=True, digest="c" * 64)
         self.assertTrue(duplicate["already_indexed"])
+
+
+    def test_publication_rejects_missing_canonical_source_url(self):
+        with self.assertRaisesRegex(PDFIngestionError, "source canonique"):
+            self.call_ingest(approve=True, publish=True, canonical_source_url="https://example.org/guide")
+
+    def test_publication_rejects_non_https_license_url(self):
+        with self.assertRaisesRegex(PDFIngestionError, "URL de licence"):
+            self.call_ingest(approve=True, publish=True, license_url="http://docs.python.org/3/license.html")
+
+    def test_publication_rejects_invalid_publication_date(self):
+        with self.assertRaisesRegex(PDFIngestionError, "YYYY-MM-DD"):
+            self.call_ingest(approve=True, publish=True, publication_date="2026-13-40")
+
+    def test_publication_rejects_missing_author_organization(self):
+        with self.assertRaisesRegex(PDFIngestionError, "auteur ou l'organisme"):
+            self.call_ingest(approve=True, publish=True, author_organization="")
+
+    def test_published_catalog_entry_contains_provenance_and_extraction_metadata(self):
+        self.call_ingest(approve=True, publish=True, publication_date="2026-11-20")
+        entry = json.loads(self.catalog.read_text(encoding="utf-8"))["documents"][0]
+        self.assertEqual(entry["author_organization"], "Python Software Foundation")
+        self.assertEqual(entry["canonical_source_url"], "https://docs.python.org/3/")
+        self.assertEqual(entry["language"], "en")
+        self.assertEqual(entry["discipline"], "Test de sécurité")
+        self.assertEqual(entry["publication_date"], "2026-11-20")
+        self.assertEqual(entry["license_url"], "https://docs.python.org/3/license.html")
+        self.assertEqual(entry["license"], "Python Software Foundation License Version 2")
+        self.assertEqual(entry["format"], "pdf")
+        self.assertEqual(entry["extraction_status"], "text_layer_extracted")
+        self.assertEqual(entry["extraction_method"], "pypdf")
+        self.assertEqual(entry["verification_status"], "manual_review_complete_approved_for_publication")
+        self.assertRegex(entry["sha256"], r"^[0-9a-f]{64}$")
+        self.assertRegex(entry["collection_date"], r"^\d{4}-\d{2}-\d{2}$")
 
 
 if __name__ == "__main__":
