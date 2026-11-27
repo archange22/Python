@@ -1,0 +1,46 @@
+name: Sun documentary ingestion tests
+
+on:
+  pull_request:
+    paths:
+      - "scripts/ingest_pdf_knowledge.py"
+      - "tests/test_pdf_ingestion.py"
+      - "README.md"
+      - ".github/workflows/sun-documentary-tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/ingest_pdf_knowledge.py"
+      - "tests/test_pdf_ingestion.py"
+      - "README.md"
+      - ".github/workflows/sun-documentary-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  documentary-ingestion:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PDF parser
+        run: python -m pip install pypdf
+
+      - name: Run PDF ingestion tests
+        run: python -m unittest discover -s tests -p "test_pdf_ingestion.py" -v
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run Sun regression tests
+        run: node --test tests/sun-brain.test.cjs tests/sun-ui.test.cjs
