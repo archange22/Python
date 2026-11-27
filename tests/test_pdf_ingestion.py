@@ -119,11 +119,11 @@ class PDFPublicationSafetyTests(unittest.TestCase):
         digest="a" * 64,
         approve=True,
         publish=False,
-        author_organization="Organisme fictif de test",
-        canonical_source_url="https://example.org/guide",
-        language="fr",
+        author_organization="Python Software Foundation",
+        canonical_source_url="https://docs.python.org/3/",
+        language="en",
         publication_date=None,
-        license_url="https://creativecommons.org/licenses/by/4.0/",
+        license_url="https://docs.python.org/3/license.html",
     ):
         with patch("ingest_pdf_knowledge.ROOT", self.root), \
              patch("ingest_pdf_knowledge.KNOWLEDGE_ROOT", self.knowledge), \
@@ -136,8 +136,8 @@ class PDFPublicationSafetyTests(unittest.TestCase):
                 self.pdf,
                 title="Guide de test",
                 topic="Test de sécurité",
-                source="Documentation fictive de test créée localement",
-                license_name="CC BY 4.0",
+                source="Documentation officielle Python (métadonnées synthétiques de test)",
+                license_name="Python Software Foundation License Version 2",
                 author_organization=author_organization,
                 canonical_source_url=canonical_source_url,
                 language=language,
@@ -173,12 +173,12 @@ class PDFPublicationSafetyTests(unittest.TestCase):
             with self.assertRaisesRegex(PDFIngestionError, "utilise déjà ce titre"):
                 ingest_pdf(
                     self.pdf, title="Guide de test", topic="Test",
-                    source="Source fictive de test",
-                    license_name="CC BY 4.0",
-                    author_organization="Organisme fictif de test",
-                    canonical_source_url="https://example.org/guide",
-                    language="fr",
-                    license_url="https://creativecommons.org/licenses/by/4.0/",
+                    source="Documentation officielle Python (métadonnées synthétiques de test)",
+                    license_name="Python Software Foundation License Version 2",
+                    author_organization="Python Software Foundation",
+                    canonical_source_url="https://docs.python.org/3/",
+                    language="en",
+                    license_url="https://docs.python.org/3/license.html",
                     approve=True, publish_public=True,
                 )
 
@@ -190,11 +190,11 @@ class PDFPublicationSafetyTests(unittest.TestCase):
 
     def test_publication_rejects_missing_canonical_source_url(self):
         with self.assertRaisesRegex(PDFIngestionError, "source canonique"):
-            self.call_ingest(approve=True, publish=True, canonical_source_url="")
+            self.call_ingest(approve=True, publish=True, canonical_source_url="https://example.org/guide")
 
     def test_publication_rejects_non_https_license_url(self):
         with self.assertRaisesRegex(PDFIngestionError, "URL de licence"):
-            self.call_ingest(approve=True, publish=True, license_url="http://example.org/license")
+            self.call_ingest(approve=True, publish=True, license_url="http://docs.python.org/3/license.html")
 
     def test_publication_rejects_invalid_publication_date(self):
         with self.assertRaisesRegex(PDFIngestionError, "YYYY-MM-DD"):
@@ -207,12 +207,12 @@ class PDFPublicationSafetyTests(unittest.TestCase):
     def test_published_catalog_entry_contains_provenance_and_extraction_metadata(self):
         self.call_ingest(approve=True, publish=True, publication_date="2026-11-20")
         entry = json.loads(self.catalog.read_text(encoding="utf-8"))["documents"][0]
-        self.assertEqual(entry["author_organization"], "Organisme fictif de test")
-        self.assertEqual(entry["canonical_source_url"], "https://example.org/guide")
-        self.assertEqual(entry["language"], "fr")
+        self.assertEqual(entry["author_organization"], "Python Software Foundation")
+        self.assertEqual(entry["canonical_source_url"], "https://docs.python.org/3/")
+        self.assertEqual(entry["language"], "en")
         self.assertEqual(entry["discipline"], "Test de sécurité")
         self.assertEqual(entry["publication_date"], "2026-11-20")
-        self.assertEqual(entry["license_url"], "https://creativecommons.org/licenses/by/4.0/")
+        self.assertEqual(entry["license_url"], "https://docs.python.org/3/license.html")
         self.assertEqual(entry["format"], "pdf")
         self.assertEqual(entry["extraction_status"], "text_layer_extracted")
         self.assertEqual(entry["extraction_method"], "pypdf")
