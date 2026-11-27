@@ -41,12 +41,12 @@ Exemple après vérification manuelle de l'aperçu et de la licence :
 python scripts/ingest_pdf_knowledge.py mon-document.pdf \
   --title "Guide de programmation" \
   --topic "Python et programmation" \
-  --source "Description de la source documentaire" \
-  --source-url "https://example.org/documentation" \
-  --author "Organisme éditeur" \
-  --language "fr" \
-  --license "Nom exact de la licence" \
-  --license-url "https://example.org/license" \
+  --source "Documentation officielle Python" \
+  --source-url "https://docs.python.org/3/" \
+  --author "Python Software Foundation" \
+  --language "en" \
+  --license "Python Software Foundation License Version 2" \
+  --license-url "https://docs.python.org/3/license.html" \
   --approve --publish-public
 ```
 
