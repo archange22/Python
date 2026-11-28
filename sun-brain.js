@@ -382,7 +382,7 @@
       ["topic_python", () => has("python", "def", "return", "variable", "variables", "boucle", "boucles", "liste", "dictionnaire", "venv", "pip", "virtualenv") || includes("environnement virtuel", "environnements virtuels")],
       ["topic_ia", () => includes("intelligence artificielle", "reseau neuronal", "machine learning", "deep learning", "perceptron") || has("ia", "neurone", "neurones")],
       ["topic_discord", () => has("discord", "bot", "bots", "gateway") || includes("serveur discord")],
-      ["topic_web", () => has("html", "css", "javascript", "responsive", "frontend") || includes("site web", "navigateur web")],
+      ["topic_web", () => has("html", "css", "javascript", "responsive", "frontend", "cors", "fetch", "http", "https", "github") || includes("site web", "navigateur web", "site statique", "hebergement statique", "github pages", "serveur web")],
       ["topic_documents", () => has("pdf", "document", "documents", "fichier", "extraction", "indexation", "chapitre", "chapitres") || includes("bibliotheque documentaire")],
       ["topic_math", () => has("fraction", "fractions", "equation", "equations", "calcul", "mathematique", "pourcentage", "numerateur", "denominateur")],
       ["topic_science", () => has("science", "scientifique", "experience", "hypothese", "observation", "biologie", "physique")],
@@ -545,7 +545,7 @@
     "qui", "que", "quoi", "quel", "quelle", "quels", "quelles", "comment",
     "pourquoi", "explique", "expliquer", "donne", "donner", "montre", "montrer",
     "faire", "fait", "fais", "cest", "estce", "peux", "peut", "on", "il", "elle",
-    "entre", "vers", "difference", "fonctionne", "fonctionner", "une", "les", "leurs",
+    "entre", "vers", "difference", "fonctionne", "fonctionner", "une", "les", "leurs", "ne", "pas", "cote",
     "je", "tu", "ils", "elles", "aide", "y", "comme"
   ]);
 
@@ -580,8 +580,13 @@
     bot: ["discord", "robot"],
     bots: ["bot", "discord"],
     discord: ["bot", "bots"],
-    site: ["web", "html", "css"],
+    site: ["web", "html", "css", "github", "pages"],
     web: ["html", "css", "javascript"],
+    statique: ["hebergement", "github", "pages", "web"],
+    hebergement: ["statique", "github", "pages", "web"],
+    internet: ["web", "reseau", "pages"],
+    explore: ["explorer", "exploration", "robot"],
+    permanence: ["permanent", "permanente"],
     javascript: ["js"],
     js: ["javascript"],
     style: ["css", "mise", "forme"],
