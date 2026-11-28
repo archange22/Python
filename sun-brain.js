@@ -849,9 +849,15 @@
   }
   function isFollowUpPrompt(value) {
     const text = norm(value);
-    const words = text.split(/\s+/).filter(Boolean);
-    if (!words.length) return false;
-    if (words.length <= 2) return true;
+    if (!text) return false;
+    const exactFollowUps = new Set([
+      "pourquoi", "comment", "exemple", "un exemple", "autre exemple",
+      "suite", "la suite", "ensuite", "plus simple", "plus simplement",
+      "detaille", "developpe", "continue", "resume", "comment faire",
+      "pourquoi ca", "pourquoi cela", "et pourquoi", "et comment",
+      "et ensuite", "et apres", "dans ce cas"
+    ]);
+    if (exactFollowUps.has(text)) return true;
     return /^(?:et|donc|alors|mais|avec|sans|ca|cela)\b/.test(text) ||
       /^(?:un exemple|exemple|autre exemple|donne(?: moi)? un exemple|montre(?: moi)? un exemple|la suite|ensuite|plus simple|plus simplement|detaille|developpe|continue|resume|et pour|et si|dans ce cas|pourquoi ca|pourquoi cela|pourquoi ce code|pourquoi cette erreur|pourquoi ce resultat|comment faire|comment ca|comment cela|celui ci|celle ci|lequel|laquelle)\b/.test(text);
   }
