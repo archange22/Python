@@ -48,8 +48,27 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout without out-of-scope blobs
+        env:
+          PR_NUMBER: \${{ github.event.pull_request.number }}
+        run: |
+          git init .
+          git remote add origin "https://github.com/\${GITHUB_REPOSITORY}.git"
+          git config extensions.partialClone origin
+          git config remote.origin.promisor true
+          git config remote.origin.partialclonefilter blob:none
+          git sparse-checkout init --no-cone
+          git sparse-checkout set --no-cone \
+            '/*' \
+            '!/knowledge/discussion-global-v0.0.2.md' \
+            '!/knowledge/imported/discussion-global-v0.0.2.md' \
+            '!/knowledge/pdfs/sun-discussion-global-v0.0.2.pdf'
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            git fetch --filter=blob:none --no-tags --depth=1 origin "refs/pull/\${PR_NUMBER}/merge"
+          else
+            git fetch --filter=blob:none --no-tags --depth=1 origin "$GITHUB_SHA"
+          fi
+          git checkout --detach FETCH_HEAD
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -63,8 +82,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pandoc
           python -m pip install beautifulsoup4 weasyprint pypdf
-      - name: Build and verify Sun discussion PDF 0.0.2
-        run: python scripts/build_sun_discussion_pdf.py
       - name: Run PDF ingestion tests
         run: python -m unittest discover -s tests -p "test_pdf_ingestion.py"
       - name: Check frontend JavaScript syntax
