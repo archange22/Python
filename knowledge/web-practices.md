@@ -20,3 +20,13 @@ Le curriculum MDN comprend des notions d'accessibilité, de formulaires, de sém
 Référence : https://developer.mozilla.org/en-US/docs/Web/Accessibility
 Référence : https://developer.mozilla.org/en-US/curriculum/
 Référence : https://www.w3.org/WAI/standards-guidelines/wcag/
+
+
+## Lire des pages externes depuis le navigateur : CORS
+Une application peut utiliser `fetch()` pour demander une ressource située sur un autre domaine. Le navigateur n'autorise toutefois pas automatiquement le script à lire cette réponse : le serveur distant doit autoriser l'origine de l'application avec l'en-tête HTTP `Access-Control-Allow-Origin`. Cette règle s'appelle le partage des ressources entre origines (CORS). Le mode `no-cors` ne permet pas de contourner cette protection : la réponse devient opaque et son contenu n'est pas lisible par JavaScript. Une application exécutée dans le navigateur doit donc se limiter aux sources qui autorisent l'accès CORS ou demander le contenu à un service serveur contrôlé et correctement sécurisé.
+
+## Ce qu'un hébergement statique peut faire
+Un hébergement statique publie des fichiers HTML, CSS, JavaScript, images et données déjà préparées. GitHub Pages ne fournit pas d'exécution de code côté serveur en PHP, Ruby ou Python. Une application hébergée ainsi peut interroger des services externes autorisés, mais elle ne peut pas, à elle seule, lancer un robot serveur permanent chargé d'explorer librement tout le Web. Pour construire un index Web autonome et récupérer les pages qui ne permettent pas l'accès CORS, il faut un composant serveur ou un processus de construction séparé. Le choix doit être annoncé clairement : un lien vers une page de résultats n'est pas la même chose qu'une page effectivement téléchargée, lue et analysée.
+
+## Vérifier les sources trouvées sur le Web
+Commencer par chercher la source primaire : documentation officielle, publication originale ou organisme responsable de l'information. Vérifier l'auteur, la date de publication ou de mise à jour, le contexte et la version concernée. Un extrait affiché dans un résultat de recherche ne suffit pas à confirmer une affirmation : il faut consulter la page elle-même. Pour une information importante, comparer plusieurs sources indépendantes et signaler les désaccords ou les éléments qui restent incertains. Conserver l'URL exacte et le titre de la page permet de retrouver l'origine d'une affirmation.
