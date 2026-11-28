@@ -295,7 +295,8 @@ for (const item of QA_CASES) {
     );
 
     const answer = await brain.reply(item.question, []);
-    const sourceMatches = Array.from(answer.matchAll(/Sources? : ([^\s\n]+)/g)).map(match => match[1]);
+    const sourceMatches = Array.from(answer.matchAll(/Sources? : ([^\n]+)/g))
+      .flatMap(match => match[1].split(/\s*;\s*/).map(source => source.trim()).filter(Boolean));
     assert.ok(sourceMatches.length > 0, "La réponse doit citer son fichier source.");
     sourceMatches.forEach(source => {
       assert.ok(item.sources.includes(source), "Source secondaire hors sujet : " + source);
