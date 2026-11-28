@@ -1,6 +1,7 @@
 const STATIC_CACHE = "academique-shell-v25";
 const PDF_CACHE = "academique-pdf-v2";
 const OUT_OF_SCOPE_ASSETS = [
+  "./knowledge/discussion-global-v0.0.2.md",
   "./knowledge/imported/discussion-global-v0.0.2.md",
   "./knowledge/pdfs/sun-discussion-global-v0.0.2.pdf"
 ];

@@ -50,6 +50,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            /*
+            !/knowledge/discussion-global-v0.0.2.md
+            !/knowledge/imported/discussion-global-v0.0.2.md
+            !/knowledge/pdfs/sun-discussion-global-v0.0.2.pdf
+          sparse-checkout-cone-mode: false
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

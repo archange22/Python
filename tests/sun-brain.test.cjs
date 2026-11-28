@@ -390,8 +390,20 @@ test("Les corpus de discussion hors périmètre sont désactivés et purgés du 
   assert.match(serviceWorker, /OUT_OF_SCOPE_ASSETS/);
   assert.match(serviceWorker, /cache\.delete\(new URL\(asset, self\.location\.href\)\.href\)/);
 
-  const workflow = fs.readFileSync(path.join(ROOT, ".github/workflows/test-sun-brain.yml"), "utf8");
-  assert.doesNotMatch(workflow, /build_sun_discussion_pdf\.py/);
+  const workflowPaths = [
+    ".github/workflows/test-sun-brain.yml",
+    ".github/workflows/build-course-pdfs.yml",
+    ".github/workflows/build-lesson-pdf.yml",
+    ".github/workflows/sun-documentary-tests.yml"
+  ];
+  workflowPaths.forEach(relativePath => {
+    const workflow = fs.readFileSync(path.join(ROOT, relativePath), "utf8");
+    assert.match(workflow, /filter: blob:none/);
+    assert.match(workflow, /!\/knowledge\/discussion-global-v0\.0\.2\.md/);
+    assert.match(workflow, /!\/knowledge\/imported\/discussion-global-v0\.0\.2\.md/);
+    assert.match(workflow, /!\/knowledge\/pdfs\/sun-discussion-global-v0\.0\.2\.pdf/);
+    assert.doesNotMatch(workflow, /build_sun_discussion_pdf\.py/);
+  });
 });
 
 test("Une question de définition commence par la définition du concept", async () => {

@@ -17,6 +17,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            /*
+            !/knowledge/discussion-global-v0.0.2.md
+            !/knowledge/imported/discussion-global-v0.0.2.md
+            !/knowledge/pdfs/sun-discussion-global-v0.0.2.pdf
+          sparse-checkout-cone-mode: false
       - name: Install PDF dependencies
         run: |
           sudo apt-get update
