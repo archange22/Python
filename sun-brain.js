@@ -847,15 +847,21 @@
 
     return { best, alternatives, candidates: ranked.slice(0, 28), queryTerms: queryData.base, coverage: covered.size / queryData.base.length };
   }
-  function buildContextQuery(message, history) {
-    const current = norm(message);
-    const wordCount = getQueryTerms(current).base.length;
-    const followUp = /\b(exemple|un exemple|pourquoi|comment faire|et ensuite|et apres|la suite|plus simple|plus simplement|detaille|developpe|continue|resume|autre exemple|et ca|avec ca|celui ci|celle ci|lequel|laquelle|et pour|et si|dans ce cas)\b/.test(current) ||
-      /^(et|donc|alors|mais|avec|sans|pour|ca|cela)\b/.test(current);
-    if (!Array.isArray(history) || (!followUp && wordCount > 3)) return message;
+  function isFollowUpPrompt(value) {
+    const text = norm(value);
+    const words = text.split(/\s+/).filter(Boolean);
+    if (!words.length) return false;
+    if (words.length <= 2) return true;
+    return /^(?:et|donc|alors|mais|avec|sans|ca|cela)\b/.test(text) ||
+      /^(?:un exemple|exemple|autre exemple|donne(?: moi)? un exemple|montre(?: moi)? un exemple|la suite|ensuite|plus simple|plus simplement|detaille|developpe|continue|resume|et pour|et si|dans ce cas|pourquoi ca|pourquoi cela|pourquoi ce code|pourquoi cette erreur|pourquoi ce resultat|comment faire|comment ca|comment cela|celui ci|celle ci|lequel|laquelle)\b/.test(text);
+  }
 
+  function buildContextQuery(message, history) {
+    if (!Array.isArray(history) || !isFollowUpPrompt(message)) return message;
     const previousUser = history.slice(0, -1).reverse().find(item =>
-      item && item.role === "user" && typeof item.content === "string"
+      item && item.role === "user" &&
+      typeof item.content === "string" &&
+      !isFollowUpPrompt(item.content)
     );
     if (!previousUser) return message;
     return previousUser.content + " " + message;
@@ -1374,12 +1380,12 @@
       "\n\nSource : courses/ia/lesson-06.md";
   }
 
-  function searchDocs(query) {
+  function searchDocs(query, intentQuery) {
     const result = retrieveDocs(query);
     if (!result) {
       return "Je n’ai pas trouvé de passage suffisamment fiable dans les cours pour répondre à cette question. Tu peux préciser le sujet ou poser une question plus ciblée. Je préfère signaler cette limite plutôt que d’inventer une réponse.";
     }
-    const type = detectQuestionType(query);
+    const type = detectQuestionType(intentQuery || query);
     if (type === "explanation" &&
         /\b(perceptron|poids|biais|activation)\b/.test(norm(query))) {
       const perceptron = composePerceptronExplanation(result);
@@ -1457,7 +1463,7 @@
     }
     await ready;
     const contextualQuery = buildContextQuery(message, history);
-    return searchDocs(contextualQuery);
+    return searchDocs(contextualQuery, message);
   }
   window.SunBrain = {
     ready: () => ready,
