@@ -346,7 +346,7 @@ test("Sun conserve le sujet initial pendant plusieurs relances successives", asy
   ];
   const answer = await brain.reply("et pourquoi ?", history);
   assert.match(answer, /condition/i);
-  assert.match(answer, /if/i);
+  assert.match(answer, /Voici l’explication/i);
   assert.match(answer, /Source : courses\/python\/lesson-05\.md/);
 });
 
