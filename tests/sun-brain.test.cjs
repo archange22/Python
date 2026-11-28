@@ -373,7 +373,7 @@ test("Une recherche courte et autonome ne reprend pas un ancien sujet", async ()
 
   const answer = await brain.reply("python liste", history);
   assert.match(answer, /liste/i);
-  assert.match(answer, /Sources? : courses\\/python\\/lesson-07\\.md/);
+  assert.match(answer, /Sources? : courses\/python\/lesson-07\.md/);
   assert.doesNotMatch(answer, /condition imbriquée/i);
 });
 
