@@ -7,7 +7,7 @@ Sun IA est une application web progressive (PWA) à identité solaire. Sa page p
 - Un réseau neuronal artificiel local à propagation avant, avec 24 neurones cachés, entraîné sur 224 formulations françaises réparties entre huit intentions de conversation et treize familles de sujets ; ses poids sont conservés localement après le premier entraînement.
 - Classification neuronale de huit intentions sociales et de treize familles de sujets : Python, IA, Discord, Web, documents/PDF, études, mathématiques, sciences, culture, langues, rédaction, dépannage et discussion générale.
 - Analyse de mots, bigrammes, préfixes, suffixes et trigrammes de caractères pour mieux reconnaître les variantes d’écriture, les abréviations et les formulations proches.
-- Indexation locale du noyau documentaire de 32 fichiers Markdown : 23 leçons de cours, quatre fiches d'exercices et cinq fiches documentaires. Le catalogue ajoute en plus les documents approuvés, dont le corpus de discussion extrait du PDF.
+- Indexation locale du noyau documentaire de 32 fichiers Markdown : 23 leçons de cours, quatre fiches d'exercices et cinq fiches documentaires. Les imports du catalogue ne sont chargés qu'après revue explicite et présence des métadonnées de provenance, de licence, d'extraction et d'empreinte.
 - Recherche documentaire pondérée (BM25), normalisation de plusieurs abréviations françaises, rapprochement de synonymes techniques et léger signal de routage issu de la classification neuronale.
 - Analyse du type de demande : définition, explication, comparaison, procédure ou exemple ; contexte enrichi pour les demandes de suivi courtes.
 - Composition de réponses à partir de phrases pertinentes extraites de plusieurs sections, avec attribution des fichiers sources ; les comparaisons HTML/CSS/JavaScript et les procédures multi-étapes sont prises en charge.
@@ -22,14 +22,14 @@ Sun IA est une application web progressive (PWA) à identité solaire. Sa page p
 
 Les fichiers principaux sont \`sun-brain.js\` (classification neuronale et recherche documentaire), \`sun-ia.js\` (interface de discussion) et \`sun-ia.css\` (présentation).
 
-### Corpus de discussion et import PDF 0.0.2
+### Archive synthétique historique (hors index documentaire)
 
-- Corpus original de conversation française : 36 chapitres, 216 situations et 432 formulations de réponse possibles.
-- Thèmes : salutations, français familier, présentation, discussion générale, demandes d'aide, école, rédaction, langues, mathématiques, Python, Web, IA, Discord, sciences, culture, sécurité, dépannage, actualité et gestion des limites.
-- Le corpus original est généré de manière déterministe à partir de 36 thèmes documentaires et de six situations par thème. Le PDF produit est relu page par page avec pypdf ; les chapitres, le texte extrait et les pages sources sont ensuite inscrits au catalogue local après contrôles.
-- Sun Brain peut charger jusqu'à 100 documents Markdown supplémentaires marqués `approved: true` dans `knowledge/catalog.json`, sous le chemin sécurisé `knowledge/imported/`. Il expose `recognizeTopic(query)` et `analyzeQuestion(query)` pour retrouver le domaine, le chapitre, le type de demande, le niveau de correspondance et les sources pertinentes.
-- Le Service Worker v22 met en cache les 23 leçons, le catalogue, les textes approuvés et leurs PDF locaux afin de pouvoir les rouvrir hors connexion après leur téléchargement.
-- Le catalogue indique le PDF et le texte extraits lorsqu'ils ont été générés et publiés par le workflow de construction.
+- L'ancien corpus synthétique de discussion est conservé comme artefact historique du projet, mais il est explicitement exclu de l'index documentaire et du cache des imports approuvés.
+- Il ne constitue pas une source documentaire vérifiée et n'est pas utilisé pour apprendre à partir des échanges avec les utilisateurs.
+- Les domaines sans document validé peuvent être reconnus comme sujets possibles, mais Sun doit s'abstenir de présenter une réponse comme documentée lorsqu'aucune source locale pertinente n'existe.
+- Sun Brain peut charger jusqu'à 50 documents Markdown supplémentaires dans `knowledge/imported/` uniquement si le catalogue indique une approbation et une revue explicites, un auteur ou organisme, une source canonique HTTPS, une langue, une licence exacte et son URL, un état et une méthode d'extraction, une date de collecte et une empreinte SHA-256.
+- Le Service Worker v25 applique les mêmes exigences avant de mettre en cache les textes et PDF importés. Les cours et fiches documentaires intégrés restent disponibles selon le cache hors connexion existant.
+- Les archives synthétiques ne sont pas supprimées ; leur statut de publication est simplement désactivé.
 
 ### Importer un autre PDF
 
@@ -52,7 +52,7 @@ python scripts/ingest_pdf_knowledge.py mon-document.pdf \
 
 L'import crée d'abord un aperçu dans `knowledge/staging/`, dossier ignoré par Git. Pour valider un document, renseigne l'auteur ou l'organisme, l'URL canonique de la source, la langue et l'URL de la licence exacte. La date de publication reste facultative lorsqu'elle est inconnue ; la date de collecte est enregistrée automatiquement. Le script vérifie la présence et la forme HTTPS des URL, mais ne vérifie pas lui-même les droits d'auteur ni la permission de redistribution : cette vérification reste humaine et doit précéder `--approve`. Cette option enregistre la revue sans publier. Pour copier le fichier, son texte extrait et sa référence dans le dépôt public, il faut aussi indiquer explicitement `--publish-public`. N'utilise cette option que si la redistribution est autorisée ; les documents privés doivent rester hors du dépôt public. Les PDF scannés ou constitués d'images sont refusés et nécessitent un OCR séparé qui n'est pas encore intégré. Le contrôle automatique des marqueurs sensibles ne garantit pas qu'un document ne contient aucune donnée personnelle : une lecture humaine reste obligatoire.
 
-**Limite :** le réseau neuronal classe huit intentions de conversation et treize familles de sujets ; il ne devient pas un grand modèle de langage génératif. Le corpus et l'import PDF renforcent la recherche documentaire, mais un sujet absent des documents nécessite une source supplémentaire ou une recherche externe réellement disponible.
+**Limite :** le réseau neuronal classe huit intentions et treize familles de sujets ; il ne devient pas un grand modèle de langage génératif. Un sujet reconnu sans document local validé ne suffit pas à produire une réponse : Sun doit signaler l'absence de preuve. Les poids ne sont pas entraînés sur les conversations des utilisateurs.
 
 ## Formations et bibliothèque
 

@@ -85,7 +85,25 @@ async function localFetch(input) {
       text: async () => JSON.stringify({
         version: 1,
         documents: [
-          { id: "approved-test", approved: true, path: "knowledge/imported/test-approved.md" },
+          {
+            id: "approved-test",
+            title: "Guide PDF de test synthétique",
+            discipline: "documents",
+            author_organization: "Organisme fictif de test",
+            canonical_source_url: "https://docs.example.org/guide",
+            language: "fr",
+            license: "CC BY 4.0",
+            license_url: "https://creativecommons.org/licenses/by/4.0/",
+            format: "pdf",
+            extraction_status: "text_layer_extracted",
+            extraction_method: "pypdf",
+            collection_date: "2026-11-28",
+            sha256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            reviewed: true,
+            verification_status: "manual_review_complete_approved_for_publication",
+            approved: true,
+            path: "knowledge/imported/test-approved.md"
+          },
           { id: "discussion-global-v0.0.2", approved: true, path: "knowledge/imported/discussion-global-v0.0.2.md" },
           { id: "pending-test", approved: false, path: "knowledge/imported/test-pending.md" },
           { id: "unsafe-test", approved: true, path: "../private.md" }
@@ -128,7 +146,7 @@ async function localFetch(input) {
 function createBrain() {
   const source = fs.readFileSync(path.join(ROOT, "sun-brain.js"), "utf8");
   const window = {};
-  vm.runInNewContext(source, { window, localStorage, fetch: localFetch }, {
+  vm.runInNewContext(source, { window, localStorage, fetch: localFetch, URL }, {
     filename: "sun-brain.js",
     timeout: 10000
   });
@@ -256,8 +274,8 @@ const QA_CASES = [
 
 test("Sun Brain charge tous les documents pédagogiques prévus", () => {
   const status = brain.status();
-  assert.equal(status.documents, DOCUMENTS.length + 2);
-  assert.equal(status.total, DOCUMENTS.length + 2);
+  assert.equal(status.documents, DOCUMENTS.length + 1);
+  assert.equal(status.total, DOCUMENTS.length + 1);
   assert.equal(status.failed, 0);
   assert.ok(status.sections >= 250, "Le découpage des cours doit produire suffisamment de passages.");
 });
@@ -327,11 +345,12 @@ test("Sun Brain conserve le contexte pour une demande de précision", async () =
 });
 
 test("Les documents sont lus localement et les poids du réseau sont réutilisés", () => {
-  assert.equal(requestedPaths.length, DOCUMENTS.length + 3);
+  assert.equal(requestedPaths.length, DOCUMENTS.length + 2);
   assert.ok(requestedPaths.every(request => request.startsWith("./")));
   assert.ok(requestedPaths.includes("./knowledge/catalog.json"));
   assert.ok(requestedPaths.includes("./knowledge/imported/test-approved.md"));
-  assert.ok(requestedPaths.includes("./knowledge/imported/discussion-global-v0.0.2.md"));
+  assert.ok(!requestedPaths.includes("./knowledge/imported/discussion-global-v0.0.2.md"),
+    "Un ancien corpus conversationnel sans provenance documentaire complète ne doit pas être chargé.");
   assert.ok(!requestedPaths.includes("./knowledge/imported/test-pending.md"));
   assert.ok(!requestedPaths.includes("./../private.md"));
   const writesBeforeReload = storageWrites;
@@ -397,14 +416,13 @@ test("Sun Brain indexe les cinq nouvelles fiches documentaires locales", () => {
 test("Sun Brain reconnaît un sujet dans un document PDF importé et approuvé", () => {
   const topic = brain.recognizeTopic("comment ouvrir un pdf extraire le texte organiser les chapitres et indexer hors connexion");
   assert.ok(topic, "Le moteur doit reconnaître le sujet du document importé.");
-  assert.ok(
-    ["knowledge/imported/test-approved.md", "knowledge/imported/discussion-global-v0.0.2.md"].includes(topic.source),
-    "Le sujet doit être retrouvé dans une source locale approuvée."
-  );
+  assert.equal(topic.source, "knowledge/imported/test-approved.md",
+    "Le sujet doit provenir du document synthétique de test avec provenance complète.");
   assert.match(topic.heading, /Documents PDF et lecture|Extraction et organisation des chapitres/i);
 });
 
-test("Les documents non approuvés ou aux chemins non sûrs sont ignorés", () => {
+test("Les documents sans provenance complète, non approuvés ou aux chemins non sûrs sont ignorés", () => {
+  assert.ok(!requestedPaths.includes("./knowledge/imported/discussion-global-v0.0.2.md"));
   assert.ok(!requestedPaths.includes("./knowledge/imported/test-pending.md"));
   assert.ok(!requestedPaths.includes("./../private.md"));
   assert.equal(typeof brain.recognizeTopic, "function");
@@ -440,35 +458,20 @@ test("Le réseau neuronal v3 reconnaît les catégories de sujets en plus des in
   assert.equal(brain.classifyIntent("bonjour sun").kind, "conversation");
 });
 
-test("L'analyse sémantique identifie correctement les sujets et le type de demande", () => {
+test("L'analyse sémantique n'attribue une source qu'aux domaines réellement documentés", () => {
   const cases = [
     ["je veux programmer une boucle python avec for et while", "python", "procedure"],
     ["explique le perceptron et le biais d un neurone artificiel", "ia", "explanation"],
     ["comment sécuriser le token de mon bot discord", "discord", "procedure"],
     ["quelle différence entre html css et javascript", "web", "comparison"],
-    ["comment ouvrir un pdf et extraire ses chapitres", "documents", "procedure"],
-    ["comment organiser mes devoirs et réviser pour un examen", "school", "procedure"],
-    ["explique les fractions et les opérations mathématiques", "math", "explanation"],
-    ["traduis cette phrase du français vers l anglais", "language", "procedure"],
-    ["explique une expérience scientifique et une hypothèse", "science", "explanation"],
-    ["raconte un événement historique et sa chronologie", "culture", "explanation"],
-    ["aide moi à rédiger un paragraphe argumentatif", "writing", "procedure"],
-    ["mon téléphone android ne fonctionne plus comment le dépanner", "daily", "procedure"]
+    ["comment ouvrir un pdf et extraire ses chapitres", "documents", "procedure"]
   ];
   const allowedSources = {
     python: ["courses/python/", "knowledge/python-practice.md"],
     ia: ["courses/ia/", "knowledge/ia-foundations.md"],
     discord: ["courses/discord/", "knowledge/discord-development.md"],
     web: ["courses/web/", "knowledge/web-practices.md"],
-    documents: ["knowledge/imported/", "knowledge/pdfs/"],
-    school: ["knowledge/imported/"],
-    math: ["knowledge/imported/"],
-    science: ["knowledge/imported/"],
-    culture: ["knowledge/imported/"],
-    language: ["knowledge/imported/"],
-    writing: ["knowledge/imported/"],
-    daily: ["knowledge/imported/"],
-    general: ["knowledge/imported/"]
+    documents: ["knowledge/imported/", "knowledge/pdfs/"]
   };
   cases.forEach(([question, expectedSubject, expectedType]) => {
     const analysis = brain.analyzeQuestion(question);
@@ -479,6 +482,22 @@ test("L'analyse sémantique identifie correctement les sujets et le type de dema
     assert.ok(allowedSources[expectedSubject].some(prefix =>
       analysis.source === prefix || analysis.source.startsWith(prefix)
     ), "La source doit correspondre au sujet " + expectedSubject + " : " + analysis.source);
+  });
+});
+
+test("Le classificateur peut reconnaître un sujet sans prétendre disposer d'une source documentaire", () => {
+  const cases = [
+    ["comment planifier mes devoirs et organiser mes révisions scolaires", "topic_school"],
+    ["comment calculer et simplifier des fractions mathématiques", "topic_math"],
+    ["comment mener une expérience scientifique et tester une hypothèse", "topic_science"],
+    ["explique la chronologie d un événement historique", "topic_culture"],
+    ["comment traduire une phrase et apprendre du vocabulaire anglais", "topic_language"],
+    ["comment rédiger un paragraphe clair et corriger le texte", "topic_writing"],
+    ["comment dépanner mon téléphone android", "topic_daily"],
+    ["je voudrais discuter librement d un sujet et échanger", "topic_general"]
+  ];
+  cases.forEach(([question, expectedIntent]) => {
+    assert.equal(brain.classifyIntent(question).intent, expectedIntent);
   });
 });
 
