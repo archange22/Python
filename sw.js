@@ -1,4 +1,4 @@
-const STATIC_CACHE = "academique-shell-v24";
+const STATIC_CACHE = "academique-shell-v25";
 const PDF_CACHE = "academique-pdf-v2";
 const APP_FILES = [
   "./",
@@ -72,6 +72,38 @@ const APP_FILES = [
   "./apps/python-console-3/icon.svg"
 ];
 
+function isVerifiedPublicDocument(item) {
+  const nonEmpty = value => typeof value === "string" && value.trim().length > 0;
+  const isHttpsUrl = value => {
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" && Boolean(url.hostname) && !url.username && !url.password;
+    } catch (_) {
+      return false;
+    }
+  };
+  return Boolean(item &&
+    item.approved === true &&
+    item.reviewed === true &&
+    item.verification_status === "manual_review_complete_approved_for_publication" &&
+    typeof item.path === "string" &&
+    /^knowledge\/imported\/[a-z0-9][a-z0-9.-]*\.md$/i.test(item.path) &&
+    !item.path.includes("..") &&
+    nonEmpty(item.title) &&
+    nonEmpty(item.discipline) &&
+    nonEmpty(item.author_organization) &&
+    isHttpsUrl(item.canonical_source_url) &&
+    /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(String(item.language || "")) &&
+    nonEmpty(item.license) &&
+    isHttpsUrl(item.license_url) &&
+    nonEmpty(item.format) &&
+    nonEmpty(item.extraction_status) &&
+    nonEmpty(item.extraction_method) &&
+    /^[a-f0-9]{64}$/i.test(String(item.sha256 || "")) &&
+    /^\d{4}-\d{2}-\d{2}$/.test(String(item.collection_date || ""))
+  );
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
@@ -127,7 +159,7 @@ self.addEventListener("fetch", (event) => {
         return response;
       }
       const approved = Array.isArray(catalog.documents)
-        ? catalog.documents.filter((item) => item && item.approved === true)
+        ? catalog.documents.filter(isVerifiedPublicDocument)
         : [];
       const assets = [];
       approved.slice(0, 50).forEach((item) => {

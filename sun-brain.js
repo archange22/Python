@@ -463,6 +463,38 @@
   }
   let totalDocuments = paths.length;
 
+  function isVerifiedDocumentEntry(entry) {
+    const nonEmpty = value => typeof value === "string" && value.trim().length > 0;
+    const isHttpsUrl = value => {
+      try {
+        const url = new URL(value);
+        return url.protocol === "https:" && Boolean(url.hostname) && !url.username && !url.password;
+      } catch (_) {
+        return false;
+      }
+    };
+    return Boolean(entry &&
+      entry.approved === true &&
+      entry.reviewed === true &&
+      entry.verification_status === "manual_review_complete_approved_for_publication" &&
+      typeof entry.path === "string" &&
+      /^knowledge\/imported\/[a-z0-9][a-z0-9.-]*\.md$/i.test(entry.path) &&
+      !entry.path.includes("..") &&
+      nonEmpty(entry.title) &&
+      nonEmpty(entry.discipline) &&
+      nonEmpty(entry.author_organization) &&
+      isHttpsUrl(entry.canonical_source_url) &&
+      /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(String(entry.language || "")) &&
+      nonEmpty(entry.license) &&
+      isHttpsUrl(entry.license_url) &&
+      nonEmpty(entry.format) &&
+      nonEmpty(entry.extraction_status) &&
+      nonEmpty(entry.extraction_method) &&
+      /^[a-f0-9]{64}$/i.test(String(entry.sha256 || "")) &&
+      /^\d{4}-\d{2}-\d{2}$/.test(String(entry.collection_date || ""))
+    );
+  }
+
   async function approvedDocumentPaths() {
     try {
       const response = await fetch("./knowledge/catalog.json", { credentials: "same-origin" });
@@ -470,10 +502,7 @@
       const catalog = JSON.parse(await response.text());
       if (!catalog || !Array.isArray(catalog.documents)) return [];
       return catalog.documents
-        .filter(entry => entry && entry.approved === true &&
-          typeof entry.path === "string" &&
-          /^knowledge\/imported\/[a-z0-9][a-z0-9.-]*\.md$/i.test(entry.path) &&
-          !entry.path.includes(".."))
+        .filter(isVerifiedDocumentEntry)
         .slice(0, 50)
         .map(entry => entry.path);
     } catch (_) {

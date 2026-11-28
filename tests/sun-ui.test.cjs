@@ -13,7 +13,7 @@ const css = read("sun-ia.css");
 const sw = read("sw.js");
 
 test("Les scripts JavaScript de Sun et de l'application sont syntaxiquement valides", () => {
-  for (const file of ["sun-brain.js", "sun-ia.js", "app.js"]) {
+  for (const file of ["sun-brain.js", "sun-ia.js", "app.js", "sw.js"]) {
     assert.doesNotThrow(() => new Function(read(file)), file + " doit être analysable");
   }
 });
@@ -53,8 +53,16 @@ test("Les réponses affichent le code, les sources et échappent le contenu", ()
 });
 
 test("Le Service Worker utilise le cache actualisé", () => {
-  assert.match(sw, /academique-shell-v24/);
+  assert.match(sw, /academique-shell-v25/);
   assert.match(sw, /knowledge\/catalog\.json/);
+});
+
+test("Le Service Worker exige provenance, licence et extraction vérifiées avant le cache", () => {
+  assert.match(sw, /function isVerifiedPublicDocument/);
+  assert.match(sw, /manual_review_complete_approved_for_publication/);
+  assert.match(sw, /canonical_source_url/);
+  assert.match(sw, /license_url/);
+  assert.match(sw, /extraction_status/);
 });
 test("L'interface Sun 0.0.3 propose une recherche d'historique et des actions sur les réponses", () => {
   assert.match(ui, /sunHistorySearch/);
