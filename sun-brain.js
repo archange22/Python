@@ -1214,12 +1214,6 @@
   }
 
   function composeEvidence(query, result, evidence, type) {
-    if (!evidence.length) {
-      return "J’ai retrouvé un passage dans les cours, mais je n’ai pas assez d’éléments pour en construire une réponse fiable. Reformule la question ou précise le point que tu veux comprendre.";
-    }
-    const chosen = [];
-    const queryData = getQueryTerms(query);
-    const codeExample = type === "example" ? extractCodeExample(result) : "";
     const retrievedSections = new Set();
     if (result.best && result.best.section) retrievedSections.add(result.best.section);
     (result.alternatives || []).forEach(candidate => {
@@ -1228,10 +1222,17 @@
     (result.candidates || []).forEach(candidate => {
       if (candidate && candidate.section) retrievedSections.add(candidate.section);
     });
+    const eligibleEvidence = evidence.filter(item => item && retrievedSections.has(item.section));
+    if (!eligibleEvidence.length) {
+      return "J’ai retrouvé un sujet proche, mais aucun passage récupéré ne fournit assez de preuves directes pour construire une réponse fiable. Reformule la question ou précise le point que tu veux comprendre.";
+    }
+    const chosen = [];
+    const queryData = getQueryTerms(query);
+    const codeExample = type === "example" ? extractCodeExample(result) : "";
     const direct = findDirectEvidence(query, type, retrievedSections).filter(item =>
       type !== "example" || !/^(?:avant|quelle valeur|reponds|tu dois|essaie)/i.test(norm(item.sentence))
     );
-    const first = direct[0] || evidence[0];
+    const first = direct[0] || eligibleEvidence[0];
     if (first) chosen.push(first);
     if (type === "definition" && first && /\bcondition\b/i.test(first.sentence)) {
       const ifSupport = direct.find(item =>
@@ -1263,7 +1264,7 @@
       };
       chosen.forEach(markCovered);
 
-      evidence.forEach(item => {
+      eligibleEvidence.forEach(item => {
         if (chosen.length >= maxItems) return;
         if (!item.section.path.startsWith(subjectPrefix)) return;
         if (chosen.some(existing => norm(existing.sentence) === norm(item.sentence))) return;
@@ -1279,7 +1280,7 @@
         newMatches.forEach(token => covered.add(token));
       });
     } else {
-      evidence.forEach(item => {
+      eligibleEvidence.forEach(item => {
         if (chosen.length >= maxItems) return;
         if (chosen.some(existing => norm(existing.sentence) === norm(item.sentence))) return;
         if (chosen.length && item.score < chosen[0].score * 0.58) return;
