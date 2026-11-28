@@ -301,6 +301,15 @@ for (const item of QA_CASES) {
     sourceMatches.forEach(source => {
       assert.ok(item.sources.includes(source), "Source secondaire hors sujet : " + source);
     });
+    const retrievedPaths = new Set([
+      result.best.section.path,
+      ...(result.alternatives || []).map(candidate => candidate.section.path),
+      ...(result.candidates || []).map(candidate => candidate.section.path)
+    ]);
+    sourceMatches.forEach(source => {
+      assert.ok(retrievedPaths.has(source),
+        "La réponse cite un document qui n'a pas été récupéré pour cette question : " + source);
+    });
 
     const normalizedAnswer = answer.toLowerCase();
     item.required.forEach(term => {
