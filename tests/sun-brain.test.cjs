@@ -380,7 +380,7 @@ test("Sun distingue l'hébergement statique d'un service exécuté côté serveu
   assert.ok(result && result.best);
   assert.equal(result.best.section.path, "courses/web/lesson-08.md");
   assert.match(result.best.section.heading, /comprendre l'hébergement/i);
-  assert.match(result.best.section.body, /site statique/i);
+  assert.match(result.best.section.body, /hébergement statique/i);
   assert.match(result.best.section.body, /côté serveur/i);
 });
 
