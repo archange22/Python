@@ -398,10 +398,13 @@ test("Les corpus de discussion hors périmètre sont désactivés et purgés du 
   ];
   workflowPaths.forEach(relativePath => {
     const workflow = fs.readFileSync(path.join(ROOT, relativePath), "utf8");
-    assert.match(workflow, /filter: blob:none/);
+    const sparse = workflow.indexOf("git sparse-checkout set --no-cone");
+    const fetch = workflow.indexOf("git fetch --filter=blob:none");
+    assert.ok(sparse >= 0 && fetch > sparse, "Le filtre sparse doit être configuré avant le fetch : " + relativePath);
     assert.match(workflow, /!\/knowledge\/discussion-global-v0\.0\.2\.md/);
     assert.match(workflow, /!\/knowledge\/imported\/discussion-global-v0\.0\.2\.md/);
     assert.match(workflow, /!\/knowledge\/pdfs\/sun-discussion-global-v0\.0\.2\.pdf/);
+    assert.doesNotMatch(workflow, /actions\/checkout@/);
     assert.doesNotMatch(workflow, /build_sun_discussion_pdf\.py/);
   });
 });

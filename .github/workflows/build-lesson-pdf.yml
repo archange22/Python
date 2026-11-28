@@ -16,15 +16,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          filter: blob:none
-          sparse-checkout: |
-            /*
-            !/knowledge/discussion-global-v0.0.2.md
-            !/knowledge/imported/discussion-global-v0.0.2.md
-            !/knowledge/pdfs/sun-discussion-global-v0.0.2.pdf
-          sparse-checkout-cone-mode: false
+      - name: Checkout without out-of-scope blobs
+        env:
+          PR_NUMBER: \${{ github.event.pull_request.number }}
+        run: |
+          git init .
+          git remote add origin "https://github.com/\${GITHUB_REPOSITORY}.git"
+          git config extensions.partialClone origin
+          git config remote.origin.promisor true
+          git config remote.origin.partialclonefilter blob:none
+          git sparse-checkout init --no-cone
+          git sparse-checkout set --no-cone \
+            '/*' \
+            '!/knowledge/discussion-global-v0.0.2.md' \
+            '!/knowledge/imported/discussion-global-v0.0.2.md' \
+            '!/knowledge/pdfs/sun-discussion-global-v0.0.2.pdf'
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            git fetch --filter=blob:none --no-tags --depth=1 origin "refs/pull/\${PR_NUMBER}/merge"
+          else
+            git fetch --filter=blob:none --no-tags --depth=1 origin "$GITHUB_SHA"
+          fi
+          git checkout --detach FETCH_HEAD
       - name: Install PDF dependencies
         run: |
           sudo apt-get update
@@ -34,7 +46,10 @@ jobs:
       - name: Generate lesson PDF
         run: .venv/bin/python scripts/build_python_lesson.py
       - name: Commit generated PDF
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add pdf/lecon-01-python-school.pdf
