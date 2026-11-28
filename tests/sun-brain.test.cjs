@@ -336,6 +336,31 @@ test("Sun Brain conserve le contexte pour une demande de précision", async () =
   assert.match(answer, /Source : courses\/python\/lesson-05\.md/);
 });
 
+test("Sun conserve le sujet initial pendant plusieurs relances successives", async () => {
+  const history = [
+    { role: "user", content: "c est quoi une condition en python" },
+    { role: "assistant", content: "Une condition permet de choisir selon une situation." },
+    { role: "user", content: "donne un exemple" },
+    { role: "assistant", content: "Voici un exemple avec if." },
+    { role: "user", content: "et pourquoi ?" }
+  ];
+  const answer = await brain.reply("et pourquoi ?", history);
+  assert.match(answer, /condition/i);
+  assert.match(answer, /if/i);
+  assert.match(answer, /Source : courses\\/python\\/lesson-05\\.md/);
+});
+
+test("Une nouvelle question complète ne récupère pas le contexte du sujet précédent", async () => {
+  const history = [
+    { role: "user", content: "c est quoi une condition en python" },
+    { role: "assistant", content: "Une condition permet de choisir." },
+    { role: "user", content: "explique les volcans de Mars et leur température exacte" }
+  ];
+  const answer = await brain.reply("explique les volcans de Mars et leur température exacte", history);
+  assert.match(answer, /pas trouvé de passage suffisamment fiable/i);
+  assert.doesNotMatch(answer, /condition python/i);
+});
+
 test("Les documents sont lus localement et les poids du réseau sont réutilisés", () => {
   assert.equal(requestedPaths.length, DOCUMENTS.length + 3);
   assert.ok(requestedPaths.every(request => request.startsWith("./")));
