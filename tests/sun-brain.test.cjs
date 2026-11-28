@@ -378,8 +378,8 @@ test("Sun retrouve et cite la fiche sur CORS et les pages Web externes", async (
 test("Sun distingue l'hébergement statique d'un service exécuté côté serveur", () => {
   const result = brain.searchDocuments("github pages hébergement statique sans exécution de code côté serveur");
   assert.ok(result && result.best);
-  assert.equal(result.best.section.path, "knowledge/web-practices.md");
-  assert.match(result.best.section.heading, /hébergement statique/i);
+  assert.equal(result.best.section.path, "courses/web/lesson-08.md");
+  assert.match(result.best.section.heading, /site statique et site dynamique/i);
 });
 
 test("Banc d'essai : la recherche retrouve la bonne source avec des formulations reformulées", () => {
