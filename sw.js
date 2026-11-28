@@ -87,7 +87,7 @@ function isVerifiedPublicDocument(item) {
     item.reviewed === true &&
     item.verification_status === "manual_review_complete_approved_for_publication" &&
     typeof item.path === "string" &&
-    /^knowledge\\/imported\\/[a-z0-9][a-z0-9.-]*\\.md$/i.test(item.path) &&
+    /^knowledge\/imported\/[a-z0-9][a-z0-9.-]*\.md$/i.test(item.path) &&
     !item.path.includes("..") &&
     nonEmpty(item.title) &&
     nonEmpty(item.discipline) &&
@@ -100,7 +100,7 @@ function isVerifiedPublicDocument(item) {
     nonEmpty(item.extraction_status) &&
     nonEmpty(item.extraction_method) &&
     /^[a-f0-9]{64}$/i.test(String(item.sha256 || "")) &&
-    /^\\d{4}-\\d{2}-\\d{2}$/.test(String(item.collection_date || ""))
+    /^\d{4}-\d{2}-\d{2}$/.test(String(item.collection_date || ""))
   );
 }
 
