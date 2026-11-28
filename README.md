@@ -29,7 +29,7 @@ Les fichiers principaux sont \`sun-brain.js\` (classification neuronale et reche
 - Les domaines sans document validé peuvent être reconnus comme sujets possibles, mais Sun doit s'abstenir de présenter une réponse comme documentée lorsqu'aucune source locale pertinente n'existe.
 - Sun Brain peut charger jusqu'à 50 documents Markdown supplémentaires dans `knowledge/imported/` uniquement si le catalogue indique une approbation et une revue explicites, un auteur ou organisme, une source canonique HTTPS, une langue, une licence exacte et son URL, un état et une méthode d'extraction, une date de collecte et une empreinte SHA-256.
 - Le Service Worker v25 applique les mêmes exigences avant de mettre en cache les textes et PDF importés. Les cours et fiches documentaires intégrés restent disponibles selon le cache hors connexion existant.
-- Les archives synthétiques ne sont pas supprimées ; leur statut de publication est simplement désactivé.
+- Les archives synthétiques ne sont pas supprimées ; leur statut de publication est désactivé. Le script qui reconstruit le PDF conserve également cet état et ne peut pas les réapprouver automatiquement.
 
 ### Importer un autre PDF
 

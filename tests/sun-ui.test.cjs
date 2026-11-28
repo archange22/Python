@@ -11,6 +11,8 @@ const brain = read("sun-brain.js");
 const ui = read("sun-ia.js");
 const css = read("sun-ia.css");
 const sw = read("sw.js");
+const archiveBuilder = read("scripts/build_sun_discussion_pdf.py");
+const knowledgeCatalog = JSON.parse(read("knowledge/catalog.json"));
 
 test("Les scripts JavaScript de Sun et de l'application sont syntaxiquement valides", () => {
   for (const file of ["sun-brain.js", "sun-ia.js", "app.js", "sw.js"]) {
@@ -63,6 +65,17 @@ test("Le Service Worker exige provenance, licence et extraction vérifiées avan
   assert.match(sw, /canonical_source_url/);
   assert.match(sw, /license_url/);
   assert.match(sw, /extraction_status/);
+  assert.match(sw, /catalog\.documents\.filter\(isVerifiedPublicDocument\)/);
+});
+
+test("Le générateur PDF ne réapprouve jamais l'archive synthétique", () => {
+  assert.match(archiveBuilder, /"approved": False/);
+  assert.match(archiveBuilder, /"verification_status": "excluded_non_documentary_synthetic"/);
+  assert.match(archiveBuilder, /"extraction_status": "generated_synthetic_content_not_documentary"/);
+  const entry = knowledgeCatalog.documents.find(item => item.id === "discussion-global-v0.0.2");
+  assert.ok(entry, "L'archive historique doit rester référencée.");
+  assert.equal(entry.approved, false);
+  assert.equal(entry.verification_status, "excluded_non_documentary_synthetic");
 });
 test("L'interface Sun 0.0.3 propose une recherche d'historique et des actions sur les réponses", () => {
   assert.match(ui, /sunHistorySearch/);
