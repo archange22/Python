@@ -403,7 +403,7 @@
     let topicMeta = null;
     try {
       if (!window.SunBrain) throw new Error("Sun Brain n’est pas chargé.");
-      answer = await window.SunBrain.reply(content, chat.messages.slice(-8));
+      answer = await window.SunBrain.reply(content, chat.messages.slice(-12));
       const analysis = window.SunBrain.analyzeQuestion(content);
       if (analysis && analysis.source && analysis.subjectId) topicMeta = { subject: analysis.subject };
     } catch (error) {

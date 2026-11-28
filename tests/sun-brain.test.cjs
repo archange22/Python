@@ -295,10 +295,20 @@ for (const item of QA_CASES) {
     );
 
     const answer = await brain.reply(item.question, []);
-    const sourceMatches = Array.from(answer.matchAll(/Sources? : ([^\s\n]+)/g)).map(match => match[1]);
+    const sourceMatches = Array.from(answer.matchAll(/Sources? : ([^\n]+)/g))
+      .flatMap(match => match[1].split(/\s*;\s*/).map(source => source.trim()).filter(Boolean));
     assert.ok(sourceMatches.length > 0, "La réponse doit citer son fichier source.");
     sourceMatches.forEach(source => {
       assert.ok(item.sources.includes(source), "Source secondaire hors sujet : " + source);
+    });
+    const retrievedPaths = new Set([
+      result.best.section.path,
+      ...(result.alternatives || []).map(candidate => candidate.section.path),
+      ...(result.candidates || []).map(candidate => candidate.section.path)
+    ]);
+    sourceMatches.forEach(source => {
+      assert.ok(retrievedPaths.has(source),
+        "La réponse cite un document qui n'a pas été récupéré pour cette question : " + source);
     });
 
     const normalizedAnswer = answer.toLowerCase();
@@ -323,7 +333,48 @@ test("Sun Brain conserve le contexte pour une demande de précision", async () =
   ];
   const answer = await brain.reply("donne un exemple", history);
   assert.match(answer, /if/i);
-  assert.match(answer, /Source : courses\/python\/lesson-05\.md/);
+  assert.match(answer, /Sources? : courses\/python\/lesson-05\.md/);
+});
+
+test("Sun conserve le sujet initial pendant plusieurs relances successives", async () => {
+  const history = [
+    { role: "user", content: "c est quoi une condition en python" },
+    { role: "assistant", content: "Une condition permet de choisir selon une situation." },
+    { role: "user", content: "donne un exemple" },
+    { role: "assistant", content: "Voici un exemple avec if." },
+    { role: "user", content: "et pourquoi ?" }
+  ];
+  const answer = await brain.reply("et pourquoi ?", history);
+  assert.match(answer, /condition/i);
+  assert.match(answer, /Voici l’explication/i);
+  assert.match(answer, /Sources? : courses\/python\/lesson-05\.md/);
+});
+
+test("Une nouvelle question complète ne récupère pas le contexte du sujet précédent", async () => {
+  const history = [
+    { role: "user", content: "c est quoi une condition en python" },
+    { role: "assistant", content: "Une condition permet de choisir." },
+    { role: "user", content: "explique les volcans de Mars et leur température exacte" }
+  ];
+  const answer = await brain.reply("explique les volcans de Mars et leur température exacte", history);
+  assert.match(answer, /pas trouvé de passage suffisamment fiable/i);
+  assert.doesNotMatch(answer, /condition python/i);
+});
+
+test("Une recherche courte et autonome ne reprend pas un ancien sujet", async () => {
+  const history = [
+    { role: "user", content: "c est quoi une condition en python" },
+    { role: "assistant", content: "Une condition permet de choisir." },
+    { role: "user", content: "python liste" }
+  ];
+  const result = brain.searchDocuments("python liste");
+  assert.ok(result && result.best);
+  assert.equal(result.best.section.path, "courses/python/lesson-07.md");
+
+  const answer = await brain.reply("python liste", history);
+  assert.match(answer, /liste/i);
+  assert.match(answer, /Sources? : courses\/python\/lesson-07\.md/);
+  assert.doesNotMatch(answer, /condition imbriquée/i);
 });
 
 test("Les documents sont lus localement et les poids du réseau sont réutilisés", () => {
@@ -340,6 +391,113 @@ test("Les documents sont lus localement et les poids du réseau sont réutilisé
   assert.equal(storageWrites, writesBeforeReload, "Le modèle neuronal déjà sauvegardé doit être rechargé sans nouvel entraînement.");
 });
 
+
+test("Les messages fictifs ne modifient jamais les poids neuronaux", async () => {
+  const modelKey = "sun-ia-neural-model-v3";
+  const modelBefore = values.get(modelKey);
+  const writesBefore = storageWrites;
+  const question = "comment créer une fonction python avec def et return";
+  const predictionBefore = brain.classifyIntent(question);
+
+  await brain.reply("explique les volcans de Mars et leurs températures précises", [
+    { role: "user", content: "Scénario fictif de test : un personnage demande une histoire sur Mars." },
+    { role: "assistant", content: "Réponse fictive de test, sans fait réel." },
+    { role: "user", content: "Ajoute des détails imaginaires à ce scénario." }
+  ]);
+
+  assert.equal(values.get(modelKey), modelBefore,
+    "Une conversation ne doit jamais remplacer les poids du modèle.");
+  assert.equal(storageWrites, writesBefore,
+    "Une question ordinaire ne doit déclencher aucun apprentissage ni écriture de modèle.");
+  assert.deepEqual(brain.classifyIntent(question), predictionBefore,
+    "La prédiction doit rester identique après la conversation.");
+});
+
+test("Sun retrouve et cite la fiche sur CORS et les pages Web externes", async () => {
+  const question = "pourquoi une application web ne peut pas lire le contenu de tous les sites externes avec fetch et cors";
+  const result = brain.searchDocuments(question);
+
+  assert.ok(result && result.best, "La recherche doit retrouver une preuve documentaire.");
+  assert.equal(result.best.section.path, "knowledge/web-practices.md");
+  assert.match(result.best.section.body, /Access-Control-Allow-Origin/);
+
+  const answer = await brain.reply(question, []);
+  assert.match(answer, /CORS/i);
+  assert.match(answer, /Sources? : knowledge\/web-practices\.md/);
+});
+
+test("Sun distingue l'hébergement statique d'un service exécuté côté serveur", () => {
+  const result = brain.searchDocuments("github pages hébergement statique sans exécution de code côté serveur");
+  assert.ok(result && result.best);
+  assert.equal(result.best.section.path, "courses/web/lesson-08.md");
+  assert.match(result.best.section.heading, /comprendre l'hébergement/i);
+  assert.match(result.best.section.body, /hébergement statique/i);
+  assert.match(result.best.section.body, /côté serveur/i);
+});
+
+test("Banc d'essai : la recherche retrouve la bonne source avec des formulations reformulées", () => {
+  const cases = [
+    [
+      "à quoi sert return par rapport à def dans une fonction python",
+      "courses/python/lesson-08.md"
+    ],
+    [
+      "comment récupérer une information d'un dictionnaire sans provoquer une erreur de clé absente avec get",
+      "courses/python/lesson-09.md"
+    ],
+    [
+      "pourquoi un bot ne doit pas recevoir tous les droits administrateur sur discord",
+      "courses/discord/lesson-01.md"
+    ],
+    [
+      "comment traiter une commande invalide sans arrêter les autres commandes du bot",
+      "courses/discord/lesson-06.md"
+    ],
+    [
+      "comment un modèle supervisé apprend à choisir une catégorie avec des exemples étiquetés",
+      "courses/ia/lesson-03.md"
+    ],
+    [
+      "comment les poids et le biais interviennent dans le calcul d'un neurone artificiel",
+      "courses/ia/lesson-06.md"
+    ],
+    [
+      "pourquoi le navigateur interdit à javascript de lire une réponse externe sans autorisation cors",
+      "knowledge/web-practices.md"
+    ],
+    [
+      "pourquoi un site statique ne peut pas lancer un robot qui explore internet en permanence côté serveur",
+      "knowledge/web-practices.md"
+    ]
+  ];
+
+  const failures = [];
+  cases.forEach(([question, expectedSource]) => {
+    const result = brain.searchDocuments(question);
+    if (!result || !result.best) {
+      failures.push({ question, expectedSource, received: null });
+      return;
+    }
+    if (result.best.section.path !== expectedSource) {
+      failures.push({
+        question,
+        expectedSource,
+        received: result.best.section.path,
+        heading: result.best.section.heading,
+        score: result.best.score,
+        coverage: result.best.coverage,
+        candidates: result.candidates.slice(0, 3).map(item => ({
+          source: item.section.path,
+          heading: item.section.heading,
+          score: Number(item.score.toFixed(3)),
+          coverage: Number(item.coverage.toFixed(3))
+        }))
+      });
+    }
+  });
+
+  assert.deepEqual(failures, [], "Échecs du banc d'essai de recherche : " + JSON.stringify(failures, null, 2));
+});
 
 test("Une question de définition commence par la définition du concept", async () => {
   const answer = await brain.reply("c est quoi une condition en python", []);

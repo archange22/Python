@@ -1,17 +1,35 @@
-name: Sun documentary ingestion tests
+name: SUN regression and documentary ingestion tests
 
 on:
   pull_request:
     paths:
+      - "sun-brain.js"
+      - "sun-ia.js"
+      - "sun-ia.css"
+      - "app.js"
+      - "sw.js"
+      - "index.html"
+      - "tests/**"
+      - "courses/**"
+      - "knowledge/**"
+      - "pdf/**"
       - "scripts/ingest_pdf_knowledge.py"
-      - "tests/test_pdf_ingestion.py"
       - "README.md"
       - ".github/workflows/sun-documentary-tests.yml"
   push:
     branches: [main]
     paths:
+      - "sun-brain.js"
+      - "sun-ia.js"
+      - "sun-ia.css"
+      - "app.js"
+      - "sw.js"
+      - "index.html"
+      - "tests/**"
+      - "courses/**"
+      - "knowledge/**"
+      - "pdf/**"
       - "scripts/ingest_pdf_knowledge.py"
-      - "tests/test_pdf_ingestion.py"
       - "README.md"
       - ".github/workflows/sun-documentary-tests.yml"
   workflow_dispatch:

@@ -37,3 +37,8 @@ Le moteur actuel indexe localement des fichiers Markdown. Il ne décode pas les 
 
 ## Limites
 Cette première collection cible Python, IA, Web, Discord et sécurité. Ce n'est pas une copie exhaustive d'Internet. Les sites et PDF protégés, les documents dont la licence n'autorise pas la redistribution et les fichiers non vérifiés ne sont pas recopiés. Les liens renvoient aux références originales.
+
+## Navigation et recherche Web
+- Partage des ressources entre origines (CORS), MDN : https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS
+- En-tête `Access-Control-Allow-Origin`, MDN : https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Access-Control-Allow-Origin
+- Création et limites de l'hébergement GitHub Pages : https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site
