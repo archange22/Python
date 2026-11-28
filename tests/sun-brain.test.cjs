@@ -362,6 +362,26 @@ test("Les messages fictifs ne modifient jamais les poids neuronaux", async () =>
     "La prédiction doit rester identique après la conversation.");
 });
 
+test("Sun retrouve et cite la fiche sur CORS et les pages Web externes", async () => {
+  const question = "pourquoi une application web ne peut pas lire le contenu de tous les sites externes avec fetch et cors";
+  const result = brain.searchDocuments(question);
+
+  assert.ok(result && result.best, "La recherche doit retrouver une preuve documentaire.");
+  assert.equal(result.best.section.path, "knowledge/web-practices.md");
+  assert.match(result.best.section.body, /Access-Control-Allow-Origin/);
+
+  const answer = await brain.reply(question, []);
+  assert.match(answer, /CORS/i);
+  assert.match(answer, /Source : knowledge\/web-practices\.md/);
+});
+
+test("Sun distingue l'hébergement statique d'un service exécuté côté serveur", () => {
+  const result = brain.searchDocuments("github pages hébergement statique sans exécution de code côté serveur");
+  assert.ok(result && result.best);
+  assert.equal(result.best.section.path, "knowledge/web-practices.md");
+  assert.match(result.best.section.heading, /hébergement statique/i);
+});
+
 test("Une question de définition commence par la définition du concept", async () => {
   const answer = await brain.reply("c est quoi une condition en python", []);
   assert.match(
