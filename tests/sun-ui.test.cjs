@@ -13,7 +13,7 @@ const css = read("sun-ia.css");
 const sw = read("sw.js");
 
 test("Les scripts JavaScript de Sun et de l'application sont syntaxiquement valides", () => {
-  for (const file of ["sun-brain.js", "sun-ia.js", "app.js"]) {
+  for (const file of ["sun-brain.js", "sun-ia.js", "app.js", "sw.js"]) {
     assert.doesNotThrow(() => new Function(read(file)), file + " doit être analysable");
   }
 });
