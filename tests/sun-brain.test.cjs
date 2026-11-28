@@ -372,7 +372,7 @@ test("Sun retrouve et cite la fiche sur CORS et les pages Web externes", async (
 
   const answer = await brain.reply(question, []);
   assert.match(answer, /CORS/i);
-  assert.match(answer, /Source : knowledge\/web-practices\.md/);
+  assert.match(answer, /Sources? : knowledge\/web-practices\.md/);
 });
 
 test("Sun distingue l'hébergement statique d'un service exécuté côté serveur", () => {
@@ -394,7 +394,7 @@ test("Banc d'essai : la recherche retrouve la bonne source avec des formulations
     ],
     [
       "pourquoi un bot ne doit pas recevoir tous les droits administrateur sur discord",
-      "courses/discord/lesson-05.md"
+      "courses/discord/lesson-01.md"
     ],
     [
       "comment traiter une commande invalide sans arrêter les autres commandes du bot",
@@ -402,7 +402,7 @@ test("Banc d'essai : la recherche retrouve la bonne source avec des formulations
     ],
     [
       "comment un modèle supervisé apprend à choisir une catégorie avec des exemples étiquetés",
-      "courses/ia/lesson-05.md"
+      "courses/ia/lesson-03.md"
     ],
     [
       "comment les poids et le biais interviennent dans le calcul d'un neurone artificiel",
