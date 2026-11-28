@@ -58,6 +58,29 @@ const DOCUMENTS = [
   "knowledge/security-and-privacy.md"
 ];
 
+const VERIFIED_TEST_ENTRY = {
+  id: "approved-test",
+  title: "Guide documentaire de test",
+  topic: "documentation locale",
+  discipline: "informatique",
+  source: "Fiche synthétique créée uniquement pour les tests automatisés.",
+  author_organization: "Équipe de test Sun",
+  canonical_source_url: "https://docs.python.org/3/tutorial/",
+  language: "fr",
+  publication_date: null,
+  collection_date: "2026-11-28",
+  license: "PSF-2.0",
+  license_url: "https://docs.python.org/3/license.html",
+  verification_status: "manual_review_complete_approved_for_publication",
+  format: "pdf",
+  extraction_status: "text_layer_extracted",
+  sha256: "a".repeat(64),
+  path: "knowledge/imported/test-approved.md",
+  pdf: "knowledge/pdfs/imported/test-approved.pdf",
+  approved: true,
+  reviewed: true
+};
+
 const values = new Map();
 let storageWrites = 0;
 const localStorage = {
@@ -85,8 +108,11 @@ async function localFetch(input) {
       text: async () => JSON.stringify({
         version: 1,
         documents: [
-          { id: "approved-test", approved: true, path: "knowledge/imported/test-approved.md" },
-          { id: "discussion-global-v0.0.2", approved: true, path: "knowledge/imported/discussion-global-v0.0.2.md" },
+          VERIFIED_TEST_ENTRY,
+          { ...VERIFIED_TEST_ENTRY, id: "legacy-unverified", path: "knowledge/imported/legacy-unverified.md", pdf: "knowledge/pdfs/imported/legacy-unverified.pdf", author_organization: "" },
+          { ...VERIFIED_TEST_ENTRY, id: "reserved-domain", path: "knowledge/imported/reserved-domain.md", pdf: "knowledge/pdfs/imported/reserved-domain.pdf", canonical_source_url: "https://example.com/guide" },
+          { ...VERIFIED_TEST_ENTRY, id: "invalid-date", path: "knowledge/imported/invalid-date.md", pdf: "knowledge/pdfs/imported/invalid-date.pdf", collection_date: "2026-02-31" },
+          { id: "discussion-global-v0.0.2", approved: false, verification_status: "excluded_by_scope_policy", path: "knowledge/imported/discussion-global-v0.0.2.md" },
           { id: "pending-test", approved: false, path: "knowledge/imported/test-pending.md" },
           { id: "unsafe-test", approved: true, path: "../private.md" }
         ]
@@ -128,7 +154,7 @@ async function localFetch(input) {
 function createBrain() {
   const source = fs.readFileSync(path.join(ROOT, "sun-brain.js"), "utf8");
   const window = {};
-  vm.runInNewContext(source, { window, localStorage, fetch: localFetch }, {
+  vm.runInNewContext(source, { window, localStorage, fetch: localFetch, URL }, {
     filename: "sun-brain.js",
     timeout: 10000
   });
@@ -327,11 +353,14 @@ test("Sun Brain conserve le contexte pour une demande de précision", async () =
 });
 
 test("Les documents sont lus localement et les poids du réseau sont réutilisés", () => {
-  assert.equal(requestedPaths.length, DOCUMENTS.length + 3);
+  assert.equal(requestedPaths.length, DOCUMENTS.length + 2);
   assert.ok(requestedPaths.every(request => request.startsWith("./")));
   assert.ok(requestedPaths.includes("./knowledge/catalog.json"));
   assert.ok(requestedPaths.includes("./knowledge/imported/test-approved.md"));
-  assert.ok(requestedPaths.includes("./knowledge/imported/discussion-global-v0.0.2.md"));
+  assert.ok(!requestedPaths.includes("./knowledge/imported/legacy-unverified.md"));
+  assert.ok(!requestedPaths.includes("./knowledge/imported/reserved-domain.md"));
+  assert.ok(!requestedPaths.includes("./knowledge/imported/invalid-date.md"));
+  assert.ok(!requestedPaths.includes("./knowledge/imported/discussion-global-v0.0.2.md"));
   assert.ok(!requestedPaths.includes("./knowledge/imported/test-pending.md"));
   assert.ok(!requestedPaths.includes("./../private.md"));
   const writesBeforeReload = storageWrites;
@@ -340,6 +369,30 @@ test("Les documents sont lus localement et les poids du réseau sont réutilisé
   assert.equal(storageWrites, writesBeforeReload, "Le modèle neuronal déjà sauvegardé doit être rechargé sans nouvel entraînement.");
 });
 
+
+
+test("Le catalogue exige une provenance complète et des dates valides avant tout chargement", () => {
+  assert.ok(requestedPaths.includes("./knowledge/imported/test-approved.md"));
+  assert.ok(!requestedPaths.includes("./knowledge/imported/legacy-unverified.md"));
+  assert.ok(!requestedPaths.includes("./knowledge/imported/reserved-domain.md"));
+  assert.ok(!requestedPaths.includes("./knowledge/imported/invalid-date.md"));
+  assert.ok(!requestedPaths.includes("./knowledge/imported/discussion-global-v0.0.2.md"));
+});
+
+test("Les corpus de discussion hors périmètre sont désactivés et purgés du cache", () => {
+  const catalog = JSON.parse(fs.readFileSync(path.join(ROOT, "knowledge/catalog.json"), "utf8"));
+  const excluded = catalog.documents.find(entry => entry.id === "discussion-global-v0.0.2");
+  assert.ok(excluded, "L'entrée de registre doit rester traçable.");
+  assert.equal(excluded.approved, false);
+  assert.equal(excluded.verification_status, "excluded_by_scope_policy");
+
+  const serviceWorker = fs.readFileSync(path.join(ROOT, "sw.js"), "utf8");
+  assert.match(serviceWorker, /OUT_OF_SCOPE_ASSETS/);
+  assert.match(serviceWorker, /cache\.delete\(new URL\(asset, self\.location\.href\)\.href\)/);
+
+  const workflow = fs.readFileSync(path.join(ROOT, ".github/workflows/test-sun-brain.yml"), "utf8");
+  assert.doesNotMatch(workflow, /build_sun_discussion_pdf\.py/);
+});
 
 test("Une question de définition commence par la définition du concept", async () => {
   const answer = await brain.reply("c est quoi une condition en python", []);
@@ -398,7 +451,7 @@ test("Sun Brain reconnaît un sujet dans un document PDF importé et approuvé",
   const topic = brain.recognizeTopic("comment ouvrir un pdf extraire le texte organiser les chapitres et indexer hors connexion");
   assert.ok(topic, "Le moteur doit reconnaître le sujet du document importé.");
   assert.ok(
-    ["knowledge/imported/test-approved.md", "knowledge/imported/discussion-global-v0.0.2.md"].includes(topic.source),
+    topic.source === "knowledge/imported/test-approved.md",
     "Le sujet doit être retrouvé dans une source locale approuvée."
   );
   assert.match(topic.heading, /Documents PDF et lecture|Extraction et organisation des chapitres/i);

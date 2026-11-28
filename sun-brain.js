@@ -463,6 +463,46 @@
   }
   let totalDocuments = paths.length;
 
+  function validHttpsUrl(value) {
+    if (typeof value !== "string" || !value.trim()) return false;
+    try {
+      const parsed = new URL(value.trim());
+      const host = parsed.hostname.toLowerCase().replace(/\.$/, "");
+      const reservedHosts = ["example.com", "example.net", "example.org", "example.test", "example.invalid", "localhost"];
+      const reserved = reservedHosts.some(name => host === name || host.endsWith("." + name)) ||
+        /\.(?:example|test|invalid|localhost)$/.test(host);
+      return parsed.protocol === "https:" && Boolean(host) &&
+        !parsed.username && !parsed.password && !reserved;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function validIsoDate(value) {
+    if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const parsed = new Date(value + "T00:00:00Z");
+    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+  }
+
+  function hasVerifiedDocument(entry) {
+    const hasText = value => typeof value === "string" && value.trim().length > 0;
+    if (!entry || typeof entry !== "object" || entry.approved !== true || entry.reviewed !== true) return false;
+    if (entry.verification_status !== "manual_review_complete_approved_for_publication") return false;
+    if (!["title", "topic", "discipline", "source", "author_organization", "license"].every(key => hasText(entry[key]))) return false;
+    if (!/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(String(entry.language || ""))) return false;
+    if (!validHttpsUrl(entry.canonical_source_url) || !validHttpsUrl(entry.license_url)) return false;
+    if (!validIsoDate(entry.collection_date)) return false;
+    if (entry.publication_date && !validIsoDate(entry.publication_date)) return false;
+    if (entry.format !== "pdf" || entry.extraction_status !== "text_layer_extracted") return false;
+    if (!/^[a-f0-9]{64}$/i.test(String(entry.sha256 || ""))) return false;
+    return typeof entry.path === "string" &&
+      /^knowledge\/imported\/[a-z0-9][a-z0-9.-]*\.md$/i.test(entry.path) &&
+      !entry.path.includes("..") &&
+      typeof entry.pdf === "string" &&
+      /^knowledge\/pdfs\/(?:imported\/)?[a-z0-9][a-z0-9.-]*\.pdf$/i.test(entry.pdf) &&
+      !entry.pdf.includes("..");
+  }
+
   async function approvedDocumentPaths() {
     try {
       const response = await fetch("./knowledge/catalog.json", { credentials: "same-origin" });
@@ -470,10 +510,7 @@
       const catalog = JSON.parse(await response.text());
       if (!catalog || !Array.isArray(catalog.documents)) return [];
       return catalog.documents
-        .filter(entry => entry && entry.approved === true &&
-          typeof entry.path === "string" &&
-          /^knowledge\/imported\/[a-z0-9][a-z0-9.-]*\.md$/i.test(entry.path) &&
-          !entry.path.includes(".."))
+        .filter(hasVerifiedDocument)
         .slice(0, 50)
         .map(entry => entry.path);
     } catch (_) {

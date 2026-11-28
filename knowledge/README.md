@@ -15,3 +15,12 @@
 Les aperçus d'extraction sont placés dans `knowledge/staging/`, dossier local ignoré par Git. Une validation manuelle (`--approve`) ne publie pas le document. L'ajout au catalogue partagé et au site public exige aussi `--publish-public`. Cette option ne doit être utilisée que pour un document dont la redistribution est explicitement autorisée. Les documents personnels ne doivent pas être copiés dans le dépôt public.
 
 Les PDF scannés sans couche texte ne sont pas indexés. La détection automatique de marqueurs sensibles est une précaution supplémentaire, pas une garantie d'absence de données personnelles.
+
+
+## Admission au catalogue
+
+Une fiche importée n'est chargée que si sa provenance, son auteur ou organisme, sa langue, sa licence exacte, l'URL canonique, l'URL de licence, la date de collecte, le format, l'état d'extraction et l'empreinte SHA-256 sont présents et cohérents. Les entrées incomplètes restent hors index et hors cache, même si un ancien champ les marquait comme approuvées.
+
+## Exclusion stricte des conversations
+
+Aucun historique, export de chat, message privé ou corpus de dialogues ne constitue une source documentaire pour Sun. Ces contenus ne doivent être ni importés, ni indexés, ni utilisés pour ajuster des poids. Les tests utilisent uniquement des questions et des scénarios synthétiques autonomes. Les anciens artefacts de discussion restent hors catalogue actif et ne sont pas lus par les tests ou les workflows.

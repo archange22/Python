@@ -63,8 +63,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pandoc
           python -m pip install beautifulsoup4 weasyprint pypdf
-      - name: Build and verify Sun discussion PDF 0.0.2
-        run: python scripts/build_sun_discussion_pdf.py
       - name: Run PDF ingestion tests
         run: python -m unittest discover -s tests -p "test_pdf_ingestion.py"
       - name: Check frontend JavaScript syntax

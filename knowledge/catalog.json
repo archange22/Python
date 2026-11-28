@@ -9,14 +9,16 @@
       "pdf": "knowledge/pdfs/sun-discussion-global-v0.0.2.pdf",
       "source": "Corpus original créé pour Sun IA à partir de situations fictives.",
       "license": "Contenu original du projet Sun IA.",
-      "approved": true,
+      "approved": false,
       "version": "0.0.2",
       "pages": 112,
       "chapters": 36,
       "situations": 216,
       "response_variants": 432,
       "extracted_chars": 216851,
-      "sha256_pdf": "8d1b931a6fda7f70e2e17c0e26a76b1833177e04d4a187cf2071bf796639b3d9"
+      "sha256_pdf": "8d1b931a6fda7f70e2e17c0e26a76b1833177e04d4a187cf2071bf796639b3d9",
+      "verification_status": "excluded_by_scope_policy",
+      "exclusion_reason": "Les corpus de conversations et de discussions sont hors périmètre documentaire; le contenu n'est ni chargé ni analysé."
     }
   ]
 }
