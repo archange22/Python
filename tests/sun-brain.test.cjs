@@ -361,6 +361,22 @@ test("Une nouvelle question complète ne récupère pas le contexte du sujet pr�
   assert.doesNotMatch(answer, /condition python/i);
 });
 
+test("Une recherche courte et autonome ne reprend pas un ancien sujet", async () => {
+  const history = [
+    { role: "user", content: "c est quoi une condition en python" },
+    { role: "assistant", content: "Une condition permet de choisir." },
+    { role: "user", content: "python liste" }
+  ];
+  const result = brain.searchDocuments("python liste");
+  assert.ok(result && result.best);
+  assert.equal(result.best.section.path, "courses/python/lesson-07.md");
+
+  const answer = await brain.reply("python liste", history);
+  assert.match(answer, /liste/i);
+  assert.match(answer, /Sources? : courses\\/python\\/lesson-07\\.md/);
+  assert.doesNotMatch(answer, /condition imbriquée/i);
+});
+
 test("Les documents sont lus localement et les poids du réseau sont réutilisés", () => {
   assert.equal(requestedPaths.length, DOCUMENTS.length + 3);
   assert.ok(requestedPaths.every(request => request.startsWith("./")));
