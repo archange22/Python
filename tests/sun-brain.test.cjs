@@ -341,6 +341,27 @@ test("Les documents sont lus localement et les poids du réseau sont réutilisé
 });
 
 
+test("Les messages fictifs ne modifient jamais les poids neuronaux", async () => {
+  const modelKey = "sun-ia-neural-model-v3";
+  const modelBefore = values.get(modelKey);
+  const writesBefore = storageWrites;
+  const question = "comment créer une fonction python avec def et return";
+  const predictionBefore = brain.classifyIntent(question);
+
+  await brain.reply("explique les volcans de Mars et leurs températures précises", [
+    { role: "user", content: "Scénario fictif de test : un personnage demande une histoire sur Mars." },
+    { role: "assistant", content: "Réponse fictive de test, sans fait réel." },
+    { role: "user", content: "Ajoute des détails imaginaires à ce scénario." }
+  ]);
+
+  assert.equal(values.get(modelKey), modelBefore,
+    "Une conversation ne doit jamais remplacer les poids du modèle.");
+  assert.equal(storageWrites, writesBefore,
+    "Une question ordinaire ne doit déclencher aucun apprentissage ni écriture de modèle.");
+  assert.deepEqual(brain.classifyIntent(question), predictionBefore,
+    "La prédiction doit rester identique après la conversation.");
+});
+
 test("Une question de définition commence par la définition du concept", async () => {
   const answer = await brain.reply("c est quoi une condition en python", []);
   assert.match(
