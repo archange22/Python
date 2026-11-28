@@ -1171,11 +1171,12 @@
     return answer.trim();
   }
 
-  function findDirectEvidence(query, type) {
+  function findDirectEvidence(query, type, allowedSections) {
     const queryData = getQueryTerms(query);
     const candidates = [];
     searchIndex.forEach(indexed => {
       const section = indexed.section;
+      if (allowedSections && !allowedSections.has(section)) return;
       const headingTokens = new Set(indexed.headingTokens);
       const titleTokens = new Set(indexed.titleTokens);
       const contextMatches = queryData.base.filter(token => headingTokens.has(token) || titleTokens.has(token)).length;
@@ -1219,7 +1220,15 @@
     const chosen = [];
     const queryData = getQueryTerms(query);
     const codeExample = type === "example" ? extractCodeExample(result) : "";
-    const direct = findDirectEvidence(query, type).filter(item =>
+    const retrievedSections = new Set();
+    if (result.best && result.best.section) retrievedSections.add(result.best.section);
+    (result.alternatives || []).forEach(candidate => {
+      if (candidate && candidate.section) retrievedSections.add(candidate.section);
+    });
+    (result.candidates || []).forEach(candidate => {
+      if (candidate && candidate.section) retrievedSections.add(candidate.section);
+    });
+    const direct = findDirectEvidence(query, type, retrievedSections).filter(item =>
       type !== "example" || !/^(?:avant|quelle valeur|reponds|tu dois|essaie)/i.test(norm(item.sentence))
     );
     const first = direct[0] || evidence[0];
