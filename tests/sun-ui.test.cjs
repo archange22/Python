@@ -62,7 +62,7 @@ test("L'interface Sun 0.0.3 propose une recherche d'historique et des actions su
   assert.match(ui, /Copier la réponse/);
   assert.match(ui, /composerDraft/);
   assert.match(ui, /analyzeQuestion/);
-  assert.match(ui, /chat\\.messages\\.slice\\(-12\\)/, "Le moteur reçoit plusieurs tours récents pour préserver le contexte.");
+  assert.match(ui, /chat\.messages\.slice\(-12\)/, "Le moteur reçoit plusieurs tours récents pour préserver le contexte.");
   assert.match(css, /sun-history-search-wrap/);
   assert.match(css, /sun-message-actions/);
   assert.match(css, /sun-thinking-pulse/);
