@@ -382,6 +382,70 @@ test("Sun distingue l'hébergement statique d'un service exécuté côté serveu
   assert.match(result.best.section.heading, /hébergement statique/i);
 });
 
+test("Banc d'essai : la recherche retrouve la bonne source avec des formulations reformulées", () => {
+  const cases = [
+    [
+      "à quoi sert return par rapport à def dans une fonction python",
+      "courses/python/lesson-08.md"
+    ],
+    [
+      "comment récupérer une information d'un dictionnaire sans provoquer une erreur de clé absente avec get",
+      "courses/python/lesson-09.md"
+    ],
+    [
+      "pourquoi un bot ne doit pas recevoir tous les droits administrateur sur discord",
+      "courses/discord/lesson-05.md"
+    ],
+    [
+      "comment traiter une commande invalide sans arrêter les autres commandes du bot",
+      "courses/discord/lesson-06.md"
+    ],
+    [
+      "comment un modèle supervisé apprend à choisir une catégorie avec des exemples étiquetés",
+      "courses/ia/lesson-05.md"
+    ],
+    [
+      "comment les poids et le biais interviennent dans le calcul d'un neurone artificiel",
+      "courses/ia/lesson-06.md"
+    ],
+    [
+      "pourquoi le navigateur interdit à javascript de lire une réponse externe sans autorisation cors",
+      "knowledge/web-practices.md"
+    ],
+    [
+      "pourquoi un site statique ne peut pas lancer un robot qui explore internet en permanence côté serveur",
+      "knowledge/web-practices.md"
+    ]
+  ];
+
+  const failures = [];
+  cases.forEach(([question, expectedSource]) => {
+    const result = brain.searchDocuments(question);
+    if (!result || !result.best) {
+      failures.push({ question, expectedSource, received: null });
+      return;
+    }
+    if (result.best.section.path !== expectedSource) {
+      failures.push({
+        question,
+        expectedSource,
+        received: result.best.section.path,
+        heading: result.best.section.heading,
+        score: result.best.score,
+        coverage: result.best.coverage,
+        candidates: result.candidates.slice(0, 3).map(item => ({
+          source: item.section.path,
+          heading: item.section.heading,
+          score: Number(item.score.toFixed(3)),
+          coverage: Number(item.coverage.toFixed(3))
+        }))
+      });
+    }
+  });
+
+  assert.deepEqual(failures, [], "Échecs du banc d'essai de recherche : " + JSON.stringify(failures, null, 2));
+});
+
 test("Une question de définition commence par la définition du concept", async () => {
   const answer = await brain.reply("c est quoi une condition en python", []);
   assert.match(
