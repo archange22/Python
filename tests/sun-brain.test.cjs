@@ -333,7 +333,7 @@ test("Sun Brain conserve le contexte pour une demande de précision", async () =
   ];
   const answer = await brain.reply("donne un exemple", history);
   assert.match(answer, /if/i);
-  assert.match(answer, /Source : courses\/python\/lesson-05\.md/);
+  assert.match(answer, /Sources? : courses\/python\/lesson-05\.md/);
 });
 
 test("Sun conserve le sujet initial pendant plusieurs relances successives", async () => {
